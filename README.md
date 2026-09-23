@@ -33,6 +33,50 @@ ATLAS v1.0 focuses on four responsibilities:
 - **Local AI investigation** — investigate infrastructure without making the LLM authoritative.
 - **Governed operations** — execute only explicit, policy-controlled and independently verified actions.
 
+## Quick Start
+
+ATLAS OS v1.0 targets Debian/systemd systems with Python 3.13+.
+
+Download the official release bundle:
+
+```bash
+curl -LO https://github.com/Brunor86/atlas-os/releases/download/v1.0.0/atlas-os-v1.0.0.tar.gz
+curl -LO https://github.com/Brunor86/atlas-os/releases/download/v1.0.0/atlas-os-v1.0.0.tar.gz.sha256
+```
+
+Verify the download:
+
+```bash
+sha256sum -c atlas-os-v1.0.0.tar.gz.sha256
+```
+
+Extract it:
+
+```bash
+tar -xzf atlas-os-v1.0.0.tar.gz
+cd atlas-os-v1.0.0
+```
+
+On Debian, install Python virtual-environment support if needed:
+
+```bash
+sudo apt-get update
+sudo apt-get install -y python3-venv
+```
+
+Install ATLAS:
+
+```bash
+sudo ./scripts/install-atlas.sh \
+  --wheel wheel/atlasctl-1.0.0-py3-none-any.whl
+```
+
+ATLAS starts with a fail-closed configuration. Docker, Proxmox, Ollama and Prometheus are optional providers.
+
+The web interface binds to `127.0.0.1:8091` by default.
+
+For the complete installation and configuration guide, see [`INSTALL_V1.md`](docs/INSTALL_V1.md).
+
 ## Infrastructure overview
 
 <p align="center">
