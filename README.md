@@ -1,225 +1,229 @@
 # ATLAS OS
 
-ATLAS OS is a personal infrastructure intelligence and governed-operations
-platform for homelabs.
+<p align="center">
+  <strong>Infrastructure Intelligence & Governed Operations for Self-Hosted Systems</strong>
+</p>
 
-It discovers infrastructure, maintains an Asset Registry and topology,
-collects operational evidence, correlates events and incidents, supports
-read-only AI-assisted investigation, and exposes a controlled Operator for
-explicitly approved infrastructure actions.
+<p align="center">
+  Observe. Understand. Investigate. Operate safely.
+</p>
 
-## Release
+<p align="center">
+  <img src="docs/media/atlas-dashboard-overview.png" alt="ATLAS OS Dashboard" width="100%">
+</p>
 
-Current stable release:
+---
 
-`v1.0.0`
+## What is ATLAS OS?
 
-ATLAS v1.0 is deliberately conservative. Its objective is not unrestricted
-autonomy. Its objective is trustworthy infrastructure knowledge and safe,
-auditable operation.
+ATLAS OS is a self-hosted infrastructure intelligence and governed-operations platform designed for homelabs and private infrastructure.
 
-## v1.0 operating contract
+It discovers infrastructure, builds an Asset Registry and topology, collects operational evidence, correlates events and incidents, supports AI-assisted investigation, and exposes a controlled Operator for explicitly governed infrastructure actions.
 
-ATLAS v1.0 can:
+ATLAS is deliberately designed so that infrastructure authority does not belong to the language model. The LLM can investigate and propose, while ATLAS policy, persisted state, approvals, execution handlers and independent verification remain authoritative.
 
-- discover and persist infrastructure assets;
-- maintain stable identities, capabilities, criticality and relationships;
-- collect infrastructure snapshots;
-- evaluate health and degradation;
-- correlate events and persistent incidents;
-- investigate infrastructure using deterministic tools and local AI;
-- create governed operational proposals;
-- require explicit human approval before mutation;
-- reserve approvals durably for at-most-one execution attempt;
-- execute only explicit routed and allowlisted actions;
-- independently verify real post-execution state;
-- preserve verification and recovery history;
-- degrade explicitly when Docker, Proxmox or AI is unavailable;
-- keep optional Prometheus metric enrichment non-blocking;
-- prevent incomplete discovery from causing destructive reconciliation;
-- recover automatically after a normal host reboot.
+## ATLAS v1.0
+
+Current stable release: `v1.0.0`
+
+ATLAS v1.0 focuses on four responsibilities:
+
+- **Infrastructure knowledge** — discover and maintain trustworthy infrastructure state.
+- **Operational intelligence** — transform observations into events, incidents and context.
+- **Local AI investigation** — investigate infrastructure without making the LLM authoritative.
+- **Governed operations** — execute only explicit, policy-controlled and independently verified actions.
+
+## Infrastructure overview
+
+<p align="center">
+  <img src="docs/media/atlas-infrastructure.png" alt="ATLAS OS Infrastructure Overview" width="100%">
+</p>
+
+The v1.0 core includes Asset Registry, stable identities, capabilities, criticality, topology, snapshots, health evaluation, events, persistent incidents, Docker and Proxmox discovery, local system/storage state, optional Prometheus enrichment and local AI provider state.
+
+## Real infrastructure
+
+ATLAS OS is developed and validated against a real self-hosted environment, not only synthetic fixtures.
+
+<p align="center">
+  <img src="docs/media/atlas-homelab-main.jpg" alt="ATLAS Homelab" width="47%">
+  &nbsp;
+  <img src="docs/media/atlas-homelab-front.jpg" alt="ATLAS Homelab Front View" width="47%">
+</p>
+
+The environment combines virtualization, containers, storage, local AI and physical infrastructure under a single operational knowledge layer.
+
+## Proxmox integration
+
+<p align="center">
+  <img src="docs/media/atlas-proxmox-guests.png" alt="ATLAS OS Proxmox Guests" width="100%">
+</p>
+
+ATLAS treats external providers as evidence sources, not as infallible truth. Provider degradation is recorded explicitly instead of being interpreted as an authoritative empty inventory.
 
 ## Architecture
 
-    Infrastructure
-        |
-        v
-    Providers / Discovery
-        |
-        +--> Asset Registry
-        |       |
-        |       +--> Knowledge / Graph
-        |
-        +--> Snapshots / Health
-                |
-                +--> Events
-                        |
-                        +--> Incidents / NOC
-                                |
-                                +--> Investigation
-                                |
-                                +--> SafeAction
-                                        |
-                                        +--> Policy
-                                                |
-                                                +--> Human Approval
-                                                        |
-                                                        +--> Execution Claim
-                                                                |
-                                                                +--> Executor
-                                                                        |
-                                                                        +--> Verification
+```text
+Infrastructure
+    |
+    v
+Providers / Discovery
+    |
+    +--> Asset Registry
+    |       |
+    |       +--> Knowledge / Graph
+    |
+    +--> Snapshots / Health
+            |
+            +--> Events
+                    |
+                    +--> Incidents / NOC
+                            |
+                            +--> Investigation
+                            |
+                            +--> SafeAction
+                                    |
+                                    +--> Policy
+                                            |
+                                            +--> Human Approval
+                                                    |
+                                                    +--> Execution Claim
+                                                            |
+                                                            +--> Executor
+                                                                    |
+                                                                    +--> Verification
+```
 
 The AI layer does not own infrastructure authority.
 
-Policy, Asset Registry truth, persisted approvals, execution claims, handlers
-and independent verification remain authoritative.
+## Governed Operator
 
-## Operator V1
+ATLAS does not expose unrestricted shell execution to the AI layer.
 
-Supported execution vocabulary:
+Supported v1.0 actions:
 
-Docker containers:
-- start
-- stop
-- restart
+- Docker containers: start, stop, restart
+- systemd services: start, stop, restart
+- Proxmox QEMU VMs: start, stop, restart
+- Proxmox LXC containers: restart
 
-systemd services:
-- start
-- stop
-- restart
+Execution support does not imply policy permission. Asset presence, capabilities, criticality, importance, handler allowlists and policy remain independent safety gates.
 
-Proxmox QEMU VM:
-- start
-- stop
-- restart
+## Safety model
 
-Proxmox LXC:
-- restart
-
-Execution support does not imply policy permission.
-
-Handler allowlists, capabilities, asset presence, importance and criticality
-remain independent safety gates.
-
-There is no arbitrary shell execution path in the Operator UI.
-
-## Safety boundaries
-
-ATLAS v1.0 intentionally does not provide:
+ATLAS v1.0 intentionally does **not** provide:
 
 - unrestricted autonomous execution;
 - arbitrary shell mutation;
+- direct LLM infrastructure mutation;
 - automatic destructive rollback;
 - automatic retry of uncertain actions;
-- direct LLM infrastructure mutation;
-- bypass of protected HIGH/CRITICAL assets;
+- bypass of protected HIGH or CRITICAL assets;
 - mutation based on incomplete discovery.
 
-A successful remote command is not considered proof of infrastructure
-success. ATLAS independently verifies the resulting state.
-
-An uncertain result becomes a recovery problem, not an automatic retry.
+A successful remote command is not considered proof of infrastructure success. ATLAS independently verifies the resulting state. An uncertain result becomes a recovery problem, not an automatic retry.
 
 ## Provider failure semantics
 
+```text
 Docker unavailable:
-
-    docker.available = false
-    health = warning
+docker.available = false
+health = warning
 
 Proxmox unavailable:
-
-    proxmox.available = false
-    health = warning
-
-An unavailable provider is not treated as an authoritative empty inventory.
+proxmox.available = false
+health = warning
 
 Incomplete discovery:
-
-    DiscoveryResult.complete = false
-
-causes authoritative inventory reconciliation and mutating NOC processing to
-be skipped.
+DiscoveryResult.complete = false
 
 AI provider unavailable:
+status = OFFLINE
+provider_available = false
+```
 
-    status = OFFLINE
-    provider_available = false
-
-does not grant or remove infrastructure authority.
-
-Local system, storage and network truth remains fail-closed.
+An unavailable provider is not treated as an authoritative empty inventory. Incomplete discovery causes authoritative reconciliation and mutating NOC processing to be skipped.
 
 ## Runtime
 
 Main production services:
 
-    atlas-web.service
-    atlas-collector.service
+```text
+atlas-web.service
+atlas-collector.service
+```
 
-Persistent operational state is stored in SQLite.
-
-Production uses WAL mode.
+Persistent operational state is stored in SQLite using WAL mode.
 
 ## Release qualification
 
 The v1.0 release line has been validated with:
 
-- 792 automated tests;
-- SQLite integrity_check and quick_check;
+- **792 automated tests**;
+- SQLite `integrity_check` and `quick_check`;
 - consistent online database backup;
-- controlled ATLAS service restart;
-- real VM reboot;
-- automatic service recovery;
-- 25/25 Docker workload recovery;
-- storage remount after boot;
-- runtime secret restoration;
-- Proxmox recovery;
-- Operator API recovery;
-- Docker provider failure isolation;
-- Proxmox provider failure isolation;
+- controlled service restart and real VM reboot;
+- automatic service and Docker workload recovery;
+- storage remount and runtime secret restoration;
+- Proxmox and Operator API recovery;
+- Docker and Proxmox provider failure isolation;
 - simultaneous external-provider degradation;
 - local-host fail-closed behavior;
 - incomplete-discovery mutation guard;
 - AI provider OFFLINE behavior;
 - snapshot schema v3 degradation evidence.
 
+## Design principles
+
+**Infrastructure truth before AI opinion.**
+
+**Investigation is separate from authority.**
+
+**Actions are explicit, governed and auditable.**
+
+**Execution must be independently verified.**
+
+**Missing evidence must not silently become false certainty.**
+
+**External provider failure must not erase known infrastructure.**
+
 ## Documentation
 
-See:
-
-- `docs/RELEASE_CONTRACT_V1.md`
-- `docs/BACKUP_RESTORE_V1.md`
-- `docs/BOOT_RECOVERY_V1.md`
-- `docs/OPERATOR_SINGLE_EXECUTION.md`
+- [`RELEASE_CONTRACT_V1.md`](docs/RELEASE_CONTRACT_V1.md)
+- [`BACKUP_RESTORE_V1.md`](docs/BACKUP_RESTORE_V1.md)
+- [`BOOT_RECOVERY_V1.md`](docs/BOOT_RECOVERY_V1.md)
+- [`OPERATOR_SINGLE_EXECUTION.md`](docs/OPERATOR_SINGLE_EXECUTION.md)
 
 ## Development validation
 
-From the repository root:
-
-    export PYTHONPATH="$PWD/src"
-    /opt/atlas/.venv/bin/python -m pytest -q
+```bash
+export PYTHONPATH="$PWD/src"
+/opt/atlas/.venv/bin/python -m pytest -q
+```
 
 A release is accepted only with a clean full suite.
 
 ## Versioning
 
-Runtime version information is derived from Git tags.
+Package metadata: `1.0.0`
 
-Package metadata uses PEP 440:
-
-    1.0.0
-
-Git release tag:
-
-    v1.0.0
+Git release tag: `v1.0.0`
 
 ## Beyond v1.0
 
-Home Assistant control, ATLAS Science, Atlas Sky, broader autonomous
-operation, generalized infrastructure mutation and domain-specific systems
-belong after the v1.0 stability boundary.
+```text
+ATLAS
+├── Infrastructure
+├── Intelligence
+├── Operator
+│
+├── ATLAS Home
+├── ATLAS Science
+└── ATLAS Sky
+```
 
-ATLAS OS v1.0 establishes the infrastructure operating core those systems
-can build upon.
+Home Assistant integration, ATLAS Science, Atlas Sky, broader infrastructure capabilities and domain-specific systems belong after the v1.0 stability boundary.
+
+## License
+
+ATLAS OS is licensed under the Apache License 2.0.
