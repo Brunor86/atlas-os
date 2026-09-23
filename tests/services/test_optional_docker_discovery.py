@@ -173,3 +173,73 @@ def test_discovery_kernel_keeps_configured_docker_lazy(
         docker_providers[0].service
         is None
     )
+
+
+def test_discovery_kernel_skips_unconfigured_proxmox(
+    monkeypatch,
+):
+
+    import atlas.services.discovery.kernel as module
+
+    monkeypatch.setattr(
+        module,
+        "is_proxmox_configured",
+        lambda:
+            False,
+        raising=False,
+    )
+
+    kernel = module.DiscoveryKernel()
+
+    kernel.providers = []
+
+    monkeypatch.setattr(
+        kernel,
+        "_discover_proxmox",
+        lambda:
+            (_ for _ in ()).throw(
+                AssertionError(
+                    "unconfigured Proxmox must be skipped"
+                )
+            ),
+    )
+
+    monkeypatch.setattr(
+        kernel,
+        "_discover_host_services",
+        lambda:
+            [],
+    )
+
+    monkeypatch.setattr(
+        kernel.role_inference,
+        "infer",
+        lambda assets:
+            assets,
+    )
+
+    monkeypatch.setattr(
+        kernel.graph_builder,
+        "build",
+        lambda assets:
+            [],
+    )
+
+    monkeypatch.setattr(
+        kernel.dependency_builder,
+        "build",
+        lambda assets:
+            [],
+    )
+
+    monkeypatch.setattr(
+        kernel.graph_service,
+        "persist",
+        lambda relationships:
+            None,
+    )
+
+    result = kernel.discover()
+
+    assert result.complete is True
+    assert result.errors == []

@@ -32,6 +32,13 @@ def test_storage_provider_reports_remote_inventory_failure(
     monkeypatch,
 ):
 
+    monkeypatch.setattr(
+        storage_module,
+        "is_proxmox_configured",
+        lambda:
+            True,
+    )
+
     def fail_host():
 
         raise RuntimeError(
@@ -65,6 +72,13 @@ def test_storage_provider_reports_remote_inventory_failure(
 def test_storage_provider_resets_errors_each_cycle(
     monkeypatch,
 ):
+
+    monkeypatch.setattr(
+        storage_module,
+        "is_proxmox_configured",
+        lambda:
+            True,
+    )
 
     calls = {
         "count": 0,
@@ -334,3 +348,37 @@ SMART overall-health self-assessment test result: PASSED
 
     assert smart.smart_available is True
     assert smart.smart_passed is True
+
+
+def test_storage_provider_skips_unconfigured_proxmox_smart(
+    monkeypatch,
+):
+
+    monkeypatch.setattr(
+        storage_module,
+        "is_proxmox_configured",
+        lambda:
+            False,
+        raising=False,
+    )
+
+    def should_not_run():
+
+        raise AssertionError(
+            "unconfigured Proxmox SMART must be skipped"
+        )
+
+    monkeypatch.setattr(
+        storage_module,
+        "require_proxmox_host",
+        should_not_run,
+    )
+
+    provider = StorageAssetProvider(
+        telemetry=EmptyTelemetry()
+    )
+
+    assets = provider.collect()
+
+    assert assets == []
+    assert provider.errors == []

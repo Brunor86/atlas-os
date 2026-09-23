@@ -2,7 +2,10 @@ import logging
 
 from atlas.core.provider import AssetProvider
 
-from atlas.config.proxmox import require_proxmox_host
+from atlas.config.proxmox import (
+    is_proxmox_configured,
+    require_proxmox_host,
+)
 
 from atlas.core.asset import (
     Asset,
@@ -109,6 +112,12 @@ class StorageAssetProvider(AssetProvider):
         # Physical storage exposed by Proxmox
         # ----------------------------------------------------------
         #
+
+        # A completely unconfigured optional Proxmox provider is
+        # absent, not failed. Partial configuration still reaches
+        # the normal failure-isolation boundary.
+        if not is_proxmox_configured():
+            return assets
 
         try:
 

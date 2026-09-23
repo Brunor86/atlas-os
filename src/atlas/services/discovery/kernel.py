@@ -20,6 +20,7 @@ from atlas.services.assets.graph_service import AssetGraphService
 from atlas.models.discovery import DiscoveryResult
 
 from atlas.config.proxmox import (
+    is_proxmox_configured,
     require_proxmox_host,
 )
 
@@ -339,11 +340,20 @@ class DiscoveryKernel:
         #
         # Proxmox infrastructure
         #
+        # A completely absent optional provider is skipped.
+        # Partial/configured Proxmox still fails closed.
+        #
+
+        proxmox_configured = (
+            is_proxmox_configured()
+        )
 
         try:
 
             proxmox_assets, guests = (
                 self._discover_proxmox()
+                if proxmox_configured
+                else ([], [])
             )
 
             for asset in proxmox_assets:
@@ -352,9 +362,11 @@ class DiscoveryKernel:
                     asset
                 )
 
-            successful_sources.append(
-                "Proxmox"
-            )
+            if proxmox_configured:
+
+                successful_sources.append(
+                    "Proxmox"
+                )
 
             _diagnostic(
                 "DEBUG PROXMOX ASSETS:",
@@ -384,6 +396,8 @@ class DiscoveryKernel:
                 self._discover_lxc_services(
                     guests
                 )
+                if proxmox_configured
+                else []
             )
 
             for asset in lxc_services:
@@ -392,9 +406,11 @@ class DiscoveryKernel:
                     asset
                 )
 
-            successful_sources.append(
-                "LXCServices"
-            )
+            if proxmox_configured:
+
+                successful_sources.append(
+                    "LXCServices"
+                )
 
             _diagnostic(
                 "DEBUG LXC SERVICES:",

@@ -406,3 +406,26 @@ def test_missing_database_is_unhealthy(
     )
 
     assert result["status"] == "UNHEALTHY"
+
+
+def test_ai_offline_degrades_control_plane(
+    tmp_path,
+):
+
+    result = make_service(
+        tmp_path,
+        cycle_status(),
+        ai="OFFLINE",
+    ).status()
+
+    assert (
+        result["components"]["ai_runtime"]["status"]
+        == "DEGRADED"
+    )
+
+    assert (
+        result["components"]["ai_runtime"]["reason"]
+        == "AI_RUNTIME_OFFLINE"
+    )
+
+    assert result["status"] == "DEGRADED"

@@ -658,6 +658,11 @@ class ControlPlaneHealthService:
             status = "HEALTHY"
             reason = "AI_RUNTIME_HEALTHY"
 
+        elif raw == "OFFLINE":
+
+            status = "DEGRADED"
+            reason = "AI_RUNTIME_OFFLINE"
+
         elif raw in (
             "DEGRADED",
             "WARNING",

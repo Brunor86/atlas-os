@@ -109,3 +109,31 @@ def test_ca_bundle_takes_precedence(
         config.requests_verify
         == "/example/proxmox-ca.pem"
     )
+
+
+def test_proxmox_configuration_detection(
+    monkeypatch,
+):
+
+    from atlas.config.proxmox import (
+        is_proxmox_configured,
+    )
+
+    clear_proxmox_env(
+        monkeypatch
+    )
+
+    assert (
+        is_proxmox_configured()
+        is False
+    )
+
+    monkeypatch.setenv(
+        "ATLAS_PROXMOX_HOST",
+        "pve.example.internal",
+    )
+
+    assert (
+        is_proxmox_configured()
+        is True
+    )

@@ -91,6 +91,22 @@ def get_proxmox_config() -> ProxmoxConfig:
     )
 
 
+def is_proxmox_configured() -> bool:
+    # A completely absent optional provider must be skipped.
+    # Partial configuration still counts as configured so
+    # missing fields or connectivity failures remain visible.
+    config = get_proxmox_config()
+
+    return any(
+        (
+            config.url,
+            config.token,
+            config.host,
+            config.ca_bundle,
+        )
+    )
+
+
 def require_proxmox_api() -> ProxmoxConfig:
     """
     Return configured Proxmox API settings or fail explicitly.
