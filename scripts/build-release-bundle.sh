@@ -389,9 +389,13 @@ tar \
     "$BUNDLE_NAME"
 
 
-sha256sum \
-    "$ARCHIVE" \
-    > "$ARCHIVE_SUM"
+(
+    cd "$OUTPUT_ROOT"
+
+    sha256sum \
+        "$(basename "$ARCHIVE")" \
+        > "$(basename "$ARCHIVE_SUM")"
+)
 
 
 echo

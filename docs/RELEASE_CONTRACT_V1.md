@@ -1,6 +1,13 @@
 # ATLAS OS v1.0 Release Contract
 
-## Stable release
+## Current stable release
+
+`v1.0.1`
+
+The patch release preserves the v1.0 safety contract and adds clean-room
+hardening for optional-provider semantics and public release packaging.
+
+## Original stable release
 
 `v1.0.0`
 
@@ -225,13 +232,13 @@ Validated:
 
 ## Automated regression baseline
 
-    792 passed
+    797 passed
 
 The release documentation change must preserve that full result.
 
 ## Stable acceptance
 
-`v1.0.0` may be tagged only when:
+The original `v1.0.0` stable tag required:
 
 - the repository worktree is clean;
 - the full regression suite passes;
@@ -249,5 +256,4 @@ The release documentation change must preserve that full result.
 - Apache License 2.0 is included in the repository and release bundle;
 - release documentation is committed before the stable tag is created.
 
-Final `v1.0.0` requires no unresolved release-candidate defect violating this
-contract.
+The v1.0 release line requires no unresolved defect violating this contract.

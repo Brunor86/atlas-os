@@ -9,11 +9,15 @@ A Git checkout is not required by the installed runtime.
 
 The v1 installer targets a Debian system using systemd and Python 3.13+.
 
-On a minimal Debian 13 installation, install Python virtual-environment
-support before running the ATLAS installer:
+On a minimal Debian 13 installation, become root and install the
+bootstrap prerequisites before downloading and running ATLAS:
 
+    su -
     apt-get update
-    apt-get install -y python3-venv
+    apt-get install -y ca-certificates wget python3-venv
+
+The public Quick Start deliberately does not assume that `sudo` or `curl`
+is installed.
 
 The release wheel contains ATLAS itself. Python package dependencies are
 resolved by pip during installation, so network access to the configured
@@ -54,7 +58,7 @@ infrastructure controls including systemd and Docker.
 Build or obtain the ATLAS wheel, then run:
 
     scripts/install-atlas.sh \
-        --wheel /path/to/atlasctl-1.0.0-py3-none-any.whl
+        --wheel /path/to/atlasctl-1.0.1-py3-none-any.whl
 
 The installer:
 

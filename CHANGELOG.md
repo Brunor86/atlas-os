@@ -1,5 +1,29 @@
 # Changelog
 
+## v1.0.1
+
+Patch release driven by the public Debian 13 clean-room installation.
+
+### Optional-provider semantics
+
+- Unconfigured Proxmox is skipped during authoritative discovery instead of
+  being reported as a provider failure.
+- Proxmox SMART collection is skipped when Proxmox is not configured.
+- Partially configured or unreachable Proxmox remains explicit, incomplete
+  discovery and therefore fail-closed.
+- An unavailable optional Ollama runtime degrades control-plane health instead
+  of marking the ATLAS core unhealthy.
+- Full release regression baseline: 797 tests.
+
+### Public installation hardening
+
+- Quick Start now works from a minimal Debian installation without assuming
+  `sudo` or `curl`.
+- Debian bootstrap prerequisites explicitly include CA certificates, `wget`
+  and Python virtual-environment support.
+- Release archive checksum output is portable and contains the archive
+  basename rather than a build-host absolute path.
+
 ## v1.0.0
 
 First stable release of the ATLAS OS v1.0 infrastructure operating core.

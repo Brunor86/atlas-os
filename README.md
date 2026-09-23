@@ -24,7 +24,7 @@ ATLAS is deliberately designed so that infrastructure authority does not belong 
 
 ## ATLAS v1.0
 
-Current stable release: `v1.0.0`
+Current stable release: `v1.0.1`
 
 ATLAS v1.0 focuses on four responsibilities:
 
@@ -37,38 +37,40 @@ ATLAS v1.0 focuses on four responsibilities:
 
 ATLAS OS v1.0 targets Debian/systemd systems with Python 3.13+.
 
+On a minimal Debian installation, become root and install the small set of
+bootstrap prerequisites. The Quick Start does not assume `sudo` or `curl`:
+
+```bash
+su -
+apt-get update
+apt-get install -y ca-certificates wget python3-venv
+```
+
 Download the official release bundle:
 
 ```bash
-curl -LO https://github.com/Brunor86/atlas-os/releases/download/v1.0.0/atlas-os-v1.0.0.tar.gz
-curl -LO https://github.com/Brunor86/atlas-os/releases/download/v1.0.0/atlas-os-v1.0.0.tar.gz.sha256
+wget https://github.com/Brunor86/atlas-os/releases/download/v1.0.1/atlas-os-v1.0.1.tar.gz
+wget https://github.com/Brunor86/atlas-os/releases/download/v1.0.1/atlas-os-v1.0.1.tar.gz.sha256
 ```
 
 Verify the download:
 
 ```bash
-sha256sum -c atlas-os-v1.0.0.tar.gz.sha256
+sha256sum -c atlas-os-v1.0.1.tar.gz.sha256
 ```
 
 Extract it:
 
 ```bash
-tar -xzf atlas-os-v1.0.0.tar.gz
-cd atlas-os-v1.0.0
-```
-
-On Debian, install Python virtual-environment support if needed:
-
-```bash
-sudo apt-get update
-sudo apt-get install -y python3-venv
+tar -xzf atlas-os-v1.0.1.tar.gz
+cd atlas-os-v1.0.1
 ```
 
 Install ATLAS:
 
 ```bash
-sudo ./scripts/install-atlas.sh \
-  --wheel wheel/atlasctl-1.0.0-py3-none-any.whl
+./scripts/install-atlas.sh \
+  --wheel wheel/atlasctl-1.0.1-py3-none-any.whl
 ```
 
 ATLAS starts with a fail-closed configuration. Docker, Proxmox, Ollama and Prometheus are optional providers.
@@ -203,7 +205,7 @@ Persistent operational state is stored in SQLite using WAL mode.
 
 The v1.0 release line has been validated with:
 
-- **792 automated tests**;
+- **797 automated tests**;
 - SQLite `integrity_check` and `quick_check`;
 - consistent online database backup;
 - controlled service restart and real VM reboot;
@@ -249,9 +251,9 @@ A release is accepted only with a clean full suite.
 
 ## Versioning
 
-Package metadata: `1.0.0`
+Package metadata: `1.0.1`
 
-Git release tag: `v1.0.0`
+Git release tag: `v1.0.1`
 
 ## Beyond v1.0
 

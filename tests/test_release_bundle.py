@@ -242,3 +242,23 @@ def test_release_artifact_directories_are_gitignored():
 
     assert "build/" in values
     assert "dist-release/" in values
+
+
+def test_release_archive_checksum_is_portable():
+
+    text = source()
+
+    assert (
+        'cd "$OUTPUT_ROOT"'
+        in text
+    )
+
+    assert (
+        '"$(basename "$ARCHIVE")"'
+        in text
+    )
+
+    assert (
+        '> "$(basename "$ARCHIVE_SUM")"'
+        in text
+    )
