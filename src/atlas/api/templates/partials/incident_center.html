@@ -1,0 +1,190 @@
+<div class="panel incident-center">
+
+
+    <div class="panel-header">
+
+        <h3>
+            Incident Center
+        </h3>
+
+
+        <span class="health-badge warning">
+
+            {{ incident_summary.open }} Open
+
+        </span>
+
+    </div>
+
+
+
+    <div class="incident-summary-grid">
+
+
+        <div class="metric-card">
+
+            <span>Total</span>
+
+            <strong>
+                {{ incident_summary.total }}
+            </strong>
+
+        </div>
+
+
+
+        <div class="metric-card">
+
+            <span>Critical</span>
+
+            <strong class="critical-text">
+
+                {{ incident_summary.critical }}
+
+            </strong>
+
+        </div>
+
+
+
+    </div>
+
+
+
+
+    <div class="severity-distribution">
+
+        <h4>
+            Severity
+        </h4>
+
+
+        {% for level,count in incident_severity.items() %}
+
+        <div class="severity-row">
+
+            <span>
+                {{ level }}
+            </span>
+
+
+            <strong>
+                {{ count }}
+            </strong>
+
+
+        </div>
+
+
+        {% endfor %}
+
+
+    </div>
+
+
+
+
+
+    <h4>
+        Active Incidents
+    </h4>
+
+
+
+    {% if incidents %}
+
+
+        {% for incident in incidents %}
+
+
+        <div class="incident-card">
+
+
+            <div>
+
+                <strong>
+                    {{ incident[0] }}
+                </strong>
+
+
+                <span class="
+                    health-badge
+
+                    {% if incident[3] == 'CRITICAL' %}
+                          critical
+                      {% elif incident[3] == 'HIGH' %}
+                          high
+                      {% elif incident[3] == 'WARNING' %}
+                          warning
+                      {% elif incident[3] == 'LOW' %}
+                          low
+                      {% elif incident[3] == 'RESOLVED' %}
+                          healthy
+                      {% else %}
+                          healthy
+                      {% endif %}
+                ">
+
+                    {{ incident[3] }}
+
+                </span>
+
+
+            </div>
+
+
+
+            <h4>
+                {{ incident[1] }}
+            </h4>
+
+
+
+            <p>
+                Asset:
+                {{ incident[2] }}
+            </p>
+
+
+
+            <p>
+                Status:
+                {{ incident[4] }}
+            </p>
+
+
+
+            {% if incident[7] and incident[7] != '[]' %}
+
+            <p>
+
+                Impact:
+
+                {{ incident[7] }}
+
+            </p>
+
+            {% endif %}
+
+
+
+        </div>
+
+
+        {% endfor %}
+
+
+
+    {% else %}
+
+
+        <p>
+            No active incidents
+        </p>
+
+
+    {% endif %}
+
+
+
+</div>

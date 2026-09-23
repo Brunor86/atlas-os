@@ -1,0 +1,20 @@
+[Unit]
+Description=ATLAS OS Web Console
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/var/lib/atlas
+EnvironmentFile=/etc/atlas/atlas.env
+EnvironmentFile=/etc/atlas/atlas-web.env
+ExecStart=/opt/atlas/venv/bin/python -m uvicorn atlas.api.server:app --host ${ATLAS_WEB_HOST} --port ${ATLAS_WEB_PORT}
+Restart=on-failure
+RestartSec=3
+UMask=0077
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

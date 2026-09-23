@@ -1,0 +1,57 @@
+<section class="panel">
+
+<h3>Infrastructure Assets</h3>
+
+<div id="atlas-assets">
+Loading...
+</div>
+
+<script>
+async function loadAssets(){
+
+    const r = await fetch("/api/assets/dashboard");
+    const data = await r.json();
+
+    let html = "";
+
+    html += "<h4>Summary</h4>";
+
+    html += "<ul>";
+    html += "<li>Total: " + data.overview.summary.total + "</li>";
+    html += "<li>Online: " + data.overview.summary.online + "</li>";
+    html += "<li>Offline: " + data.overview.summary.offline + "</li>";
+    html += "<li>Critical: " + data.overview.summary.critical + "</li>";
+    html += "</ul>";
+
+    html += "<table style='width:100%'>";
+
+    html += "<tr>";
+    html += "<th>Name</th>";
+    html += "<th>Type</th>";
+    html += "<th>Status</th>";
+    html += "<th>Health</th>";
+    html += "<th>Criticality</th>";
+    html += "</tr>";
+
+    for(const a of data.assets){
+
+        html += "<tr>";
+
+        html += "<td>"+a.name+"</td>";
+        html += "<td>"+a.type+"</td>";
+        html += "<td>"+a.status+"</td>";
+        html += "<td>"+a.health.toFixed(1)+"%</td>";
+        html += "<td>"+a.criticality+"</td>";
+
+        html += "</tr>";
+    }
+
+    html += "</table>";
+
+    document.getElementById("atlas-assets").innerHTML = html;
+}
+
+loadAssets();
+</script>
+
+</section>

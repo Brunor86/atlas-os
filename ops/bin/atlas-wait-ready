@@ -1,0 +1,310 @@
+#!/usr/bin/env python3
+
+import os
+import shutil
+import socket
+import subprocess
+import sys
+import time
+
+from urllib.parse import (
+    urlparse,
+)
+
+
+TIMEOUT_SECONDS = 120
+INTERVAL_SECONDS = 3
+
+
+def docker_ready():
+
+    docker = shutil.which(
+        "docker"
+    )
+
+    socket_present = os.path.exists(
+        "/var/run/docker.sock"
+    )
+
+    # Docker is an optional external provider.
+    #
+    # A host with neither the Docker CLI nor its socket is a
+    # valid ATLAS installation and must not be blocked at boot.
+    #
+    # If either Docker artifact exists, however, treat Docker
+    # as configured and wait for the provider to become ready.
+    if (
+        not docker
+        and not socket_present
+    ):
+        return (
+            True,
+            "not configured",
+        )
+
+    if not docker:
+        return (
+            False,
+            "docker executable not found",
+        )
+
+    if not socket_present:
+        return (
+            False,
+            "docker socket not present",
+        )
+
+    try:
+
+        result = subprocess.run(
+            [
+                docker,
+                "info",
+                "--format",
+                "{{.ServerVersion}}",
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            timeout=5,
+        )
+
+    except Exception as exc:
+
+        return (
+            False,
+            f"docker probe exception: {exc}",
+        )
+
+
+    if result.returncode != 0:
+
+        detail = (
+            result.stderr.strip()
+            or result.stdout.strip()
+            or f"rc={result.returncode}"
+        )
+
+        return (
+            False,
+            detail,
+        )
+
+
+    return (
+        True,
+        result.stdout.strip(),
+    )
+
+
+def proxmox_target():
+
+    url = (
+        os.environ.get(
+            "ATLAS_PROXMOX_URL"
+        )
+        or ""
+    ).strip()
+
+    if not url:
+        return None
+
+    parsed = urlparse(
+        url
+    )
+
+    host = parsed.hostname
+
+    port = (
+        parsed.port
+        or (
+            443
+            if parsed.scheme == "https"
+            else 80
+        )
+    )
+
+    if not host:
+        raise RuntimeError(
+            "ATLAS_PROXMOX_URL has no hostname: "
+            f"{url!r}"
+        )
+
+    return (
+        url,
+        host,
+        port,
+    )
+
+
+def proxmox_ready():
+
+    try:
+
+        target = proxmox_target()
+
+    except Exception as exc:
+
+        return (
+            False,
+            str(exc),
+        )
+
+    if target is None:
+
+        return (
+            True,
+            "not configured",
+        )
+
+    url, host, port = target
+
+
+    try:
+
+        with socket.create_connection(
+            (
+                host,
+                port,
+            ),
+            timeout=3,
+        ):
+            pass
+
+    except Exception as exc:
+
+        return (
+            False,
+            (
+                f"{host}:{port} "
+                f"unreachable: "
+                f"{type(exc).__name__}: "
+                f"{exc}"
+            ),
+        )
+
+
+    return (
+        True,
+        f"{url} reachable",
+    )
+
+
+def main():
+
+    print(
+        "ATLAS boot readiness probe started",
+        flush=True,
+    )
+
+    try:
+
+        target = proxmox_target()
+
+    except Exception as exc:
+
+        print(
+            "ATLAS boot readiness invalid "
+            f"Proxmox target: {exc}",
+            flush=True,
+        )
+
+        return 1
+
+
+    if target is None:
+
+        print(
+            "ATLAS boot readiness target "
+            "proxmox=not-configured",
+            flush=True,
+        )
+
+    else:
+
+        url, host, port = target
+
+        print(
+            "ATLAS boot readiness target "
+            f"proxmox={host}:{port} "
+            f"url={url}",
+            flush=True,
+        )
+
+
+    deadline = (
+        time.monotonic()
+        + TIMEOUT_SECONDS
+    )
+
+    attempt = 0
+
+
+    while True:
+
+        attempt += 1
+
+        docker_ok, docker_detail = (
+            docker_ready()
+        )
+
+        proxmox_ok, proxmox_detail = (
+            proxmox_ready()
+        )
+
+
+        if (
+            docker_ok
+            and proxmox_ok
+        ):
+
+            print(
+                "ATLAS boot readiness PASS "
+                f"docker={docker_detail} "
+                f"proxmox={proxmox_detail}",
+                flush=True,
+            )
+
+            return 0
+
+
+        remaining = int(
+            deadline
+            - time.monotonic()
+        )
+
+
+        print(
+            "ATLAS boot readiness waiting "
+            f"attempt={attempt} "
+            f"remaining={max(remaining, 0)}s "
+            f"docker_ok={docker_ok} "
+            f"docker={docker_detail!r} "
+            f"proxmox_ok={proxmox_ok} "
+            f"proxmox={proxmox_detail!r}",
+            flush=True,
+        )
+
+
+        if (
+            time.monotonic()
+            >= deadline
+        ):
+
+            print(
+                "ATLAS boot readiness FAILED",
+                flush=True,
+            )
+
+            return 1
+
+
+        time.sleep(
+            INTERVAL_SECONDS
+        )
+
+
+if __name__ == "__main__":
+    sys.exit(
+        main()
+    )

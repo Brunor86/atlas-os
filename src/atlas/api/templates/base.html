@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ATLAS</title>
+    <link rel="stylesheet"
+	  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet"
+          href="{{ url_for('static', path='css/atlas.css') }}">
+
+</head>
+
+<body>
+
+    <header class="topbar">
+
+        <div class="logo">
+
+            <h1>ATLAS</h1>
+
+            <span>Infrastructure Intelligence</span>
+
+        </div>
+
+        <div class="version">
+
+            {{ atlas_version }}
+
+        </div>
+
+    </header>
+
+    <main class="content">
+
+        {% block content %}
+        {% endblock %}
+
+    </main>
+
+
+    <script src="/static/js/atlas.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,60 @@
+<section class="panel">
+
+    <h2>
+        <i class="fas fa-hdd"></i>
+        Storage
+    </h2>
+
+
+    {% for disk in infra.storage %}
+
+    <div class="disk">
+
+
+        <div class="disk-header">
+
+            <strong>
+                {{ disk.mountpoint }}
+            </strong>
+
+            <span>
+                {{ "%.1f"|format(disk.usage_percent) }}%
+            </span>
+
+        </div>
+
+
+        <div class="progress">
+
+            <div class="progress-bar"
+                 style="width: {{ disk.usage_percent }}%;">
+            </div>
+
+        </div>
+
+
+        <div class="disk-footer">
+
+            {{ disk.filesystem }}
+
+            -
+
+            {{ "%.1f"|format(disk.used_gb) }}
+            /
+            {{ "%.1f"|format(disk.total_gb) }}
+            GB
+
+            (Libre:
+            {{ "%.1f"|format(disk.free_gb) }}
+            GB)
+
+        </div>
+
+
+    </div>
+
+
+    {% endfor %}
+
+
+</section>

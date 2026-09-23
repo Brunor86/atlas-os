@@ -1,0 +1,72 @@
+<div class="panel">
+
+
+    <h2>
+        Event History
+    </h2>
+
+
+    <div class="event-history">
+
+
+        {% for event in event_history %}
+
+
+        <div class="history-item">
+
+
+            <div class="history-main">
+
+
+                <strong>
+                    {{ event.title }}
+                </strong>
+
+
+                <p>
+                    {{ event.message }}
+                </p>
+
+
+            </div>
+
+
+            <div class="history-meta">
+
+
+                <span>
+                    {{ event.severity }}
+                </span>
+
+
+                <span>
+                    {{ event.status }}
+                </span>
+
+
+                <span>
+                    {{ event.occurrences }} occurrences
+                </span>
+
+
+            </div>
+
+
+        </div>
+
+
+        {% else %}
+
+
+        <p>
+            No events recorded
+        </p>
+
+
+        {% endfor %}
+
+
+    </div>
+
+
+</div>

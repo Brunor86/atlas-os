@@ -1,0 +1,7 @@
+"""ATLAS Model Context Protocol integration."""
+
+from atlas.mcp.server import build_server
+
+__all__ = [
+    "build_server",
+]

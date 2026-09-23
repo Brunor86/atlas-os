@@ -1,0 +1,95 @@
+<div class="impact-panel panel">
+
+    <div class="panel-header">
+
+        <h3>
+            Impact Intelligence
+        </h3>
+
+    </div>
+
+
+    {% if impact %}
+
+
+    <div class="noc-summary">
+
+
+        <div class="noc-card">
+            <span>
+                Critical Assets
+            </span>
+
+            <strong>
+                {{ impact.critical_assets }}
+            </strong>
+        </div>
+
+
+
+        <div class="noc-card">
+            <span>
+                Total Impact
+            </span>
+
+            <strong>
+                {{ impact.total_score }}
+            </strong>
+        </div>
+
+
+
+        <div class="noc-card">
+            <span>
+                Severity
+            </span>
+
+            <strong>
+                {{ impact.severity }}
+            </strong>
+        </div>
+
+
+    </div>
+
+
+
+    {% if impact.assets %}
+
+    <h4>
+        Top Impacted Assets
+    </h4>
+
+
+    {% for asset in impact.assets %}
+
+
+    <div class="incident-card">
+
+        <strong>
+            {{ asset.name }}
+        </strong>
+
+        <p>
+            Score:
+            {{ asset.score }}
+        </p>
+
+        <p>
+            Severity:
+            {{ asset.severity }}
+        </p>
+
+    </div>
+
+
+    {% endfor %}
+
+
+    {% endif %}
+
+
+    {% endif %}
+
+
+</div>

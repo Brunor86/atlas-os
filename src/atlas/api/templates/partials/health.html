@@ -1,0 +1,142 @@
+<section class="panel">
+
+    <h2>
+
+        <i class="fa-solid fa-heart-pulse"></i>
+
+        ATLAS Insights
+
+    </h2>
+
+
+    <table class="info-table">
+
+        <tr>
+
+            <td>Status</td>
+
+            <td>
+
+                {% if health.status == "healthy" %}
+
+                    <span class="health-badge healthy">
+
+                        ● Healthy
+
+                    </span>
+
+                {% elif health.status == "warning" %}
+
+                    <span class="health-badge warning">
+
+                        ● Warning
+
+                    </span>
+
+                {% else %}
+
+                    <span class="health-badge critical">
+
+                        ● Critical
+
+                    </span>
+
+                {% endif %}
+
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td>Last Update</td>
+
+            <td>{{ health.last_update }}</td>
+
+        </tr>
+
+    </table>
+
+
+    {% if health.alerts %}
+
+        <h3 style="margin-top:20px;">
+
+            Alerts
+
+        </h3>
+
+        <div class="alerts">
+
+            {% for alert in health.alerts %}
+
+                <div class="alert-card">
+
+                    <div class="alert-title">
+
+                        {{ alert.title }}
+
+                    </div>
+
+                    <div class="alert-message">
+
+                        {{ alert.message }}
+
+                    </div>
+
+                    <div class="alert-source">
+
+                        {{ alert.source }}
+
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    {% endif %}
+
+
+    {% if health.warnings %}
+
+        <h3 style="margin-top:20px;">
+
+            Warnings
+
+        </h3>
+
+        <div class="alerts">
+
+            {% for warning in health.warnings %}
+
+                <div class="alert-card">
+
+                    <div class="alert-title">
+
+                        {{ warning.title }}
+
+                    </div>
+
+                    <div class="alert-message">
+
+                        {{ warning.message }}
+
+                    </div>
+
+                    <div class="alert-source">
+
+                        {{ warning.source }}
+
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    {% endif %}
+
+</section>

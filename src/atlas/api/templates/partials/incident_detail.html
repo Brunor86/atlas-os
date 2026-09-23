@@ -1,0 +1,156 @@
+
+<div class="panel incident-detail">
+
+<div class="panel-header">
+    <h3>Incident Detail</h3>
+</div>
+
+
+{% if incident_detail %}
+
+
+<div class="incident-card">
+
+<div class="incident-detail-title-row">
+
+<strong>
+{{ incident_detail[0] }}
+</strong>
+
+
+<span class="health-badge
+{% if incident_detail[3] == 'CRITICAL' %}
+critical
+{% elif incident_detail[3] == 'HIGH' %}
+high
+{% elif incident_detail[3] == 'WARNING' %}
+warning
+{% elif incident_detail[3] == 'MEDIUM' %}
+warning
+{% else %}
+low
+{% endif %}
+">
+{{ incident_detail[3] }}
+</span>
+
+
+</div>
+
+
+<p>
+<strong>
+{{ incident_detail[1] }}
+</strong>
+</p>
+
+
+<p>
+Asset:
+{{ incident_detail[2] }}
+</p>
+
+
+<div class="incident-status-row">
+
+<p>
+Status:
+<strong>{{ incident_detail[4] }}</strong>
+</p>
+
+
+
+
+</div>
+
+
+</div>
+
+
+<div class="incident-section">
+
+<h4>
+Timeline
+</h4>
+
+
+{% if incident_timeline %}
+
+
+{% for event in incident_timeline %}
+
+
+<div class="timeline-item">
+
+
+<div>
+
+
+<span class="lifecycle-badge
+{% if event.state == 'OPEN' %}
+lifecycle-open
+{% elif event.state == 'DIAGNOSED' %}
+lifecycle-diagnosed
+{% elif event.state == 'RECOMMENDED' %}
+lifecycle-recommended
+{% elif event.state == 'APPROVED' %}
+lifecycle-approved
+{% elif event.state == 'EXECUTING' %}
+lifecycle-executing
+{% elif event.state == 'RESOLVED' %}
+lifecycle-resolved
+{% else %}
+lifecycle-open
+{% endif %}
+">
+{{ event.state }}
+</span>
+
+<span class="actor-badge">
+{{ event.actor }}
+</span>
+
+
+</div>
+
+
+<p>
+{{ event.detail }}
+</p>
+
+
+<small>
+{{ event.timestamp }}
+</small>
+
+
+</div>
+
+
+{% endfor %}
+
+
+{% else %}
+
+<p>
+No timeline events
+</p>
+
+
+{% endif %}
+
+
+</div>
+
+
+{% else %}
+
+<p>
+Select an incident to view details
+</p>
+
+
+{% endif %}
+
+
+</div>

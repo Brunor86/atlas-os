@@ -1,0 +1,35 @@
+<section class="panel">
+
+    <h2>
+        <i class="fas fa-network-wired"></i>
+        Network
+    </h2>
+
+    <table class="info-table">
+
+        <tr>
+            <td>Hostname</td>
+            <td>{{ infra.network.hostname }}</td>
+        </tr>
+
+        <tr>
+            <td>Gateway</td>
+            <td>{{ infra.network.gateway }}</td>
+        </tr>
+
+        <tr>
+            <td>DNS</td>
+            <td>
+
+                {% for dns in infra.network.dns %}
+
+                    {{ dns }}<br>
+
+                {% endfor %}
+
+            </td>
+        </tr>
+
+    </table>
+
+</section>

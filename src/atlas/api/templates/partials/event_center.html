@@ -1,0 +1,54 @@
+<div class="panel">
+
+    <h2>
+        Event Center
+    </h2>
+
+
+    <div class="event-summary">
+
+
+        <div class="card">
+
+            <div class="card-title">
+                Active
+            </div>
+
+            <div class="card-value">
+                {{ event_center.summary.active }}
+            </div>
+
+        </div>
+
+
+
+        <div class="card">
+
+            <div class="card-title">
+                Warning
+            </div>
+
+            <div class="card-value">
+                {{ event_center.summary.severity.warning | default(0) }}
+            </div>
+
+        </div>
+
+
+
+        <div class="card">
+
+            <div class="card-title">
+                Critical
+            </div>
+
+            <div class="card-value">
+                {{ event_center.summary.severity.critical | default(0) }}
+            </div>
+
+        </div>
+
+
+    </div>
+
+</div>

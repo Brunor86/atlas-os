@@ -1,0 +1,35 @@
+<section class="panel">
+
+    <h2>
+
+        <i class="fa-solid fa-brain"></i>
+
+        ATLAS AI Summary
+
+    </h2>
+
+    <div class="alerts">
+
+        {% for insight in insights %}
+
+            <div class="alert-card">
+
+                <div class="alert-title">
+
+                    {{ insight.title }}
+
+                </div>
+
+                <div class="alert-message">
+
+                    {{ insight.summary }}
+
+                </div>
+
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+</section>

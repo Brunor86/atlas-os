@@ -1,0 +1,60 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "atlasctl"
+version = "1.0.0"
+description = "Infrastructure & Homelab Management Platform"
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.13"
+
+classifiers = [
+    "License :: OSI Approved :: Apache Software License",
+]
+
+authors = [
+    {name = "Bruno Rossini"}
+]
+
+dependencies = [
+    "typer==0.26.8",
+    "rich==15.0.0",
+    "psutil==7.2.2",
+    "pydantic==2.13.4",
+    "pydantic-ai==2.31.0",
+    "mcp==2.1.1",
+    "docker==7.2.0",
+    "fastapi==0.139.0",
+    "requests==2.34.2",
+    "jinja2==3.1.6",
+    "uvicorn==0.51.0",
+]
+
+[project.scripts]
+atlasctl = "atlas.cli:app"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"atlas.api" = [
+    "templates/*.html",
+    "templates/partials/*.html",
+    "static/css/*.css",
+    "static/js/*.js",
+]
+
+[tool.pytest.ini_options]
+testpaths = [
+    "tests"
+]
+
+norecursedirs = [
+    "legacy"
+]

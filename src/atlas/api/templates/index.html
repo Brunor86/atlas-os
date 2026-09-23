@@ -1,0 +1,331 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="dashboard atlas-os-dashboard">
+
+    <!-- ==========================================================
+         ATLAS OS HOME
+         ========================================================== -->
+
+    <section class="os-home">
+
+        <div class="os-home-header">
+
+            <div>
+                <span class="os-eyebrow">
+                    ATLAS OS
+                </span>
+
+                <h1>
+                    Your infrastructure.
+                    <br>
+                    Under control.
+                </h1>
+
+                <p>
+                    Observe, understand and operate your infrastructure
+                    from one intelligent control surface.
+                </p>
+            </div>
+
+
+            <div class="os-current-state">
+
+                <span class="
+                    os-status-dot
+                    {% if health.status == 'healthy' %}
+                        is-healthy
+                    {% elif health.status == 'warning' %}
+                        is-warning
+                    {% else %}
+                        is-critical
+                    {% endif %}
+                "></span>
+
+                <div>
+                    <small>
+                        System status
+                    </small>
+
+                    <strong>
+                        {{ health.status|default("unknown")|title }}
+                    </strong>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ======================================================
+             PRIMARY EXPERIENCE
+             ====================================================== -->
+
+        <div class="os-command-grid">
+
+            <article class="os-health-card">
+
+                <div class="os-card-label">
+                    System Health
+                </div>
+
+                <div class="os-health-score">
+                    {{ noc.summary.health_score }}
+                </div>
+
+                <div class="
+                    os-health-state
+                    {% if noc.summary.status == 'CRITICAL' %}
+                        critical
+                    {% elif noc.summary.status == 'WARNING' %}
+                        warning
+                    {% else %}
+                        healthy
+                    {% endif %}
+                ">
+                    {{ noc.summary.status }}
+                </div>
+
+                <div class="os-health-meta">
+
+                    <span>
+                        {{ noc.summary.active_events }}
+                        active events
+                    </span>
+
+                    <span>
+                        Priority
+                        {{ noc.summary.priority }}
+                    </span>
+
+                </div>
+
+            </article>
+
+
+            <article class="os-ask-card">
+
+                <div class="os-ask-header">
+
+                    <div>
+                        <span class="os-card-label">
+                            ATLAS Intelligence
+                        </span>
+
+                        <h2>
+                            Ask ATLAS
+                        </h2>
+                    </div>
+
+                    <span class="os-ai-state">
+                        ● Ready
+                    </span>
+
+                </div>
+
+
+                <form
+                    class="os-ask-form"
+                    id="atlasAskForm"
+                >
+
+                    <textarea
+                        id="atlasAskInput"
+                        placeholder="Ask anything about your infrastructure…"
+                        rows="3"
+                    ></textarea>
+
+                    <button
+                        type="submit"
+                        aria-label="Ask ATLAS"
+                    >
+                        ↑
+                    </button>
+
+                </form>
+
+
+                <div class="os-ask-suggestions">
+
+                    <button type="button">
+                        What is offline?
+                    </button>
+
+                    <button type="button">
+                        What needs attention?
+                    </button>
+
+                    <button type="button">
+                        Show my virtual machines
+                    </button>
+
+                </div>
+
+
+                <div
+                    class="os-ask-response"
+                    id="atlasAskResponse"
+                    hidden
+                ></div>
+
+            </article>
+
+        </div>
+
+    </section>
+
+
+    <!-- ==========================================================
+         QUICK OVERVIEW
+         ========================================================== -->
+
+    <section class="os-section">
+
+        <div class="os-section-heading">
+
+            <div>
+                <span class="os-section-kicker">
+                    Overview
+                </span>
+
+                <h2>
+                    Infrastructure
+                </h2>
+            </div>
+
+        </div>
+
+        {% include "partials/cards.html" %}
+
+    </section>
+
+
+    <!-- ==========================================================
+         INTELLIGENCE
+         ========================================================== -->
+
+    <section class="os-section">
+
+        <div class="os-section-heading">
+
+            <div>
+                <span class="os-section-kicker">
+                    Intelligence
+                </span>
+
+                <h2>
+                    Current situation
+                </h2>
+            </div>
+
+        </div>
+
+
+        <div class="os-intelligence-grid">
+
+            {% include "partials/noc.html" %}
+            {% include "partials/impact.html" %}
+
+        </div>
+
+    </section>
+
+
+    <!-- ==========================================================
+         INFRASTRUCTURE DETAIL
+         ========================================================== -->
+
+    <section class="os-section">
+
+        <div class="os-section-heading">
+
+            <div>
+                <span class="os-section-kicker">
+                    Infrastructure
+                </span>
+
+                <h2>
+                    Systems
+                </h2>
+            </div>
+
+        </div>
+
+
+        <div class="panel-grid os-infrastructure-grid">
+
+            {% include "partials/system.html" %}
+            {% include "partials/network.html" %}
+            {% include "partials/storage.html" %}
+            {% include "partials/proxmox.html" %}
+
+        </div>
+
+        {% include "partials/docker.html" %}
+        {% include "partials/assets.html" %}
+
+    </section>
+
+
+    <!-- ==========================================================
+         HEALTH
+         ========================================================== -->
+
+    <section class="os-section">
+
+        <div class="os-section-heading">
+
+            <div>
+                <span class="os-section-kicker">
+                    Health
+                </span>
+
+                <h2>
+                    Insights
+                </h2>
+            </div>
+
+        </div>
+
+        {% include "partials/health.html" %}
+        {% include "partials/insights.html" %}
+
+    </section>
+
+
+    <!-- ==========================================================
+         OPERATIONS
+         ========================================================== -->
+
+    <section class="os-section">
+
+        <div class="os-section-heading">
+
+            <div>
+                <span class="os-section-kicker">
+                    Operations
+                </span>
+
+                <h2>
+                    Events & incidents
+                </h2>
+            </div>
+
+        </div>
+
+        {% include "partials/operator_control_center.html" %}
+
+        {% include "partials/events.html" %}
+        {% include "partials/event_center.html" %}
+        {% include "partials/event_history.html" %}
+        {% include "partials/event_analytics.html" %}
+        {% include "partials/incident_correlation.html" %}
+        {% include "partials/incident_center.html" %}
+        {% include "partials/incident_detail.html" %}
+
+    </section>
+
+</div>
+
+{% endblock %}

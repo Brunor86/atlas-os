@@ -1,0 +1,18 @@
+[Unit]
+Description=ATLAS Infrastructure Collector
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/var/lib/atlas
+EnvironmentFile=/etc/atlas/atlas.env
+Environment="PATH=/opt/atlas/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ExecStart=/opt/atlas/venv/bin/python -m atlas.services.collector.worker
+Restart=always
+RestartSec=10
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

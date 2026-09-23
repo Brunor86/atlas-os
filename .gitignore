@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Packaging
+*.egg-info/
+
+# Virtual environment
+.venv/
+
+# Testing
+.pytest_cache/
+
+# IDE
+.vscode/
+.idea/
+
+# Output
+output/
+
+# Runtime databases
+*.db
+*.db-shm
+*.db-wal
+
+.bak*
+.bak
+# Local backups
+backups/
+*.bak*
+*.backup*
+atlas.db*
+
+atlas.db*
+*.db
+*.sqlite
+*.sqlite3
+
+# Local source backups
+*.bak
+*.bak.*
+
+# Local build / release artifacts
+build/
+dist-release/

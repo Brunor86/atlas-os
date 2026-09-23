@@ -1,0 +1,123 @@
+<div class="cards">
+
+    <div class="card">
+
+        <i class="fas fa-microchip"></i>
+
+        <div class="card-title">
+            CPU
+        </div>
+
+        <div class="card-value">
+            {{ "%.0f"|format(infra.system.cpu_percent) }}%
+        </div>
+
+        <div class="card-subtitle">
+            {{ infra.system.cpu_cores }} Cores
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <i class="fas fa-memory"></i>
+
+        <div class="card-title">
+            Memory
+        </div>
+
+        <div class="card-value">
+            {{ "%.0f"|format(infra.system.memory_percent) }}%
+        </div>
+
+        <div class="card-subtitle">
+            {{ "%.1f"|format(infra.system.memory_used_gb) }}
+            /
+            {{ "%.1f"|format(infra.system.memory_total_gb) }}
+            GB
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <i class="fas fa-hdd"></i>
+
+        <div class="card-title">
+            Root Disk
+        </div>
+
+        <div class="card-value">
+            {{ "%.0f"|format(infra.storage[0].usage_percent) }}%
+        </div>
+
+        <div class="card-subtitle">
+            {{ "%.1f"|format(infra.storage[0].used_gb) }}
+            /
+            {{ "%.1f"|format(infra.storage[0].total_gb) }}
+            GB
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <i class="fas fa-database"></i>
+
+        <div class="card-title">
+            NAS 12TB
+        </div>
+
+        <div class="card-value">
+            {% if infra.storage|length > 1 %}
+                {{ "%.0f"|format(infra.storage[1].usage_percent) }}%
+            {% else %}
+                --
+            {% endif %}
+        </div>
+
+        <div class="card-subtitle">
+            {% if infra.storage|length > 1 %}
+                {{ "%.0f"|format(infra.storage[1].free_gb) }}
+                GB libres
+            {% else %}
+                No detectado
+            {% endif %}
+        </div>
+
+    </div>
+
+
+
+    <div class="card">
+
+        <i class="fas fa-brain"></i>
+
+        <div class="card-title">
+            Local AI
+        </div>
+
+        <div class="card-value">
+            {{ ai.status|upper }}
+        </div>
+
+        <div class="card-subtitle">
+            {{ ai.runtime }}
+        </div>
+
+        <hr>
+
+        <div class="card-subtitle">
+            {{ ai.installed_models }} instalados
+        </div>
+
+        <div class="card-subtitle">
+            {{ ai.pending_models }} pendientes
+        </div>
+
+    </div>
+
+</div>

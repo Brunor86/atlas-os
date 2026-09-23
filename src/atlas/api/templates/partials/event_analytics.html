@@ -1,0 +1,91 @@
+<div class="panel">
+
+    <h2>
+        Event Analytics
+    </h2>
+
+
+    <div class="event-summary">
+
+
+        <div class="card">
+
+            <div class="card-title">
+                Total Events
+            </div>
+
+            <div class="card-value">
+                {{ event_analytics.summary.total }}
+            </div>
+
+        </div>
+
+
+
+        <div class="card">
+
+            <div class="card-title">
+                Active
+            </div>
+
+            <div class="card-value">
+                {{ event_analytics.summary.active }}
+            </div>
+
+        </div>
+
+
+
+        <div class="card">
+
+            <div class="card-title">
+                Closed
+            </div>
+
+            <div class="card-value">
+                {{ event_analytics.summary.closed }}
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+
+    <h3>
+        Most Frequent
+    </h3>
+
+
+    {% for event in event_analytics.top_events %}
+
+        <div>
+
+            {{ event.title }}
+
+            -
+
+            {{ event.occurrences }}
+            occurrences
+
+        </div>
+
+    {% endfor %}
+
+
+
+    <h3>
+        Average Duration
+    </h3>
+
+
+    <div>
+
+        {{ (event_analytics.average_duration / 60) | round(1) }}
+        minutes
+
+    </div>
+
+
+</div>

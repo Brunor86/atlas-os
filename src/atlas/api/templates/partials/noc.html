@@ -1,0 +1,160 @@
+{% set summary = noc.summary %}
+
+<div class="noc-panel panel">
+
+
+    <div class="panel-header">
+
+        <h3>
+            NOC Intelligence
+        </h3>
+
+
+        <span class="health-badge
+        {% if noc.summary.status == 'CRITICAL' %}
+            critical
+        {% elif noc.summary.status == 'WARNING' %}
+            warning
+        {% else %}
+            healthy
+        {% endif %}
+        ">
+
+            ● {{ noc.summary.status }}
+
+        </span>
+
+
+    </div>
+
+
+
+    <div class="noc-summary">
+
+
+        <div class="noc-card">
+
+            <span>
+                Score
+            </span>
+
+            <strong>
+                {{ noc.summary.score }}
+            </strong>
+
+        </div>
+
+
+
+        <div class="noc-card">
+
+            <span>
+                Priority
+            </span>
+
+            <strong>
+                {{ noc.summary.priority }}
+            </strong>
+
+        </div>
+
+
+
+        <div class="noc-card">
+
+            <span>
+                Active Events
+            </span>
+
+            <strong>
+                {{ noc.summary.active_events }}
+            </strong>
+
+        </div>
+
+
+    </div>
+
+
+
+
+
+    {% if noc.incidents %}
+
+
+    <h4>
+        Active Incidents
+    </h4>
+
+
+
+    {% for incident in noc.incidents %}
+
+
+    <div class="incident-card">
+
+
+        <strong>
+            {{ incident.name }}
+        </strong>
+
+
+        <p>
+            Confidence:
+            {{ (incident.confidence * 100)|int }}%
+        </p>
+
+
+        <p>
+            Severity:
+            {{ incident.severity }}
+        </p>
+
+
+        <p>
+            {{ incident.reason }}
+        </p>
+
+
+    </div>
+
+
+    {% endfor %}
+
+
+    {% endif %}
+
+
+
+
+
+    {% if noc_service.recommendations %}
+
+
+    <h4>
+        Recommendations
+    </h4>
+
+
+    <ul>
+
+
+    {% for item in noc_service.recommendations %}
+
+
+        <li>
+            {{ item }}
+        </li>
+
+
+    {% endfor %}
+
+
+    </ul>
+
+
+    {% endif %}
+
+
+
+</div>

@@ -1,0 +1,132 @@
+<section class="panel">
+
+    <div class="panel-header">
+
+        <h2>
+            <i class="fab fa-docker"></i>
+            Docker Containers
+        </h2>
+
+
+        <div class="docker-summary">
+
+            {{ infra.docker.running }}
+            /
+            {{ infra.docker.total }}
+
+            running
+
+        </div>
+
+
+    </div>
+
+
+
+    <div class="container-grid">
+
+
+        {% for container in infra.docker.containers %}
+
+
+        <div class="container-card">
+
+
+            <div class="container-header">
+
+
+                <div class="container-name">
+
+
+                    {% if container.status == "running" %}
+
+                        <span class="status running">
+                            ●
+                        </span>
+
+                    {% else %}
+
+                        <span class="status stopped">
+                            ●
+                        </span>
+
+                    {% endif %}
+
+
+                    <strong>
+                        {{ container.name }}
+                    </strong>
+
+
+                </div>
+
+
+            </div>
+
+
+
+            <div class="container-image">
+
+                {{ container.image }}
+
+            </div>
+
+
+
+            <div class="container-metrics">
+
+
+                <div>
+
+                    <span>
+                        CPU
+                    </span>
+
+                    <strong>
+                        {{ "%.2f"|format(container.cpu_percent) }} %
+                    </strong>
+
+                </div>
+
+
+
+                <div>
+
+                    <span>
+                        RAM
+                    </span>
+
+                    <strong>
+                        {{ "%.1f"|format(container.memory_mb) }}
+                        MB
+                    </strong>
+
+                </div>
+
+
+            </div>
+
+
+
+            {% if container.health %}
+
+            <div class="container-health">
+
+                Health:
+                {{ container.health }}
+
+            </div>
+
+            {% endif %}
+
+
+        </div>
+
+
+        {% endfor %}
+
+
+    </div>
+
+
+</section>

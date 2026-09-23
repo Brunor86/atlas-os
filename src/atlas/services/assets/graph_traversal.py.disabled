@@ -1,0 +1,158 @@
+from collections import deque
+
+
+class AssetGraphTraversal:
+
+
+    def __init__(self, assets):
+
+        self.assets = {
+            asset.id: asset
+            for asset in assets
+        }
+
+
+    def children(
+        self,
+        asset_id,
+    ):
+
+        result = []
+
+        asset = self.assets.get(
+            asset_id
+        )
+
+        if not asset:
+            return result
+
+
+        for rel in asset.relationships:
+
+            result.append(
+                rel.target
+            )
+
+
+        return result
+
+
+
+    def parents(
+        self,
+        asset_id,
+    ):
+
+        result = []
+
+
+        for asset in self.assets.values():
+
+            for rel in asset.relationships:
+
+                if rel.target == asset_id:
+
+                    result.append(
+                        rel.source
+                    )
+
+
+        return result
+
+
+
+    def blast_radius(
+        self,
+        asset_ids,
+        depth=5,
+    ):
+
+        visited = set()
+
+        queue = deque()
+
+
+        for asset_id in asset_ids:
+
+            queue.append(
+                (
+                    asset_id,
+                    0,
+                )
+            )
+
+
+        while queue:
+
+            current, level = queue.popleft()
+
+
+            if current in visited:
+                continue
+
+
+            visited.add(
+                current
+            )
+
+
+            if level >= depth:
+                continue
+
+
+            for child in self.children(
+                current
+            ):
+
+                queue.append(
+                    (
+                        child,
+                        level + 1,
+                    )
+                )
+
+
+        visited.difference_update(
+            asset_ids
+        )
+
+
+        return list(
+            visited
+        )
+
+
+
+    def infrastructure_path(
+        self,
+        asset_id,
+    ):
+
+        path = []
+
+        current = asset_id
+
+
+        while True:
+
+            parents = self.parents(
+                current
+            )
+
+
+            if not parents:
+                break
+
+
+            parent = parents[0]
+
+
+            path.append(
+                parent
+            )
+
+
+            current = parent
+
+
+        return path

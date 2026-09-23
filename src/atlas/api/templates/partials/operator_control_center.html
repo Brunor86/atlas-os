@@ -1,0 +1,107 @@
+<article
+    class="operator-control-center"
+    id="operatorControlCenter"
+>
+
+    <div class="operator-control-header">
+
+        <div>
+            <span class="os-card-label">
+                ATLAS Operator
+            </span>
+
+            <h3>
+                Control Center
+            </h3>
+
+            <p>
+                Persistent operational audit,
+                approvals and recovery state.
+            </p>
+        </div>
+
+
+        <div class="operator-control-toolbar">
+
+            <select
+                id="operatorControlFilter"
+                aria-label="Filter operator actions"
+            >
+                <option value="ALL">
+                    All states
+                </option>
+
+                <option value="PENDING_APPROVAL">
+                    Pending approval
+                </option>
+
+                <option value="VERIFIED">
+                    Verified
+                </option>
+
+                <option value="RECOVERY_REQUIRED">
+                    Recovery required
+                </option>
+
+                <option value="EXECUTION_FAILED">
+                    Execution failed
+                </option>
+
+                <option value="REJECTED">
+                    Rejected
+                </option>
+            </select>
+
+            <button
+                type="button"
+                id="operatorControlRefresh"
+            >
+                Open Operator
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <div
+        class="operator-control-summary"
+        id="operatorControlSummary"
+        hidden
+    ></div>
+
+
+    <div
+        class="operator-control-body"
+        id="operatorControlBody"
+        hidden
+    >
+
+        <div
+            class="operator-control-list"
+            id="operatorControlList"
+        ></div>
+
+
+        <div
+            class="operator-control-detail"
+            id="operatorControlDetail"
+        >
+            <div class="operator-control-empty">
+                Select an operation to inspect
+                its complete execution state.
+            </div>
+        </div>
+
+    </div>
+
+
+    <div
+        class="operator-control-message"
+        id="operatorControlMessage"
+    >
+        Operator authentication is required
+        to inspect operational history.
+    </div>
+
+</article>
