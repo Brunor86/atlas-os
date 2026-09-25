@@ -166,3 +166,138 @@ def test_invalid_manifest_fails_closed(tmp_path):
     assert result["configured"] is False
     assert result["status"] == "INVALID_CONFIG"
     assert result["items"] == []
+
+
+
+
+def test_failed_observed_job_fails_overall(
+    tmp_path,
+):
+
+    import subprocess
+
+    backup_dir = (
+        tmp_path
+        / "job-failure"
+    )
+
+    backup_dir.mkdir()
+
+    artifact(
+        backup_dir,
+        "database.sql.gz",
+        age_hours=1,
+    )
+
+    manifest = (
+        tmp_path
+        / "job-health.json"
+    )
+
+    manifest.write_text(
+        json.dumps(
+            {
+                "version": 2,
+                "providers": {
+                    "local": {
+                        "type":
+                            "systemd-local",
+                    },
+                },
+                "items": [
+                    {
+                        "id": "database",
+                        "name": "Database",
+                        "asset": "database",
+                        "kind": "database",
+                        "policy": "daily",
+                        "artifact_dir":
+                            str(
+                                backup_dir
+                            ),
+                        "artifact_pattern":
+                            "*.sql.gz",
+                        "max_age_hours": 30,
+                        "timer":
+                            "database-backup.timer",
+                        "job_provider":
+                            "local",
+                    },
+                ],
+            }
+        )
+    )
+
+
+    def runner(
+        command,
+        capture_output,
+        text,
+        timeout,
+        check,
+    ):
+
+        is_timer = any(
+            str(value).endswith(
+                ".timer"
+            )
+            for value in command
+        )
+
+        if is_timer:
+
+            output = (
+                "LoadState=loaded\n"
+                "ActiveState=active\n"
+                "UnitFileState=enabled\n"
+                "LastTriggerUSec="
+                "Fri 2026-09-25 02:00:00 -03\n"
+                "NextElapseUSecRealtime="
+                "Sat 2026-09-26 02:00:00 -03\n"
+            )
+
+        else:
+
+            output = (
+                "LoadState=loaded\n"
+                "Result=failed\n"
+                "ExecMainStatus=1\n"
+                "ExecMainStartTimestamp="
+                "Fri 2026-09-25 02:00:00 -03\n"
+                "ExecMainExitTimestamp="
+                "Fri 2026-09-25 02:00:01 -03\n"
+            )
+
+        return subprocess.CompletedProcess(
+            command,
+            0,
+            stdout=output,
+            stderr="",
+        )
+
+
+    result = BackupInventoryService(
+        manifest_path=manifest,
+        now=lambda: NOW,
+        job_runner=runner,
+    ).inventory()
+
+
+    assert (
+        result["items"][0]["status"]
+        == "HEALTHY"
+    )
+
+    assert (
+        result["items"][0]["job"]["status"]
+        == "FAILED"
+    )
+
+    assert result["job_summary"] == {
+        "configured": 1,
+        "healthy": 0,
+        "failed": 1,
+        "unobserved": 0,
+    }
+
+    assert result["status"] == "FAILED"

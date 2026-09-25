@@ -4575,7 +4575,10 @@ body {
     display: grid;
 
     grid-template-columns:
-        repeat(4, minmax(0, 1fr));
+        repeat(
+            auto-fit,
+            minmax(120px, 1fr)
+        );
 
     gap: 9px;
 
@@ -4767,4 +4770,48 @@ body {
         grid-template-columns: 1fr;
     }
 
+}
+
+
+
+
+/* ============================================================
+   ATLAS BACKUP JOB HEALTH v0.1
+   ============================================================ */
+
+.backup-state.unobserved {
+    color: #8a5a00;
+
+    background:
+        rgba(255,170,0,.12);
+}
+
+
+.backup-job-value.healthy {
+    color: #20853a;
+}
+
+
+.backup-job-value.failed {
+    color: #c9343a;
+}
+
+
+.backup-job-value.unobserved {
+    color: #8a5a00;
+}
+
+
+.backup-job-value.not_applicable {
+    color: var(--muted);
+}
+
+
+.backup-job-detail {
+    margin: 5px 0 0;
+
+    color: var(--muted);
+
+    font-size: 8px;
+    line-height: 1.4;
 }

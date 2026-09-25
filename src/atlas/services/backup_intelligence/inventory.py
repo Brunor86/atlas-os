@@ -10,6 +10,11 @@ from atlas.models.backup import (
     BackupStatus,
 )
 
+from atlas.services.backup_intelligence.job_health import (
+    BackupJobStatus,
+    SystemdJobHealthService,
+)
+
 
 class BackupInventoryService:
     """Read-only backup inventory and freshness evaluator."""
@@ -18,6 +23,7 @@ class BackupInventoryService:
         self,
         manifest_path: str | Path | None = None,
         now: Callable[[], datetime] | None = None,
+        job_runner: Callable | None = None,
     ):
         configured = (
             manifest_path
@@ -31,6 +37,8 @@ class BackupInventoryService:
         self._now = now or (
             lambda: datetime.now(timezone.utc)
         )
+
+        self._job_runner = job_runner
 
     def inventory(self) -> dict:
         if not self.manifest_path.is_file():
@@ -65,15 +73,86 @@ class BackupInventoryService:
                 error="manifest items must be a list",
             )
 
-        items = [
-            self._evaluate(
-                definition
+        providers = manifest.get(
+            "providers",
+            {},
+        )
+
+        if not isinstance(
+            providers,
+            dict,
+        ):
+            return self._empty(
+                status="INVALID_CONFIG",
+                error="manifest providers must be an object",
             )
+
+        observer = SystemdJobHealthService(
+            providers=providers,
+            runner=self._job_runner,
+        )
+
+        valid_definitions = [
+            definition
             for definition in definitions
             if isinstance(
                 definition,
                 dict,
             )
+        ]
+
+        evaluated = []
+        job_cache = {}
+
+        for definition in valid_definitions:
+
+            item = self._evaluate(
+                definition
+            )
+
+            provider_name = self._optional_text(
+                definition.get(
+                    "job_provider"
+                )
+            )
+
+            if item.timer:
+
+                key = (
+                    provider_name or "",
+                    item.timer,
+                )
+
+                job = job_cache.get(
+                    key
+                )
+
+                if job is None:
+
+                    job = observer.evaluate(
+                        provider_name,
+                        item.timer,
+                    )
+
+                    job_cache[key] = job
+
+            else:
+
+                job = observer.evaluate(
+                    provider_name,
+                    None,
+                )
+
+            evaluated.append(
+                (
+                    item,
+                    job,
+                )
+            )
+
+        items = [
+            item
+            for item, _job in evaluated
         ]
 
         summary = {
@@ -113,8 +192,30 @@ class BackupInventoryService:
             ),
         }
 
+        job_summary = {
+            "configured": len(
+                job_cache
+            ),
+            "healthy": sum(
+                job.status
+                == BackupJobStatus.HEALTHY
+                for job in job_cache.values()
+            ),
+            "failed": sum(
+                job.status
+                == BackupJobStatus.FAILED
+                for job in job_cache.values()
+            ),
+            "unobserved": sum(
+                job.status
+                == BackupJobStatus.UNOBSERVED
+                for job in job_cache.values()
+            ),
+        }
+
         overall = self._overall(
-            summary
+            summary,
+            job_summary,
         )
 
         return {
@@ -127,9 +228,14 @@ class BackupInventoryService:
             "generated_at":
                 self._normalized_now().isoformat(),
             "summary": summary,
+            "job_summary": job_summary,
             "items": [
-                item.as_dict()
-                for item in items
+                {
+                    **item.as_dict(),
+                    "job":
+                        job.as_dict(),
+                }
+                for item, job in evaluated
             ],
             "integrity_mode":
                 "RECORDED_CHECKSUM_ONLY",
@@ -395,8 +501,12 @@ class BackupInventoryService:
     @staticmethod
     def _overall(
         summary: dict,
+        job_summary: dict,
     ) -> str:
-        if summary["failed"]:
+        if (
+            summary["failed"]
+            or job_summary["failed"]
+        ):
             return "FAILED"
 
         if (
@@ -404,6 +514,9 @@ class BackupInventoryService:
             or summary["stale"]
         ):
             return "STALE"
+
+        if job_summary["unobserved"]:
+            return "UNOBSERVED"
 
         if summary["protected"]:
             return "HEALTHY"
@@ -486,6 +599,12 @@ class BackupInventoryService:
                 "failed": 0,
                 "missing": 0,
                 "excluded": 0,
+            },
+            "job_summary": {
+                "configured": 0,
+                "healthy": 0,
+                "failed": 0,
+                "unobserved": 0,
             },
             "items": [],
             "integrity_mode":

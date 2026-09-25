@@ -74,6 +74,11 @@ def test_backup_dashboard_has_protection_states():
     assert ".backup-state.failed" in css
     assert ".backup-state.missing" in css
     assert ".backup-state.excluded" in css
+    assert ".backup-state.unobserved" in css
+    assert ".backup-job-value.healthy" in css
+    assert ".backup-job-value.failed" in css
+    assert "backups.job_summary.healthy" in html
+    assert "item.job.status" in html
 
 
 def test_backup_dashboard_renders_missing_gap():
@@ -106,6 +111,12 @@ def test_backup_dashboard_renders_missing_gap():
                 "missing": 1,
                 "excluded": 0,
             },
+            "job_summary": {
+                "configured": 1,
+                "healthy": 1,
+                "failed": 0,
+                "unobserved": 0,
+            },
             "items": [
                 {
                     "name": "ATLAS SQLite",
@@ -117,6 +128,13 @@ def test_backup_dashboard_renders_missing_gap():
                     "integrity": "RECORDED",
                     "retention_days": 14,
                     "detail": "within policy",
+                    "job": {
+                        "status": "HEALTHY",
+                        "provider": "local",
+                        "timer": "atlas-backup.timer",
+                        "service": "atlas-backup.service",
+                        "detail": "timer is healthy",
+                    },
                 },
                 {
                     "name": "Immich originals",
@@ -128,6 +146,13 @@ def test_backup_dashboard_renders_missing_gap():
                     "integrity": "NOT_RECORDED",
                     "retention_days": None,
                     "detail": "artifact directory missing",
+                    "job": {
+                        "status": "NOT_APPLICABLE",
+                        "provider": None,
+                        "timer": None,
+                        "service": None,
+                        "detail": "no observable timer configured",
+                    },
                 },
             ],
         }
@@ -139,3 +164,5 @@ def test_backup_dashboard_renders_missing_gap():
     assert "MISSING" in rendered
     assert "ATLAS SQLite" in rendered
     assert "HEALTHY" in rendered
+    assert "Jobs healthy" in rendered
+    assert "NOT_APPLICABLE" in rendered

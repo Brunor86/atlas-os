@@ -67,12 +67,43 @@
                 </strong>
             </div>
 
+            <div>
+                <small>Jobs healthy</small>
+                <strong>
+                    {{ backups.job_summary.healthy }}
+                </strong>
+            </div>
+
+            <div>
+                <small>Jobs failed</small>
+                <strong>
+                    {{ backups.job_summary.failed }}
+                </strong>
+            </div>
+
+            <div>
+                <small>Jobs unobserved</small>
+                <strong>
+                    {{ backups.job_summary.unobserved }}
+                </strong>
+            </div>
+
         </div>
 
 
         <div class="backup-protection-note">
 
-            {% if backups.summary.missing > 0 %}
+            {% if backups.job_summary.failed > 0 %}
+
+                <strong>
+                    Backup job failure detected
+                </strong>
+
+                <span>
+                    One or more observed backup jobs are unhealthy.
+                </span>
+
+            {% elif backups.summary.missing > 0 %}
 
                 <strong>
                     Protection gap detected
@@ -103,6 +134,16 @@
                     One or more backups are outside policy.
                 </span>
 
+            {% elif backups.job_summary.unobserved > 0 %}
+
+                <strong>
+                    Backup job observation incomplete
+                </strong>
+
+                <span>
+                    One or more configured jobs could not be observed.
+                </span>
+
             {% else %}
 
                 <strong>
@@ -110,7 +151,7 @@
                 </strong>
 
                 <span>
-                    All configured backup artifacts are within policy.
+                    Backup artifacts and observed jobs are healthy.
                 </span>
 
             {% endif %}
@@ -174,6 +215,13 @@
                             </strong>
                         </span>
 
+                        <span>
+                            Job
+                            <strong class="backup-job-value {{ item.job.status|lower }}">
+                                {{ item.job.status }}
+                            </strong>
+                        </span>
+
                         {% if item.retention_days is not none %}
 
                             <span>
@@ -191,6 +239,14 @@
                     <p class="backup-item-detail">
                         {{ item.detail }}
                     </p>
+
+                    {% if item.job.detail %}
+
+                        <p class="backup-job-detail">
+                            Job: {{ item.job.detail }}
+                        </p>
+
+                    {% endif %}
 
                 </article>
 
