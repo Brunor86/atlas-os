@@ -4476,3 +4476,295 @@ body {
         width: 100%;
     }
 }
+
+
+
+
+/* ============================================================
+   ATLAS BACKUP INTELLIGENCE v0.1
+   ============================================================ */
+
+.backup-recovery {
+    padding: 18px;
+
+    background:
+        rgba(255,255,255,.82);
+
+    border:
+        1px solid var(--border);
+
+    border-radius: 18px;
+}
+
+
+.backup-recovery-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+
+    gap: 16px;
+}
+
+
+.backup-recovery-header h3 {
+    margin: 4px 0 3px;
+}
+
+
+.backup-recovery-header p {
+    margin: 0;
+
+    color: var(--muted);
+
+    font-size: 11px;
+}
+
+
+.backup-state {
+    display: inline-flex;
+    align-items: center;
+
+    padding: 5px 8px;
+
+    border-radius: 999px;
+
+    background:
+        rgba(0,0,0,.06);
+
+    font-size: 9px;
+    font-weight: 750;
+
+    white-space: nowrap;
+}
+
+
+.backup-state.healthy {
+    color: #20853a;
+
+    background:
+        rgba(40,167,69,.10);
+}
+
+
+.backup-state.stale {
+    color: #8a5a00;
+
+    background:
+        rgba(255,170,0,.12);
+}
+
+
+.backup-state.failed,
+.backup-state.missing {
+    color: #c9343a;
+
+    background:
+        rgba(229,72,77,.10);
+}
+
+
+.backup-state.excluded {
+    color: #6b7280;
+
+    background:
+        rgba(107,114,128,.10);
+}
+
+
+.backup-summary-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+    gap: 9px;
+
+    margin-top: 16px;
+}
+
+
+.backup-summary-grid > div {
+    padding: 12px;
+
+    background:
+        rgba(0,0,0,.025);
+
+    border-radius: 12px;
+}
+
+
+.backup-summary-grid small {
+    display: block;
+
+    margin-bottom: 4px;
+
+    color: var(--muted);
+
+    font-size: 9px;
+}
+
+
+.backup-summary-grid strong {
+    font-size: 18px;
+}
+
+
+.backup-protection-note {
+    display: flex;
+    flex-direction: column;
+
+    gap: 3px;
+
+    margin-top: 12px;
+    padding: 11px 12px;
+
+    background:
+        rgba(255,170,0,.07);
+
+    border:
+        1px solid
+        rgba(255,170,0,.14);
+
+    border-radius: 11px;
+}
+
+
+.backup-protection-note strong {
+    font-size: 11px;
+}
+
+
+.backup-protection-note span {
+    color: var(--muted);
+
+    font-size: 10px;
+}
+
+
+.backup-item-list {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 10px;
+
+    margin-top: 14px;
+}
+
+
+.backup-item {
+    padding: 13px;
+
+    background:
+        rgba(255,255,255,.62);
+
+    border:
+        1px solid var(--border);
+
+    border-radius: 13px;
+}
+
+
+.backup-item-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+
+    gap: 10px;
+}
+
+
+.backup-item-heading small,
+.backup-item-heading span:not(.backup-state) {
+    display: block;
+
+    color: var(--muted);
+
+    font-size: 8px;
+}
+
+
+.backup-item-heading strong {
+    display: block;
+
+    margin: 3px 0;
+
+    font-size: 12px;
+}
+
+
+.backup-item-meta {
+    display: flex;
+    flex-wrap: wrap;
+
+    gap: 6px 12px;
+
+    margin-top: 11px;
+}
+
+
+.backup-item-meta span {
+    color: var(--muted);
+
+    font-size: 8px;
+}
+
+
+.backup-item-meta strong {
+    color: var(--text);
+
+    font-weight: 650;
+}
+
+
+.backup-item-detail {
+    margin: 9px 0 0;
+
+    color: var(--muted);
+
+    font-size: 9px;
+    line-height: 1.4;
+}
+
+
+.backup-empty {
+    margin-top: 14px;
+    padding: 14px;
+
+    color: var(--muted);
+
+    background:
+        rgba(0,0,0,.025);
+
+    border-radius: 11px;
+
+    font-size: 10px;
+}
+
+
+@media (max-width: 850px) {
+
+    .backup-summary-grid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .backup-item-list {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+
+@media (max-width: 520px) {
+
+    .backup-recovery-header {
+        flex-direction: column;
+    }
+
+    .backup-summary-grid {
+        grid-template-columns: 1fr;
+    }
+
+}

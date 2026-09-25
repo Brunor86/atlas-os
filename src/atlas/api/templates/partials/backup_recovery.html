@@ -1,0 +1,203 @@
+<div
+    class="backup-recovery"
+    id="backupRecovery"
+>
+
+    <div class="backup-recovery-header">
+
+        <div>
+            <span class="os-section-kicker">
+                Recovery readiness
+            </span>
+
+            <h3>
+                Backup & Recovery
+            </h3>
+
+            <p>
+                Read-only protection status from configured
+                backup policies and recorded artifacts.
+            </p>
+        </div>
+
+        <span class="backup-state {{ backups.status|lower }}">
+            {{ backups.status }}
+        </span>
+
+    </div>
+
+
+    {% if not backups.configured %}
+
+        <div class="backup-empty">
+            Backup Intelligence is not configured.
+        </div>
+
+    {% else %}
+
+        <div class="backup-summary-grid">
+
+            <div>
+                <small>Protected</small>
+                <strong>
+                    {{ backups.summary.protected }}
+                    /
+                    {{ backups.summary.total }}
+                </strong>
+            </div>
+
+            <div>
+                <small>Healthy</small>
+                <strong>
+                    {{ backups.summary.healthy }}
+                </strong>
+            </div>
+
+            <div>
+                <small>Missing</small>
+                <strong>
+                    {{ backups.summary.missing }}
+                </strong>
+            </div>
+
+            <div>
+                <small>Excluded</small>
+                <strong>
+                    {{ backups.summary.excluded }}
+                </strong>
+            </div>
+
+        </div>
+
+
+        <div class="backup-protection-note">
+
+            {% if backups.summary.missing > 0 %}
+
+                <strong>
+                    Protection gap detected
+                </strong>
+
+                <span>
+                    {{ backups.summary.missing }}
+                    configured protection target is missing.
+                </span>
+
+            {% elif backups.summary.failed > 0 %}
+
+                <strong>
+                    Backup failure detected
+                </strong>
+
+                <span>
+                    One or more configured backup policies failed.
+                </span>
+
+            {% elif backups.summary.stale > 0 %}
+
+                <strong>
+                    Backup freshness warning
+                </strong>
+
+                <span>
+                    One or more backups are outside policy.
+                </span>
+
+            {% else %}
+
+                <strong>
+                    Recovery layer healthy
+                </strong>
+
+                <span>
+                    All configured backup artifacts are within policy.
+                </span>
+
+            {% endif %}
+
+        </div>
+
+
+        <div class="backup-item-list">
+
+            {% for item in backups["items"] %}
+
+                <article class="backup-item">
+
+                    <div class="backup-item-heading">
+
+                        <div>
+                            <small>
+                                {{ item.kind }}
+                            </small>
+
+                            <strong>
+                                {{ item.name }}
+                            </strong>
+
+                            <span>
+                                {{ item.asset }}
+                            </span>
+                        </div>
+
+                        <span class="backup-state {{ item.status|lower }}">
+                            {{ item.status }}
+                        </span>
+
+                    </div>
+
+
+                    <div class="backup-item-meta">
+
+                        <span>
+                            Policy
+                            <strong>
+                                {{ item.policy }}
+                            </strong>
+                        </span>
+
+                        {% if item.age_hours is not none %}
+
+                            <span>
+                                Age
+                                <strong>
+                                    {{ "%.1f"|format(item.age_hours) }}h
+                                </strong>
+                            </span>
+
+                        {% endif %}
+
+                        <span>
+                            Integrity
+                            <strong>
+                                {{ item.integrity }}
+                            </strong>
+                        </span>
+
+                        {% if item.retention_days is not none %}
+
+                            <span>
+                                Retention
+                                <strong>
+                                    {{ item.retention_days }}d
+                                </strong>
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <p class="backup-item-detail">
+                        {{ item.detail }}
+                    </p>
+
+                </article>
+
+            {% endfor %}
+
+        </div>
+
+    {% endif %}
+
+</div>

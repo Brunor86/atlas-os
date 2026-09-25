@@ -153,6 +153,7 @@ def test_missing_artifact_is_reported(tmp_path):
 
     assert result["status"] == "STALE"
     assert result["summary"]["missing"] == 1
+    assert result["summary"]["protected"] == 0
     assert result["items"][0]["status"] == "MISSING"
 
 

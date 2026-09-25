@@ -80,7 +80,10 @@ class BackupInventoryService:
             "total": len(items),
             "protected": sum(
                 item.status
-                != BackupStatus.EXCLUDED
+                in {
+                    BackupStatus.HEALTHY,
+                    BackupStatus.STALE,
+                }
                 for item in items
             ),
             "healthy": sum(
