@@ -1,6 +1,7 @@
 import logging
 import json
 import asyncio
+import hashlib
 from pathlib import Path
 
 from fastapi import FastAPI, Request
@@ -53,6 +54,27 @@ from atlas.storage.event_repository import EventRepository
 
 
 BASE_DIR = Path(__file__).resolve().parent
+
+
+def _static_asset_version():
+
+    digest = hashlib.sha256()
+
+    for path in (
+        BASE_DIR / "static/css/atlas.css",
+        BASE_DIR / "static/js/atlas.js",
+    ):
+
+        digest.update(
+            path.read_bytes()
+        )
+
+    return digest.hexdigest()[:12]
+
+
+STATIC_ASSET_VERSION = (
+    _static_asset_version()
+)
 
 
 logger = logging.getLogger(__name__)
@@ -563,6 +585,9 @@ def home(
 
             "atlas_version":
                 __version__,
+
+            "static_asset_version":
+                STATIC_ASSET_VERSION,
 
 
             "noc":
