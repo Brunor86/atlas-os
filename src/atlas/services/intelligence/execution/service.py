@@ -77,10 +77,22 @@ class ActionExecutionService:
                 "restart_vm",
             ),
 
+        "start lxc":
+            (
+                "proxmox",
+                "start_lxc",
+            ),
+
         "restart lxc":
             (
                 "proxmox",
                 "restart_lxc",
+            ),
+
+        "stop lxc":
+            (
+                "proxmox",
+                "stop_lxc",
             ),
 
     }

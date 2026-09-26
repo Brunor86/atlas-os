@@ -74,7 +74,9 @@ _SUPPORTED_OPERATOR_ACTIONS = {
     "restart vm",
     "stop vm",
 
+    "start lxc",
     "restart lxc",
+    "stop lxc",
 }
 
 
@@ -295,6 +297,15 @@ def _evaluate_operator_policy(
     safe_action,
 ) -> dict:
 
+    action = str(
+        getattr(
+            safe_action,
+            "action",
+            "",
+        )
+        or ""
+    ).strip().lower()
+
     target = str(
         getattr(
             safe_action,
@@ -304,15 +315,221 @@ def _evaluate_operator_policy(
         or ""
     ).strip()
 
+
     asset = _resolve_operator_asset(
         target,
-        safe_action.action,
+        action,
     )
 
-    return _policy.evaluate(
+
+    # --------------------------------------------------------
+    # JIT EXECUTION AUTHORIZATION
+    #
+    # MCP may prepare proposals without execution authority.
+    #
+    # At proposal/approval boundaries ATLAS must independently
+    # verify that a Proxmox target is explicitly enabled for
+    # Operator execution.
+    # --------------------------------------------------------
+
+    if action.endswith(
+        "vm"
+    ):
+
+        if (
+            not target.isdigit()
+            or int(target)
+            not in get_executable_qemu_vmids()
+        ):
+
+            return {
+                "status":
+                    "BLOCKED",
+
+                "reason":
+                    (
+                        "Proxmox VM target is not "
+                        "enabled for operator execution"
+                    ),
+
+                "action":
+                    action,
+
+                "target":
+                    target,
+            }
+
+
+    if action.endswith(
+        "lxc"
+    ):
+
+        if (
+            not target.isdigit()
+            or int(target)
+            not in get_executable_lxc_vmids()
+        ):
+
+            return {
+                "status":
+                    "BLOCKED",
+
+                "reason":
+                    (
+                        "Proxmox LXC target is not "
+                        "enabled for operator execution"
+                    ),
+
+                "action":
+                    action,
+
+                "target":
+                    target,
+            }
+
+
+    result = _policy.evaluate(
         safe_action,
         asset,
     )
+
+
+    if (
+        result.get(
+            "status"
+        )
+        != "BLOCKED"
+    ):
+        return result
+
+
+    # --------------------------------------------------------
+    # CONTROLLED HIGH-LXC EXCEPTION
+    #
+    # The generic policy intentionally protects HIGH assets
+    # from disruptive actions.
+    #
+    # An LXC may cross that boundary only when:
+    #
+    #   - its VMID is explicitly in the Operator allowlist
+    #   - the action is restart or stop
+    #   - the asset is HIGH, never CRITICAL
+    #   - importance is not IMPORTANT/CRITICAL
+    #   - human approval is mandatory
+    #
+    # Execution, single-claim semantics and post-execution
+    # verification remain independent downstream controls.
+    # --------------------------------------------------------
+
+    criticality = str(
+        getattr(
+            getattr(
+                asset,
+                "criticality",
+                None,
+            ),
+            "name",
+            "",
+        )
+        or ""
+    ).upper()
+
+    importance = str(
+        getattr(
+            getattr(
+                asset,
+                "service_importance",
+                None,
+            ),
+            "name",
+            "",
+        )
+        or ""
+    ).upper()
+
+    asset_type = str(
+        getattr(
+            getattr(
+                asset,
+                "type",
+                None,
+            ),
+            "name",
+            "",
+        )
+        or ""
+    ).upper()
+
+
+    controlled_high_lxc = (
+        asset is not None
+        and asset_type == "LXC"
+        and action
+        in {
+            "restart lxc",
+            "stop lxc",
+        }
+        and result.get(
+            "reason"
+        )
+        == (
+            "disruptive action is blocked "
+            "for protected asset"
+        )
+        and criticality == "HIGH"
+        and importance
+        not in {
+            "IMPORTANT",
+            "CRITICAL",
+        }
+        and bool(
+            getattr(
+                safe_action,
+                "requires_approval",
+                False,
+            )
+        )
+        and target.isdigit()
+        and int(target)
+        in get_executable_lxc_vmids()
+    )
+
+
+    if not controlled_high_lxc:
+        return result
+
+
+    allowed = dict(
+        result
+    )
+
+    allowed[
+        "status"
+    ] = "ALLOWED"
+
+    allowed[
+        "reason"
+    ] = (
+        "explicit Operator LXC allowlist "
+        "permits protected HIGH action "
+        "with mandatory human approval"
+    )
+
+    allowed[
+        "authorization"
+    ] = (
+        "ATLAS_OPERATOR_LXC_VMIDS"
+    )
+
+    allowed[
+        "protected_override"
+    ] = True
+
+    allowed[
+        "human_approval_required"
+    ] = True
+
+    return allowed
 
 
 def _validated_container_name(
@@ -717,6 +934,7 @@ def _validate_operator_transition(
         "start container",
         "start service",
         "start vm",
+        "start lxc",
     }
 
     running_required = {
@@ -730,6 +948,7 @@ def _validate_operator_transition(
         "stop vm",
 
         "restart lxc",
+        "stop lxc",
     }
 
 
@@ -741,7 +960,11 @@ def _validate_operator_transition(
         already_running = (
             state == "running"
             if normalized.endswith(
-                ("container", "vm")
+                (
+                    "container",
+                    "vm",
+                    "lxc",
+                )
             )
             else state == "active"
         )

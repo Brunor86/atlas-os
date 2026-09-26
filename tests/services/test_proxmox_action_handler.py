@@ -288,7 +288,7 @@ def test_executor_allows_start_stop_and_restart_vm_pilot():
 
     assert (
         "start lxc"
-        not in
+        in
         ActionValidator.ALLOWED_ACTIONS
     )
 
@@ -300,7 +300,7 @@ def test_executor_allows_start_stop_and_restart_vm_pilot():
 
     assert (
         "stop lxc"
-        not in
+        in
         ActionValidator.ALLOWED_ACTIONS
     )
 

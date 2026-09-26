@@ -296,11 +296,5 @@ def test_action_policy_allows_vm_actions_and_restart_lxc():
     assert "restart vm" in allowed
     assert "restart lxc" in allowed
 
-    forbidden = {
-        "start lxc",
-        "stop lxc",
-    }
-
-    assert forbidden.isdisjoint(
-        allowed
-    )
+    assert "start lxc" in allowed
+    assert "stop lxc" in allowed

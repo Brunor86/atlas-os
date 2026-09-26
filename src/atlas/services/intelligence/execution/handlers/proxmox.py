@@ -638,6 +638,612 @@ class ProxmoxActionHandler:
         combined_evidence = stop_res.get('evidence', []) + ['stop phase succeeded'] + start_res.get('evidence', [])
         return {'status': 'SUCCESS', 'result': f'VM {target} restarted successfully', 'evidence': combined_evidence}
 
+    def start_lxc(
+        self,
+        target,
+    ):
+
+        validated = (
+            self._validate_lxc_target(
+                target
+            )
+        )
+
+        if not validated[
+            "ok"
+        ]:
+
+            return {
+                "status": "FAILED",
+                "result":
+                    validated[
+                        "result"
+                    ],
+                "evidence":
+                    validated.get(
+                        "evidence",
+                        [],
+                    ),
+            }
+
+
+        vmid = validated[
+            "vmid"
+        ]
+
+        guest = validated[
+            "guest"
+        ]
+
+        evidence = list(
+            validated.get(
+                "evidence",
+                [],
+            )
+        )
+
+        evidence.append(
+            "current_state="
+            + guest.status
+        )
+
+
+        if guest.status == "running":
+
+            return {
+                "status":
+                    "FAILED",
+
+                "result": (
+                    "Proxmox LXC "
+                    + str(vmid)
+                    + " is already running"
+                ),
+
+                "evidence":
+                    evidence,
+            }
+
+
+        if guest.status != "stopped":
+
+            return {
+                "status":
+                    "FAILED",
+
+                "result": (
+                    "Proxmox LXC "
+                    + str(vmid)
+                    + " cannot be started "
+                    "from state "
+                    + guest.status
+                ),
+
+                "evidence":
+                    evidence,
+            }
+
+
+        endpoint = (
+            "/api2/json/nodes/"
+            + guest.node
+            + "/lxc/"
+            + str(vmid)
+            + "/status/start"
+        )
+
+
+        try:
+
+            task = (
+                self.proxmox
+                ._post(
+                    endpoint
+                )
+            )
+
+        except Exception as exc:
+
+            return {
+                "status":
+                    "FAILED",
+
+                "result": (
+                    "Proxmox LXC start "
+                    "request failed: "
+                    + str(exc)
+                ),
+
+                "evidence":
+                    evidence,
+            }
+
+
+        if not task:
+
+            return {
+                "status":
+                    "FAILED",
+
+                "result":
+                    (
+                        "Proxmox LXC start "
+                        "request returned no task"
+                    ),
+
+                "evidence":
+                    evidence,
+            }
+
+
+        evidence.append(
+            "Proxmox LXC start requested "
+            "for VMID="
+            + str(vmid)
+        )
+
+        evidence.append(
+            "Proxmox task="
+            + str(task)
+        )
+
+
+        try:
+
+            task_status = (
+                self._wait_for_task(
+                    guest.node,
+                    task,
+                )
+            )
+
+        except Exception as exc:
+
+            return {
+                "status":
+                    "FAILED",
+
+                "result": (
+                    "Proxmox task "
+                    "verification failed: "
+                    + str(exc)
+                ),
+
+                "evidence":
+                    evidence,
+            }
+
+
+        if not task_status:
+
+            return {
+                "status":
+                    "FAILED",
+
+                "result":
+                    (
+                        "Proxmox task status "
+                        "could not be retrieved"
+                    ),
+
+                "evidence":
+                    evidence,
+            }
+
+
+        task_state = (
+            task_status.get(
+                "status"
+            )
+        )
+
+        exit_status = (
+            task_status.get(
+                "exitstatus"
+            )
+        )
+
+        evidence.append(
+            "task_status="
+            + str(task_state)
+        )
+
+        evidence.append(
+            "task_exitstatus="
+            + str(exit_status)
+        )
+
+
+        if (
+            task_state != "stopped"
+            or exit_status != "OK"
+        ):
+
+            return {
+                "status":
+                    "FAILED",
+
+                "result": (
+                    "Proxmox LXC start "
+                    "task failed: status="
+                    + str(task_state)
+                    + ", exitstatus="
+                    + str(exit_status)
+                ),
+
+                "evidence":
+                    evidence,
+            }
+
+
+        try:
+
+            final_state = (
+                self._wait_for_state(
+                    vmid,
+                    "running",
+                    guest_type="lxc",
+                )
+            )
+
+        except Exception as exc:
+
+            return {
+                "status":
+                    "FAILED",
+
+                "result": (
+                    "Proxmox LXC state "
+                    "verification failed: "
+                    + str(exc)
+                ),
+
+                "evidence":
+                    evidence,
+            }
+
+
+        evidence.append(
+            "verified_state="
+            + str(final_state)
+        )
+
+
+        if final_state != "running":
+
+            return {
+                "status":
+                    "FAILED",
+
+                "result": (
+                    "Proxmox LXC start "
+                    "verification failed: state="
+                    + str(final_state)
+                ),
+
+                "evidence":
+                    evidence,
+            }
+
+
+        return {
+            "status":
+                "SUCCESS",
+
+            "result": (
+                "LXC "
+                + str(vmid)
+                + " running"
+            ),
+
+            "evidence":
+                evidence,
+        }
+
+
+    def stop_lxc(
+        self,
+        target,
+    ):
+
+        validated = (
+            self._validate_lxc_target(
+                target
+            )
+        )
+
+        if not validated[
+            "ok"
+        ]:
+
+            return {
+                "status": "FAILED",
+                "result":
+                    validated[
+                        "result"
+                    ],
+                "evidence":
+                    validated.get(
+                        "evidence",
+                        [],
+                    ),
+            }
+
+
+        vmid = validated[
+            "vmid"
+        ]
+
+        guest = validated[
+            "guest"
+        ]
+
+        evidence = list(
+            validated.get(
+                "evidence",
+                [],
+            )
+        )
+
+        evidence.append(
+            "current_state="
+            + guest.status
+        )
+
+
+        if guest.status == "stopped":
+
+            return {
+                "status":
+                    "FAILED",
+
+                "result": (
+                    "Proxmox LXC "
+                    + str(vmid)
+                    + " is already stopped"
+                ),
+
+                "evidence":
+                    evidence,
+            }
+
+
+        if guest.status != "running":
+
+            return {
+                "status":
+                    "FAILED",
+
+                "result": (
+                    "Proxmox LXC "
+                    + str(vmid)
+                    + " cannot be stopped "
+                    "from state "
+                    + guest.status
+                ),
+
+                "evidence":
+                    evidence,
+            }
+
+
+        endpoint = (
+            "/api2/json/nodes/"
+            + guest.node
+            + "/lxc/"
+            + str(vmid)
+            + "/status/stop"
+        )
+
+
+        try:
+
+            task = (
+                self.proxmox
+                ._post(
+                    endpoint
+                )
+            )
+
+        except Exception as exc:
+
+            return {
+                "status":
+                    "FAILED",
+
+                "result": (
+                    "Proxmox LXC stop "
+                    "request failed: "
+                    + str(exc)
+                ),
+
+                "evidence":
+                    evidence,
+            }
+
+
+        if not task:
+
+            return {
+                "status":
+                    "FAILED",
+
+                "result":
+                    (
+                        "Proxmox LXC stop "
+                        "request returned no task"
+                    ),
+
+                "evidence":
+                    evidence,
+            }
+
+
+        evidence.append(
+            "Proxmox LXC stop requested "
+            "for VMID="
+            + str(vmid)
+        )
+
+        evidence.append(
+            "Proxmox task="
+            + str(task)
+        )
+
+
+        try:
+
+            task_status = (
+                self._wait_for_task(
+                    guest.node,
+                    task,
+                )
+            )
+
+        except Exception as exc:
+
+            return {
+                "status":
+                    "FAILED",
+
+                "result": (
+                    "Proxmox task "
+                    "verification failed: "
+                    + str(exc)
+                ),
+
+                "evidence":
+                    evidence,
+            }
+
+
+        if not task_status:
+
+            return {
+                "status":
+                    "FAILED",
+
+                "result":
+                    (
+                        "Proxmox task status "
+                        "could not be retrieved"
+                    ),
+
+                "evidence":
+                    evidence,
+            }
+
+
+        task_state = (
+            task_status.get(
+                "status"
+            )
+        )
+
+        exit_status = (
+            task_status.get(
+                "exitstatus"
+            )
+        )
+
+        evidence.append(
+            "task_status="
+            + str(task_state)
+        )
+
+        evidence.append(
+            "task_exitstatus="
+            + str(exit_status)
+        )
+
+
+        if (
+            task_state != "stopped"
+            or exit_status != "OK"
+        ):
+
+            return {
+                "status":
+                    "FAILED",
+
+                "result": (
+                    "Proxmox LXC stop "
+                    "task failed: status="
+                    + str(task_state)
+                    + ", exitstatus="
+                    + str(exit_status)
+                ),
+
+                "evidence":
+                    evidence,
+            }
+
+
+        try:
+
+            final_state = (
+                self._wait_for_state(
+                    vmid,
+                    "stopped",
+                    guest_type="lxc",
+                )
+            )
+
+        except Exception as exc:
+
+            return {
+                "status":
+                    "FAILED",
+
+                "result": (
+                    "Proxmox LXC state "
+                    "verification failed: "
+                    + str(exc)
+                ),
+
+                "evidence":
+                    evidence,
+            }
+
+
+        evidence.append(
+            "verified_state="
+            + str(final_state)
+        )
+
+
+        if final_state != "stopped":
+
+            return {
+                "status":
+                    "FAILED",
+
+                "result": (
+                    "Proxmox LXC stop "
+                    "verification failed: state="
+                    + str(final_state)
+                ),
+
+                "evidence":
+                    evidence,
+            }
+
+
+        return {
+            "status":
+                "SUCCESS",
+
+            "result": (
+                "LXC "
+                + str(vmid)
+                + " stopped"
+            ),
+
+            "evidence":
+                evidence,
+        }
+
+
     def restart_lxc(
         self,
         target,

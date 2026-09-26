@@ -587,7 +587,7 @@ def test_restart_olivasat_reaches_pending_approval_only(
     )
 
 
-def test_stop_olivasat_resolves_but_capability_gate_blocks(
+def test_stop_olivasat_reaches_high_risk_pending_approval_only(
     monkeypatch,
 ):
 
@@ -612,7 +612,122 @@ def test_stop_olivasat_resolves_but_capability_gate_blocks(
     )
 
 
-    assert proposal_calls == []
+    assert proposal_calls == [
+        {
+            "event":
+                "client_constructed",
+        },
+        {
+            "event":
+                "proposal",
+
+            "tool":
+                (
+                    "atlas_propose_"
+                    "proxmox_guest_action"
+                ),
+
+            "action":
+                "stop",
+
+            "target":
+                "103",
+
+            "resource_type":
+                "lxc",
+        },
+    ]
+
+
+    proposals = [
+        data
+        for event, data
+        in activity
+        if event
+        == "operation_proposed"
+    ]
+
+
+    assert len(
+        proposals
+    ) == 1
+
+
+    proposal = proposals[0]
+
+
+    assert (
+        proposal[
+            "status"
+        ]
+        == "PENDING_APPROVAL"
+    )
+
+    assert (
+        proposal[
+            "execution_allowed"
+        ]
+        is False
+    )
+
+    assert (
+        proposal[
+            "action_request"
+        ][
+            "action"
+        ]
+        == "stop lxc"
+    )
+
+    assert (
+        proposal[
+            "action_request"
+        ][
+            "risk"
+        ]
+        == "HIGH"
+    )
+
+    assert (
+        proposal[
+            "plan"
+        ][
+            "resource_type"
+        ]
+        == "lxc"
+    )
+
+    assert (
+        proposal[
+            "plan"
+        ][
+            "target"
+        ]
+        == "103"
+    )
+
+    assert (
+        proposal[
+            "requested_plan"
+        ][
+            "target"
+        ]
+        == "olivasat"
+    )
+
+    assert (
+        proposal[
+            "target_resolution"
+        ][
+            "asset_name"
+        ]
+        == "olivasat"
+    )
+
+    assert (
+        "Human approval is required"
+        in response.content
+    )
 
 
     blocked = [
@@ -623,26 +738,7 @@ def test_stop_olivasat_resolves_but_capability_gate_blocks(
         == "operation_blocked"
     ]
 
-
-    assert len(
-        blocked
-    ) == 1
-
-
-    assert (
-        "execution capability unavailable "
-        "for action: stop lxc"
-        in blocked[0][
-            "message"
-        ]
-    )
-
-
-    assert (
-        "execution capability unavailable "
-        "for action: stop lxc"
-        in response.content
-    )
+    assert blocked == []
 
 
     assert (

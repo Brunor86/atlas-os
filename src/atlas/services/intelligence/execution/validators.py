@@ -21,7 +21,11 @@ class ActionValidator:
 
         "restart vm",
 
+        "start lxc",
+
         "restart lxc",
+
+        "stop lxc",
 
         "inspect stopped containers",
 

@@ -45,14 +45,22 @@ def test_executable_lxc_restart_uses_execution_truth():
     )
 
 
-def test_non_executable_lxc_operation_is_blocked_by_capability():
+def test_lxc_start_stop_use_execution_truth():
+
+    assert (
+        _operation_action_is_executable(
+            "start",
+            "lxc",
+        )
+        is True
+    )
 
     assert (
         _operation_action_is_executable(
             "stop",
             "lxc",
         )
-        is False
+        is True
     )
 
 

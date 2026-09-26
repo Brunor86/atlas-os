@@ -905,9 +905,17 @@ def test_execution_capability_truth_matches_real_routes():
     assert (
         ActionExecutionService
         .is_action_executable(
+            "start lxc"
+        )
+        is True
+    )
+
+    assert (
+        ActionExecutionService
+        .is_action_executable(
             "stop lxc"
         )
-        is False
+        is True
     )
 
     assert (
