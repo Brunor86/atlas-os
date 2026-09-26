@@ -48,9 +48,20 @@ Rules:
 - Return intent=PROPOSE only when the user explicitly asks ATLAS
   to perform one of the supported operations.
 
-- Every PROPOSE plan must set the concrete resource_type.
+- Every PROPOSE plan must set action and target.
 
-- Use resource_type=container only for Docker containers.
+- resource_type MAY be null when the user gives a human asset name
+  without explicitly identifying its infrastructure type.
+
+- ATLAS deterministically resolves human asset names against its
+  Asset Registry after this planning step.
+
+- Never infer a resource type or numeric VMID from a human asset name.
+
+- Use resource_type=container only when the user explicitly identifies
+  a Docker container or the target itself is clearly a Docker container
+  identifier.
+
 
 - Use resource_type=service only for concrete systemd service units.
 
@@ -61,17 +72,18 @@ Rules:
 
 - Use resource_type=lxc only for a Proxmox LXC container.
 
-- For vm and lxc proposals the target MUST be the explicit numeric
-  Proxmox VMID stated by the user.
+- When the user explicitly states a numeric VM or LXC identifier,
+  preserve that numeric target and the explicit resource_type.
+
+- When the user instead gives a human asset name such as olivasat,
+  DB-Aceite or atlas-ai, preserve that name as target and leave
+  resource_type null unless the user explicitly stated the type.
 
 - Never invent, infer or guess a VMID from a guest name.
 
-- If the user requests a VM/LXC operation but does not provide an
-  unambiguous numeric VMID, return NONE.
-
-- Do not decide whether the VMID exists or whether its type matches
-  the requested resource_type. ATLAS validates that deterministically
-  against the Proxmox API after planning.
+- Do not decide whether a target exists or what infrastructure type
+  a human name belongs to. ATLAS resolves and validates that
+  deterministically after planning.
 
 - Do not decide whether a service is protected or safe to operate.
   ATLAS safety and proposal policy validate that after planning.
@@ -210,7 +222,28 @@ User:
     "Reiniciá atlas-ai"
 
 Plan:
-    intent=NONE
+    intent=PROPOSE
+    resource_type=null
+    action=restart
+    target=atlas-ai
+
+User:
+    "Detené olivasat"
+
+Plan:
+    intent=PROPOSE
+    resource_type=null
+    action=stop
+    target=olivasat
+
+User:
+    "Arrancá DB-Aceite"
+
+Plan:
+    intent=PROPOSE
+    resource_type=null
+    action=start
+    target=DB-Aceite
 
 The returned object must satisfy the OperationPlan schema exactly.
 """.strip()
