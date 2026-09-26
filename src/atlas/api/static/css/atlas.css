@@ -4314,6 +4314,15 @@ body {
 }
 
 
+.operator-operation-row.selected {
+    background:
+        rgba(0, 0, 0, .055);
+
+    box-shadow:
+        inset 3px 0 0 var(--text);
+}
+
+
 .operator-operation-row strong,
 .operator-operation-row span:not(.operator-state),
 .operator-operation-row small {

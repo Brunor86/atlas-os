@@ -457,3 +457,55 @@ def test_ask_atlas_confirmation_exposes_action_target_and_risk():
         "window.confirm("
         not in card
     )
+
+
+
+def test_ask_atlas_proposal_syncs_into_unlocked_control_center():
+
+    js = normalized(JS)
+
+    assert (
+        "async function syncOperatorControlProposal"
+        in js
+    )
+
+    assert (
+        "await loadOperatorControlCenter()"
+        in js
+    )
+
+    assert (
+        "await loadOperatorControlDetail( normalizedId )"
+        in js
+    )
+
+    assert (
+        "syncOperatorControlProposal( request.id )"
+        in js
+    )
+
+    assert (
+        "!getStoredOperatorToken()"
+        in js
+    )
+
+
+def test_control_center_tracks_selected_operation_visually():
+
+    js = normalized(JS)
+    css = normalized(CSS)
+
+    assert (
+        "classList.toggle( \"selected\""
+        in js
+    )
+
+    assert (
+        ".operator-operation-row.selected"
+        in css
+    )
+
+    assert (
+        "Ask ATLAS proposal loaded in Operator Control Center."
+        in js
+    )

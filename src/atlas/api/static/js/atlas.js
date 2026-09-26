@@ -1847,6 +1847,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 ".atlas-operator-card"
             );
 
+
+        syncOperatorControlProposal(
+            request.id
+        );
+
         const approve =
             card.querySelector(
                 '[data-role="approve"]'
@@ -2876,6 +2881,83 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 operatorControlUnlock.textContent =
                     "Unlock";
+            }
+        }
+    }
+
+
+    async function syncOperatorControlProposal(
+        actionId
+    ) {
+
+        const normalizedId =
+            String(
+                actionId
+                || ""
+            ).trim();
+
+
+        if (
+            !normalizedId
+            || !operatorControlCenter
+            || !getStoredOperatorToken()
+        ) {
+
+            return;
+        }
+
+
+        try {
+
+            await loadOperatorControlCenter();
+
+            await loadOperatorControlDetail(
+                normalizedId
+            );
+
+
+            const rows = [
+                ...operatorControlList
+                    ?.querySelectorAll(
+                        "[data-action-id]"
+                    )
+                || []
+            ];
+
+
+            rows.forEach(
+                row => {
+
+                    row.classList.toggle(
+                        "selected",
+                        row.dataset.actionId
+                            === normalizedId
+                    );
+                }
+            );
+
+
+            if (operatorControlMessage) {
+
+                operatorControlMessage.hidden =
+                    false;
+
+                operatorControlMessage.textContent =
+                    "Ask ATLAS proposal loaded in Operator Control Center.";
+            }
+
+        }
+
+        catch (error) {
+
+            if (operatorControlMessage) {
+
+                operatorControlMessage.hidden =
+                    false;
+
+                operatorControlMessage.textContent =
+                    "Operator proposal sync failed: "
+                    + error.message;
             }
         }
     }
@@ -3929,6 +4011,21 @@ document.addEventListener("DOMContentLoaded", () => {
                                         row.dataset
                                             .actionId
                                     );
+
+
+                                    operatorControlList
+                                        .querySelectorAll(
+                                            "[data-action-id]"
+                                        )
+                                        .forEach(
+                                            item => {
+
+                                                item.classList.toggle(
+                                                    "selected",
+                                                    item === row
+                                                );
+                                            }
+                                        );
 
                                 }
                                 catch (error) {
