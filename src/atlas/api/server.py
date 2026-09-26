@@ -37,9 +37,14 @@ from atlas.services.control_plane.health import (
     ControlPlaneHealthService,
 )
 
+from atlas.services.backup_intelligence.inventory import (
+    BackupInventoryService,
+)
+
 from atlas.services.assets.api import AssetAPIService
 from atlas.api.assets import router as assets_router
 from atlas.api.operator_actions import router as operator_actions_router
+from atlas.api.backups import router as backups_router
 
 
 from atlas.storage.repository import SnapshotRepository
@@ -81,6 +86,11 @@ app.include_router(
 
 app.include_router(
     operator_actions_router
+)
+
+
+app.include_router(
+    backups_router
 )
 
 
@@ -469,6 +479,11 @@ def home(
 
 
 
+    backup_inventory = (
+        BackupInventoryService().inventory()
+    )
+
+
     _diagnostic("DEBUG TEMPLATE NOC")
     _diagnostic(noc_report)
 
@@ -558,6 +573,9 @@ def home(
 
             "impact":
                 impact,
+
+            "backups":
+                backup_inventory,
 
 
         },

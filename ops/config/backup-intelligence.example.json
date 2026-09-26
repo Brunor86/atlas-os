@@ -1,0 +1,40 @@
+{
+  "version": 2,
+  "providers": {
+    "local": {
+      "type": "systemd-local"
+    },
+    "virtualization-host": {
+      "type": "systemd-ssh",
+      "target": "backup-observer@example-host"
+    }
+  },
+  "items": [
+    {
+      "id": "application-db",
+      "name": "Application database",
+      "asset": "application",
+      "kind": "database",
+      "policy": "daily",
+      "artifact_dir": "/srv/backups/application",
+      "artifact_pattern": "*.dump",
+      "max_age_hours": 30,
+      "retention_days": 30,
+      "timer": "application-backup.timer",
+      "job_provider": "local"
+    },
+    {
+      "id": "guest-backup",
+      "name": "Virtualization guest",
+      "asset": "guest",
+      "kind": "virtual-machine",
+      "policy": "weekly",
+      "artifact_dir": "/srv/backups/guests",
+      "artifact_pattern": "*.zst",
+      "max_age_hours": 192,
+      "retention_days": 35,
+      "timer": "guest-backup.timer",
+      "job_provider": "virtualization-host"
+    }
+  ]
+}
