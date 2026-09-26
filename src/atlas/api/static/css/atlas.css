@@ -4815,3 +4815,41 @@ body {
     font-size: 8px;
     line-height: 1.4;
 }
+
+
+
+
+/* ============================================================
+   ATLAS BACKUP VISUAL PRIORITY v0.1
+   ============================================================ */
+
+.backup-item-failed {
+    order: 1;
+}
+
+
+.backup-item-missing {
+    order: 2;
+
+    border-color:
+        rgba(229,72,77,.20);
+
+    background:
+        rgba(229,72,77,.035);
+}
+
+
+.backup-item-stale {
+    order: 3;
+}
+
+
+.backup-item-healthy {
+    order: 4;
+}
+
+
+.backup-item-excluded {
+    order: 5;
+    opacity: .82;
+}

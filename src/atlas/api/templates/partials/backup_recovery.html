@@ -9,12 +9,7 @@
             <span class="os-section-kicker">
                 Recovery readiness
             </span>
-
-            <h3>
-                Backup & Recovery
-            </h3>
-
-            <p>
+<p>
                 Read-only protection status from configured
                 backup policies and recorded artifacts.
             </p>
@@ -41,8 +36,6 @@
                 <small>Protected</small>
                 <strong>
                     {{ backups.summary.protected }}
-                    /
-                    {{ backups.summary.total }}
                 </strong>
             </div>
 
@@ -54,7 +47,7 @@
             </div>
 
             <div>
-                <small>Missing</small>
+                <small>Protection gaps</small>
                 <strong>
                     {{ backups.summary.missing }}
                 </strong>
@@ -163,7 +156,7 @@
 
             {% for item in backups["items"] %}
 
-                <article class="backup-item">
+                <article class="backup-item backup-item-{{ item.status|lower }}">
 
                     <div class="backup-item-heading">
 
@@ -240,7 +233,7 @@
                         {{ item.detail }}
                     </p>
 
-                    {% if item.job.detail %}
+                    {% if item.job.detail and item.job.status in ["FAILED", "UNOBSERVED"] %}
 
                         <p class="backup-job-detail">
                             Job: {{ item.job.detail }}

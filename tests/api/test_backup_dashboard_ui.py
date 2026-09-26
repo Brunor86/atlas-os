@@ -166,3 +166,34 @@ def test_backup_dashboard_renders_missing_gap():
     assert "HEALTHY" in rendered
     assert "Jobs healthy" in rendered
     assert "NOT_APPLICABLE" in rendered
+
+
+
+
+def test_backup_dashboard_polish_contract():
+
+    html = normalized(PARTIAL)
+    css = normalized(CSS)
+
+    assert (
+        "<h3> Backup & Recovery </h3>"
+        not in html
+    )
+
+    assert "Protection gaps" in html
+
+    assert (
+        "backup-item backup-item-{{ item.status|lower }}"
+        in html
+    )
+
+    assert (
+        "item.job.status in [\"FAILED\", \"UNOBSERVED\"]"
+        in html
+    )
+
+    assert ".backup-item-failed" in css
+    assert ".backup-item-missing" in css
+    assert ".backup-item-stale" in css
+    assert ".backup-item-healthy" in css
+    assert ".backup-item-excluded" in css
