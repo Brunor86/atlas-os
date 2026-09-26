@@ -734,7 +734,8 @@ class AIService:
             print(
                 "[AI OPERATION ROUTER] "
                 "candidate=true "
-                "deterministic_preflight=bypass"
+                "route=operation_planner "
+                "knowledge_agent=bypass"
             )
 
 
@@ -754,9 +755,112 @@ class AIService:
 
         try:
 
-            result = agent.run(
-                request.user_prompt
-            )
+            # --------------------------------------------------------
+            # EXPLICIT OPERATION ROUTING
+            #
+            # An explicit supported operation must not be investigated
+            # first by the read-only Knowledge Agent.
+            #
+            # The operation planner interprets only the requested
+            # operation. ATLAS then resolves the target deterministically
+            # and the governed Operator creates, at most, a proposal.
+            #
+            # No execution authority is granted here.
+            # --------------------------------------------------------
+
+            if operation_candidate:
+
+                operation_model = (
+                    self._select_model_with_refresh(
+                        request.task
+                    )
+                )
+
+                if operation_model is None:
+
+                    raise RuntimeError(
+                        "No model available for "
+                        "operation planner"
+                    )
+
+
+                operation_provider = (
+                    self.providers.get(
+                        operation_model.provider
+                    )
+                )
+
+                if operation_provider is None:
+
+                    raise RuntimeError(
+                        "Provider unavailable for "
+                        "operation planner: "
+                        + str(
+                            operation_model.provider
+                        )
+                    )
+
+
+                if not operation_provider.available():
+
+                    raise RuntimeError(
+                        "Operation planner provider unavailable"
+                    )
+
+
+                planner_state[
+                    "model"
+                ] = operation_model
+
+                planner_state[
+                    "provider"
+                ] = operation_provider
+
+
+                self.runtime.load(
+                    operation_model.name
+                )
+
+
+                result = {
+                    "status":
+                        "SUCCESS",
+
+                    "answer":
+                        "",
+
+                    "steps":
+                        0,
+
+                    "model":
+                        operation_model.name,
+
+                    "provider":
+                        operation_model.provider,
+
+                    "llm_used":
+                        True,
+
+                    "tools_used":
+                        [],
+
+                    "observations":
+                        [],
+                }
+
+
+                print(
+                    "[AI OPERATION ROUTER] "
+                    "knowledge_agent=false "
+                    "operation_planner=true"
+                )
+
+
+            else:
+
+                result = agent.run(
+                    request.user_prompt
+                )
 
 
             # --------------------------------------------------------
@@ -780,13 +884,16 @@ class AIService:
             # --------------------------------------------------------
 
             if (
-                int(
-                    planner_state[
-                        "calls"
-                    ]
-                    or 0
+                operation_candidate
+                or (
+                    int(
+                        planner_state[
+                            "calls"
+                        ]
+                        or 0
+                    )
+                    > 0
                 )
-                > 0
             ):
 
                 try:

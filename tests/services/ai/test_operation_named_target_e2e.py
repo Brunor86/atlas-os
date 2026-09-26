@@ -151,42 +151,10 @@ def build_synthetic_operator(
             user_request,
         ):
 
-            self.planner(
-                AIRequest(
-                    task="reasoning",
-                    user_prompt=(
-                        "synthetic read-only "
-                        "planner pass"
-                    ),
-                    context_required=False,
-                )
+            raise AssertionError(
+                "Knowledge Agent must not run "
+                "for explicit operation candidates"
             )
-
-            return {
-                "status":
-                    "SUCCESS",
-
-                "answer":
-                    "synthetic read-only phase complete",
-
-                "steps":
-                    1,
-
-                "model":
-                    "synthetic-planner",
-
-                "provider":
-                    "ollama",
-
-                "llm_used":
-                    True,
-
-                "tools_used":
-                    [],
-
-                "observations":
-                    [],
-            }
 
 
     class FakeOperationPlanner:
@@ -458,6 +426,28 @@ def test_restart_olivasat_reaches_pending_approval_only(
             user_prompt="restart olivasat",
         ),
         event_callback=callback,
+    )
+
+
+    assert (
+        response.metadata[
+            "context_mode"
+        ]
+        == "operator"
+    )
+
+    assert (
+        response.metadata[
+            "mcp_agent"
+        ]
+        is False
+    )
+
+    assert (
+        response.metadata[
+            "planner_calls"
+        ]
+        == 0
     )
 
 
