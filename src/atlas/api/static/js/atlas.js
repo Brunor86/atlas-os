@@ -3834,6 +3834,32 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
+    function operatorControlPriority(
+        state
+    ) {
+
+        switch (
+            String(
+                state
+                || ""
+            )
+        ) {
+
+            case "PENDING_APPROVAL":
+                return 0;
+
+            case "RECOVERY_REQUIRED":
+                return 1;
+
+            case "EXECUTION_FAILED":
+                return 2;
+
+            default:
+                return 10;
+        }
+    }
+
+
     async function loadOperatorControlCenter() {
 
         if (
@@ -3911,9 +3937,51 @@ document.addEventListener("DOMContentLoaded", () => {
             );
 
 
-            const actions =
-                payload.actions
-                || [];
+            if (operatorControlSummary) {
+
+                const freshness =
+                    document.createElement(
+                        "span"
+                    );
+
+                freshness.className =
+                    "operator-summary-freshness";
+
+                freshness.textContent =
+                    "Updated "
+                    + operatorTimestamp(
+                        new Date()
+                            .toISOString()
+                    );
+
+                operatorControlSummary
+                    .appendChild(
+                        freshness
+                    );
+            }
+
+
+            const actions = [
+                ...(
+                    payload.actions
+                    || []
+                )
+            ].sort(
+                (
+                    left,
+                    right
+                ) => {
+
+                    return (
+                        operatorControlPriority(
+                            left.state
+                        )
+                        - operatorControlPriority(
+                            right.state
+                        )
+                    );
+                }
+            );
 
 
             if (!actions.length) {

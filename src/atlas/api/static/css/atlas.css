@@ -4709,6 +4709,55 @@ body {
 }
 
 
+
+.operator-summary-freshness {
+    margin-left: auto;
+
+    color: var(--muted);
+
+    font-size: 9px;
+    font-weight: 600;
+}
+
+
+@media (max-width: 850px) {
+
+    .operator-control-auth {
+        width: 100%;
+
+        flex-wrap: wrap;
+    }
+
+
+    .operator-control-auth input {
+        flex: 1 1 220px;
+
+        min-width: 0;
+    }
+
+
+    .operator-summary-freshness {
+        margin-left: 0;
+    }
+}
+
+
+@media (max-width: 520px) {
+
+    .operator-control-auth input {
+        width: 100%;
+
+        flex-basis: 100%;
+    }
+
+
+    .operator-confirmation-grid,
+    .atlas-operator-confirmation-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+
 @media (max-width: 850px) {
 
     .operator-control-header,

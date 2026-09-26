@@ -509,3 +509,83 @@ def test_control_center_tracks_selected_operation_visually():
         "Ask ATLAS proposal loaded in Operator Control Center."
         in js
     )
+
+
+
+def test_control_center_prioritizes_operational_attention_states():
+
+    js = normalized(JS)
+
+    assert (
+        "function operatorControlPriority"
+        in js
+    )
+
+    pending = js.index(
+        "case \"PENDING_APPROVAL\""
+    )
+
+    recovery = js.index(
+        "case \"RECOVERY_REQUIRED\""
+    )
+
+    failed = js.index(
+        "case \"EXECUTION_FAILED\""
+    )
+
+    assert (
+        pending
+        < recovery
+        < failed
+    )
+
+    assert (
+        "operatorControlPriority( left.state )"
+        in js
+    )
+
+    assert (
+        "operatorControlPriority( right.state )"
+        in js
+    )
+
+
+def test_control_center_shows_freshness_and_mobile_polish():
+
+    js = normalized(JS)
+    css = normalized(CSS)
+
+    assert (
+        "operator-summary-freshness"
+        in js
+    )
+
+    assert (
+        "\"Updated \""
+        in js
+    )
+
+    assert (
+        "new Date() .toISOString()"
+        in js
+    )
+
+    assert (
+        ".operator-summary-freshness"
+        in css
+    )
+
+    assert (
+        ".operator-control-auth input"
+        in css
+    )
+
+    assert (
+        ".operator-confirmation-grid"
+        in css
+    )
+
+    assert (
+        ".atlas-operator-confirmation-grid"
+        in css
+    )
