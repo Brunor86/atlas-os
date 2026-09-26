@@ -35,6 +35,12 @@ _ACTION_CAPABILITIES = {
     "restart vm":
         Capability.RESTART,
 
+    "start lxc":
+        Capability.START,
+
+    "stop lxc":
+        Capability.STOP,
+
     "restart lxc":
         Capability.RESTART,
 }
@@ -80,6 +86,14 @@ _ACTION_ASSET_TYPES = {
         AssetType.VM,
     },
 
+    "start lxc": {
+        AssetType.LXC,
+    },
+
+    "stop lxc": {
+        AssetType.LXC,
+    },
+
     "restart lxc": {
         AssetType.LXC,
     },
@@ -96,6 +110,7 @@ _DISRUPTIVE_ACTIONS = {
     "stop vm",
     "restart vm",
 
+    "stop lxc",
     "restart lxc",
 }
 

@@ -87,10 +87,24 @@ class ActionVerificationService:
                 "qemu",
             ),
 
+        "start lxc":
+            (
+                "proxmox",
+                "running",
+                "lxc",
+            ),
+
         "restart lxc":
             (
                 "proxmox",
                 "running",
+                "lxc",
+            ),
+
+        "stop lxc":
+            (
+                "proxmox",
+                "stopped",
                 "lxc",
             ),
     }

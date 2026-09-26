@@ -407,7 +407,7 @@ def test_systemd_proposal_reaches_existing_approval_pipeline(
     ) == 1
 
 
-def test_unrouted_lxc_stop_is_rejected_by_operator_api(
+def test_lxc_stop_requires_explicit_operator_authorization(
     monkeypatch,
 ):
 
@@ -418,6 +418,13 @@ def test_unrouted_lxc_stop_is_rejected_by_operator_api(
     monkeypatch.setenv(
         "ATLAS_OPERATOR_TOKEN",
         TOKEN,
+    )
+
+    monkeypatch.setattr(
+        api,
+        "get_executable_lxc_vmids",
+        lambda:
+            set(),
     )
 
     app = FastAPI()
@@ -439,7 +446,12 @@ def test_unrouted_lxc_stop_is_rejected_by_operator_api(
         )
 
 
-    assert response.status_code == 400
+    assert response.status_code == 403
+
+    assert (
+        "execution is not enabled"
+        in response.json()["detail"]
+    )
 
 
 def test_multibackend_ui_routes_only_governed_operator_actions():

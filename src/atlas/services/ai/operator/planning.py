@@ -75,12 +75,11 @@ class OperationPlan(BaseModel):
         ):
 
             if (
-                self.resource_type is None
-                or self.action is None
+                self.action is None
                 or self.target is None
             ):
                 raise ValueError(
-                    "PROPOSE requires resource_type, action and target"
+                    "PROPOSE requires action and target"
                 )
 
             return self

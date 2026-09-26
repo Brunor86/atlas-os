@@ -282,3 +282,35 @@ def test_pydantic_operation_planner_accepts_lxc_plan():
     assert plan.resource_type == "lxc"
     assert plan.action == "stop"
     assert plan.target == "103"
+
+
+
+def test_named_asset_plan_can_defer_resource_type():
+
+    agent = FakeAgent(
+        {
+            "intent": "PROPOSE",
+            "resource_type": None,
+            "action": "stop",
+            "target": "olivasat",
+            "reason": (
+                "User explicitly requested "
+                "the named asset to stop"
+            ),
+            "confidence": 0.99,
+        }
+    )
+
+    planner = PydanticOperationPlanner(
+        agent
+    )
+
+    plan = planner.plan(
+        "Stop olivasat",
+        observations=[],
+    )
+
+    assert plan.intent == "PROPOSE"
+    assert plan.resource_type is None
+    assert plan.action == "stop"
+    assert plan.target == "olivasat"

@@ -79,6 +79,31 @@ class FakeProxmoxHandler:
         }
 
 
+    def start_lxc(
+        self,
+        target,
+    ):
+
+        self.__class__.calls.append(
+            (
+                "start_lxc",
+                target,
+            )
+        )
+
+        return {
+            "status": "SUCCESS",
+            "result": (
+                "LXC "
+                + str(target)
+                + " running"
+            ),
+            "evidence": [
+                "fake Proxmox LXC start execution",
+            ],
+        }
+
+
     def restart_lxc(
         self,
         target,
@@ -100,6 +125,31 @@ class FakeProxmoxHandler:
             ),
             "evidence": [
                 "fake Proxmox LXC restart execution",
+            ],
+        }
+
+
+    def stop_lxc(
+        self,
+        target,
+    ):
+
+        self.__class__.calls.append(
+            (
+                "stop_lxc",
+                target,
+            )
+        )
+
+        return {
+            "status": "SUCCESS",
+            "result": (
+                "LXC "
+                + str(target)
+                + " stopped"
+            ),
+            "evidence": [
+                "fake Proxmox LXC stop execution",
             ],
         }
 
@@ -300,26 +350,65 @@ def test_stop_vm_dispatches_to_proxmox_handler(
     )
 
 
-def test_start_and_stop_lxc_execution_remain_rejected():
+def test_start_and_stop_lxc_dispatch_to_proxmox_handler(
+    monkeypatch,
+):
+
+    from atlas.services.intelligence.execution import (
+        service as execution_module,
+    )
+
+    FakeProxmoxHandler.calls = []
+
+    monkeypatch.setattr(
+        execution_module,
+        "ProxmoxActionHandler",
+        FakeProxmoxHandler,
+    )
 
     executor = (
         ActionExecutionService()
     )
 
-    for action in (
-        "start lxc",
-        "stop lxc",
-    ):
 
-        result = executor.execute(
-            approved(
-                action,
+    start = executor.execute(
+        approved(
+            "start lxc",
+            "103",
+        )
+    )
+
+    assert start.status == "SUCCESS"
+
+    assert start.result == (
+        "LXC 103 running"
+    )
+
+
+    stop = executor.execute(
+        approved(
+            "stop lxc",
+            "103",
+        )
+    )
+
+    assert stop.status == "SUCCESS"
+
+    assert stop.result == (
+        "LXC 103 stopped"
+    )
+
+
+    assert (
+        FakeProxmoxHandler.calls
+        == [
+            (
+                "start_lxc",
                 "103",
-            )
-        )
-
-        assert result.status == "REJECTED"
-
-        assert result.result == (
-            "action not allowed"
-        )
+            ),
+            (
+                "stop_lxc",
+                "103",
+            ),
+        ]
+    )
