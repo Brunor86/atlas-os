@@ -349,3 +349,111 @@ def test_control_center_confirmation_shows_execution_identity():
         "window.confirm("
         not in control
     )
+
+
+
+def test_ask_atlas_operator_card_requires_explicit_execution_confirmation():
+
+    js = normalized(JS)
+
+    start = js.index(
+        "function renderOperatorCard"
+    )
+
+    end = js.index(
+        "async function startOperator",
+        start,
+    )
+
+    card = js[
+        start:
+        end
+    ]
+
+    confirmation = (
+        "Confirm & execute"
+    )
+
+    gate = (
+        "approve.dataset.confirmed "
+        "!== \"true\""
+    )
+
+    endpoint = (
+        "/approve"
+    )
+
+    assert confirmation in card
+    assert gate in card
+    assert endpoint in card
+
+    assert (
+        card.index(confirmation)
+        < card.index(gate)
+        < card.index(endpoint)
+    )
+
+    assert (
+        "approval-cancel"
+        in card
+    )
+
+    assert (
+        "approval-confirm"
+        in card
+    )
+
+
+def test_ask_atlas_confirmation_exposes_action_target_and_risk():
+
+    js = normalized(JS)
+    css = normalized(CSS)
+
+    start = js.index(
+        "function renderOperatorCard"
+    )
+
+    end = js.index(
+        "async function startOperator",
+        start,
+    )
+
+    card = js[
+        start:
+        end
+    ]
+
+    assert (
+        "Confirm infrastructure execution"
+        in card
+    )
+
+    assert (
+        "${action}"
+        in card
+    )
+
+    assert (
+        "${target}"
+        in card
+    )
+
+    assert (
+        "${risk}"
+        in card
+    )
+
+    assert (
+        ".atlas-operator-confirmation"
+        in css
+    )
+
+    assert (
+        ".atlas-operator-confirmation-grid"
+        in css
+    )
+
+    assert (
+        "window.confirm("
+        not in card
+    )

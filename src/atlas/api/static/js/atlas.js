@@ -1774,6 +1774,70 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 </div>
 
+
+                <div
+                    class="atlas-operator-confirmation"
+                    data-role="approval-confirmation"
+                    hidden
+                >
+
+                    <strong>
+                        Confirm infrastructure execution
+                    </strong>
+
+                    <span>
+                        Review the governed operation before
+                        ATLAS is allowed to execute it.
+                    </span>
+
+
+                    <div class="atlas-operator-confirmation-grid">
+
+                        <div>
+                            <small>Action</small>
+                            <strong>
+                                ${action}
+                            </strong>
+                        </div>
+
+                        <div>
+                            <small>Target</small>
+                            <strong>
+                                ${target}
+                            </strong>
+                        </div>
+
+                        <div>
+                            <small>Risk</small>
+                            <strong>
+                                ${risk}
+                            </strong>
+                        </div>
+
+                    </div>
+
+
+                    <div class="atlas-operator-confirmation-actions">
+
+                        <button
+                            type="button"
+                            data-role="approval-cancel"
+                        >
+                            Cancel
+                        </button>
+
+                        <button
+                            type="button"
+                            class="atlas-operator-approve"
+                            data-role="approval-confirm"
+                        >
+                            Confirm & execute
+                        </button>
+
+                    </div>
+
+                </div>
+
             </div>
         `;
 
@@ -1805,7 +1869,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const actions =
             card.querySelector(
-                '[data-role="actions"]'
+                "[data-role=\"actions\"]"
+            );
+
+        const confirmation =
+            card.querySelector(
+                "[data-role=\"approval-confirmation\"]"
+            );
+
+        const cancelApproval =
+            card.querySelector(
+                "[data-role=\"approval-cancel\"]"
+            );
+
+        const confirmApproval =
+            card.querySelector(
+                "[data-role=\"approval-confirm\"]"
             );
 
 
@@ -1886,9 +1965,89 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
 
+        cancelApproval.addEventListener(
+            "click",
+            () => {
+
+                confirmation.hidden =
+                    true;
+
+                actions.hidden =
+                    false;
+
+
+                updateEvent(
+                    "approval",
+                    "Human approval",
+                    "Waiting for your decision",
+                    "working"
+                );
+            }
+        );
+
+
+        confirmApproval.addEventListener(
+            "click",
+            () => {
+
+                cancelApproval.disabled =
+                    true;
+
+                confirmApproval.disabled =
+                    true;
+
+                approve.dataset
+                    .confirmed =
+                        "true";
+
+                approve.click();
+            }
+        );
+
+
         approve.addEventListener(
             "click",
             async () => {
+
+                if (
+                    approve.dataset.confirmed
+                    !== "true"
+                ) {
+
+                    cancelApproval.disabled =
+                        false;
+
+                    confirmApproval.disabled =
+                        false;
+
+                    actions.hidden =
+                        true;
+
+                    confirmation.hidden =
+                        false;
+
+
+                    updateEvent(
+                        "approval",
+                        "Human approval",
+                        "Explicit execution confirmation required",
+                        "working"
+                    );
+
+
+                    return;
+                }
+
+
+                delete approve.dataset
+                    .confirmed;
+
+                confirmation.hidden =
+                    true;
+
+                actions.hidden =
+                    false;
+
 
                 approve.disabled = true;
                 reject.disabled = true;

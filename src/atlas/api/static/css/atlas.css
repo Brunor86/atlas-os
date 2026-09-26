@@ -4035,6 +4035,120 @@ body {
 
 
 
+.atlas-operator-confirmation {
+    margin-top: 12px;
+    padding: 12px;
+
+    border:
+        1px solid rgba(138, 90, 0, .22);
+
+    border-radius: 11px;
+
+    background:
+        rgba(255, 170, 0, .08);
+}
+
+
+.atlas-operator-confirmation[hidden] {
+    display: none !important;
+}
+
+
+.atlas-operator-confirmation > strong {
+    display: block;
+
+    font-size: 11px;
+}
+
+
+.atlas-operator-confirmation > span {
+    display: block;
+
+    margin-top: 4px;
+
+    color: var(--muted);
+
+    font-size: 9px;
+    line-height: 1.45;
+}
+
+
+.atlas-operator-confirmation-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    gap: 7px;
+
+    margin-top: 10px;
+}
+
+
+.atlas-operator-confirmation-grid > div {
+    padding: 8px;
+
+    background:
+        rgba(255, 255, 255, .65);
+
+    border-radius: 8px;
+}
+
+
+.atlas-operator-confirmation-grid small {
+    display: block;
+
+    margin-bottom: 3px;
+
+    color: var(--muted);
+
+    font-size: 8px;
+}
+
+
+.atlas-operator-confirmation-grid strong {
+    display: block;
+
+    overflow: hidden;
+
+    font-size: 9px;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+.atlas-operator-confirmation-actions {
+    display: flex;
+    justify-content: flex-end;
+
+    gap: 7px;
+
+    margin-top: 10px;
+}
+
+
+.atlas-operator-confirmation-actions button {
+    padding: 8px 13px;
+
+    border: 1px solid var(--border);
+    border-radius: 9px;
+
+    background: transparent;
+
+    cursor: pointer;
+
+    font-size: 10px;
+}
+
+
+.atlas-operator-confirmation-actions
+.atlas-operator-approve {
+    background: var(--text);
+    color: white;
+}
+
+
 /* ============================================================
    ATLAS OPERATOR · HIDDEN STATE FIX
    ============================================================ */
