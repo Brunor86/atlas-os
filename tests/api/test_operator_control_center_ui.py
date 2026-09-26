@@ -628,3 +628,32 @@ def test_locked_control_center_disables_operational_filter():
         "operatorControlFilter.disabled = !unlocked"
         in js
     )
+
+
+
+def test_confirmation_controls_are_outside_action_control_loop():
+
+    js = JS.read_text()
+
+    correctly_closed = (
+        "                );\n"
+        "            }\n"
+        "        );\n"
+        "\n"
+        "\n"
+        "        const confirmationControls = ["
+    )
+
+    broken_tail = (
+        "        );\n"
+        "\n"
+        "        );\n"
+        "    }\n"
+        "\n"
+        "\n"
+        "    function operatorControlPriority("
+    )
+
+    assert correctly_closed in js
+
+    assert broken_tail not in js

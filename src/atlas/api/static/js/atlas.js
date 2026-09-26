@@ -3723,6 +3723,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                 );
             }
+        );
 
 
         const confirmationControls = [
@@ -3835,8 +3836,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                 );
             }
-        );
-
         );
     }
 
