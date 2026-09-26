@@ -589,3 +589,42 @@ def test_control_center_shows_freshness_and_mobile_polish():
         ".atlas-operator-confirmation-grid"
         in css
     )
+
+
+
+def test_locked_control_center_hides_operational_panels():
+
+    css = normalized(CSS)
+
+    assert (
+        ".operator-control-summary[hidden]"
+        in css
+    )
+
+    assert (
+        ".operator-control-body[hidden]"
+        in css
+    )
+
+    assert (
+        "display: none !important"
+        in css
+    )
+
+
+def test_locked_control_center_disables_operational_filter():
+
+    js = normalized(JS)
+    html = normalized(HTML)
+
+    assert (
+        "id=\"operatorControlFilter\" "
+        "aria-label=\"Filter operator actions\" "
+        "disabled"
+        in html
+    )
+
+    assert (
+        "operatorControlFilter.disabled = !unlocked"
+        in js
+    )

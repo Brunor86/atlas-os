@@ -2676,6 +2676,13 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
 
+        if (operatorControlFilter) {
+
+            operatorControlFilter.disabled =
+                !unlocked;
+        }
+
+
         if (operatorControlRefresh) {
 
             operatorControlRefresh.disabled =

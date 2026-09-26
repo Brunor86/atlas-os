@@ -4252,6 +4252,12 @@ body {
 }
 
 
+.operator-control-summary[hidden],
+.operator-control-body[hidden] {
+    display: none !important;
+}
+
+
 .operator-control-body {
     display: grid;
 
