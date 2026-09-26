@@ -2975,7 +2975,10 @@ document.addEventListener("DOMContentLoaded", () => {
         ) {
 
             actionControls = `
-                <div class="operator-detail-actions">
+                <div
+                    class="operator-detail-actions"
+                    data-role="operator-decision-actions"
+                >
 
                     <button
                         type="button"
@@ -2991,6 +2994,79 @@ document.addEventListener("DOMContentLoaded", () => {
                     >
                         Approve
                     </button>
+
+                </div>
+
+
+                <div
+                    class="operator-approval-confirmation"
+                    data-role="operator-approval-confirmation"
+                    hidden
+                >
+
+                    <strong>
+                        Confirm infrastructure execution
+                    </strong>
+
+                    <p>
+                        Review the operation before ATLAS
+                        is allowed to execute it.
+                    </p>
+
+
+                    <div class="operator-confirmation-grid">
+
+                        <div>
+                            <small>Action</small>
+                            <strong>
+                                ${escapeOperatorHTML(
+                                    action.action
+                                    || "operation"
+                                )}
+                            </strong>
+                        </div>
+
+                        <div>
+                            <small>Target</small>
+                            <strong>
+                                ${escapeOperatorHTML(
+                                    action.target
+                                    || "—"
+                                )}
+                            </strong>
+                        </div>
+
+                        <div>
+                            <small>Risk</small>
+                            <strong>
+                                ${escapeOperatorHTML(
+                                    action.risk
+                                    || "UNKNOWN"
+                                )}
+                            </strong>
+                        </div>
+
+                    </div>
+
+
+                    <div class="operator-detail-actions">
+
+                        <button
+                            type="button"
+                            data-operator-confirm="cancel"
+                        >
+                            Cancel
+                        </button>
+
+                        <button
+                            type="button"
+                            class="primary"
+                            data-operator-confirm="execute"
+                        >
+                            Confirm & execute
+                        </button>
+
+                    </div>
 
                 </div>
             `;
@@ -3184,6 +3260,105 @@ document.addEventListener("DOMContentLoaded", () => {
                                 .operatorAction;
 
 
+                        if (
+                            operation
+                            === "approve"
+                            && control.dataset.confirmed
+                            !== "true"
+                        ) {
+
+                            const confirmation =
+                                operatorControlDetail
+                                    .querySelector(
+                                        "[data-role=\"operator-approval-confirmation\"]"
+                                    );
+
+                            const decisions =
+                                operatorControlDetail
+                                    .querySelector(
+                                        "[data-role=\"operator-decision-actions\"]"
+                                    );
+
+
+                            if (
+                                !confirmation
+                                || !decisions
+                            ) {
+
+                                throw new Error(
+                                    "Approval confirmation UI is unavailable"
+                                );
+                            }
+
+
+                            decisions.hidden =
+                                true;
+
+                            confirmation.hidden =
+                                false;
+
+
+                            if (
+                                operatorControlMessage
+                            ) {
+
+                                operatorControlMessage.hidden =
+                                    false;
+
+                                operatorControlMessage.textContent =
+                                    "Human confirmation required before execution.";
+                            }
+
+
+                            return;
+                        }
+
+
+                        if (
+                            operation
+                            === "approve"
+                        ) {
+
+                            delete control.dataset
+                                .confirmed;
+
+                            const confirmation =
+                                operatorControlDetail
+                                    .querySelector(
+                                        "[data-role=\"operator-approval-confirmation\"]"
+                                    );
+
+                            const decisions =
+                                operatorControlDetail
+                                    .querySelector(
+                                        "[data-role=\"operator-decision-actions\"]"
+                                    );
+
+
+                            if (confirmation) {
+
+                                confirmation.hidden =
+                                    true;
+                            }
+
+
+                            if (decisions) {
+
+                                decisions.hidden =
+                                    false;
+                            }
+
+
+                            if (
+                                operatorControlMessage
+                            ) {
+
+                                operatorControlMessage.hidden =
+                                    true;
+                            }
+                        }
+
+
                         controls.forEach(
                             item => {
                                 item.disabled = true;
@@ -3300,6 +3475,120 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                 );
             }
+
+
+        const confirmationControls = [
+            ...operatorControlDetail
+                .querySelectorAll(
+                    "[data-operator-confirm]"
+                )
+        ];
+
+        const approvalControl =
+            operatorControlDetail
+                .querySelector(
+                    "[data-operator-action=\"approve\"]"
+                );
+
+        const decisionActions =
+            operatorControlDetail
+                .querySelector(
+                    "[data-role=\"operator-decision-actions\"]"
+                );
+
+        const approvalConfirmation =
+            operatorControlDetail
+                .querySelector(
+                    "[data-role=\"operator-approval-confirmation\"]"
+                );
+
+
+        confirmationControls.forEach(
+            confirmControl => {
+
+                confirmControl.addEventListener(
+                    "click",
+                    () => {
+
+                        const decision =
+                            confirmControl.dataset
+                                .operatorConfirm;
+
+
+                        if (
+                            decision
+                            === "cancel"
+                        ) {
+
+                            if (
+                                approvalConfirmation
+                            ) {
+
+                                approvalConfirmation.hidden =
+                                    true;
+                            }
+
+
+                            if (
+                                decisionActions
+                            ) {
+
+                                decisionActions.hidden =
+                                    false;
+                            }
+
+
+                            if (
+                                operatorControlMessage
+                            ) {
+
+                                operatorControlMessage.hidden =
+                                    true;
+                            }
+
+
+                            return;
+                        }
+
+
+                        if (
+                            decision
+                            !== "execute"
+                        ) {
+
+                            return;
+                        }
+
+
+                        if (
+                            !approvalControl
+                        ) {
+
+                            throw new Error(
+                                "Approval control is unavailable"
+                            );
+                        }
+
+
+                        confirmationControls.forEach(
+                            item => {
+
+                                item.disabled =
+                                    true;
+                            }
+                        );
+
+
+                        approvalControl.dataset
+                            .confirmed =
+                                "true";
+
+                        approvalControl.click();
+                    }
+                );
+            }
+        );
+
         );
     }
 

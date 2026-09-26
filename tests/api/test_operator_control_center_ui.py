@@ -231,3 +231,121 @@ def test_operator_session_has_explicit_locked_and_unlocked_states():
         "Operator locked."
         in js
     )
+
+
+
+def test_control_center_requires_explicit_approval_confirmation():
+
+    js = normalized(JS)
+
+    control_start = js.index(
+        "ATLAS OPERATOR CONTROL CENTER V1"
+    )
+
+    control_end = js.index(
+        "form.addEventListener",
+        control_start,
+    )
+
+    control = js[
+        control_start:
+        control_end
+    ]
+
+    confirmation_gate = (
+        "control.dataset.confirmed "
+        "!== \"true\""
+    )
+
+    approve_endpoint = (
+        "/approve"
+    )
+
+    assert (
+        confirmation_gate
+        in control
+    )
+
+    assert (
+        "Confirm infrastructure execution"
+        in control
+    )
+
+    assert (
+        "Confirm & execute"
+        in control
+    )
+
+    assert (
+        "data-operator-confirm=\"cancel\""
+        in control
+    )
+
+    assert (
+        "data-operator-confirm=\"execute\""
+        in control
+    )
+
+    assert (
+        control.index(
+            confirmation_gate
+        )
+        < control.index(
+            approve_endpoint
+        )
+    )
+
+
+def test_control_center_confirmation_shows_execution_identity():
+
+    js = normalized(JS)
+    css = normalized(CSS)
+
+    control_start = js.index(
+        "ATLAS OPERATOR CONTROL CENTER V1"
+    )
+
+    control_end = js.index(
+        "form.addEventListener",
+        control_start,
+    )
+
+    control = js[
+        control_start:
+        control_end
+    ]
+
+    assert (
+        "action.action"
+        in control
+    )
+
+    assert (
+        "action.target"
+        in control
+    )
+
+    assert (
+        "action.risk"
+        in control
+    )
+
+    assert (
+        "approvalControl.dataset .confirmed"
+        in control
+    )
+
+    assert (
+        ".operator-approval-confirmation"
+        in css
+    )
+
+    assert (
+        ".operator-confirmation-grid"
+        in css
+    )
+
+    assert (
+        "window.confirm("
+        not in control
+    )
