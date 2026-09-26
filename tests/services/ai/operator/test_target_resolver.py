@@ -264,3 +264,62 @@ def test_unknown_target_fails_closed():
     )
 
     assert result.status == "NOT_FOUND"
+
+
+
+def test_canonical_asset_name_outranks_derived_service_alias():
+
+    result = resolver(
+        asset(
+            asset_id="lxc-103",
+            name="olivasat",
+            asset_type="LXC",
+            serial="103",
+            model="Linux Container",
+            vendor="Proxmox",
+        ),
+        asset(
+            asset_id="service-olivasat",
+            name="olivasat.service",
+            asset_type="SERVICE",
+            serial="olivasat:olivasat.service",
+            model="Systemd Service",
+            vendor="Linux",
+        ),
+    ).resolve(
+        "olivasat"
+    )
+
+    assert result.status == "RESOLVED"
+    assert result.resource_type == "lxc"
+    assert result.target == "103"
+    assert result.asset_name == "olivasat"
+
+
+def test_explicit_service_type_can_use_derived_service_alias():
+
+    result = resolver(
+        asset(
+            asset_id="lxc-103",
+            name="olivasat",
+            asset_type="LXC",
+            serial="103",
+            model="Linux Container",
+            vendor="Proxmox",
+        ),
+        asset(
+            asset_id="service-olivasat",
+            name="olivasat.service",
+            asset_type="SERVICE",
+            serial="olivasat:olivasat.service",
+            model="Systemd Service",
+            vendor="Linux",
+        ),
+    ).resolve(
+        "olivasat",
+        requested_resource_type="service",
+    )
+
+    assert result.status == "RESOLVED"
+    assert result.resource_type == "service"
+    assert result.target == "olivasat.service"

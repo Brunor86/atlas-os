@@ -360,18 +360,62 @@ class OperationTargetResolver:
                 continue
 
 
-            if (
-                normalized_query
-                not in self._aliases(
+            aliases = (
+                self._aliases(
                     asset,
                     resource_type,
                 )
+            )
+
+
+            if (
+                normalized_query
+                not in aliases
             ):
                 continue
 
 
+            identity = getattr(
+                asset,
+                "identity",
+                None,
+            )
+
+
+            canonical_aliases = {
+                self._normalize(
+                    getattr(
+                        asset,
+                        "name",
+                        "",
+                    )
+                ),
+                self._normalize(
+                    getattr(
+                        identity,
+                        "serial",
+                        "",
+                    )
+                ),
+            }
+
+
+            canonical_aliases.discard(
+                ""
+            )
+
+
+            match_rank = (
+                0
+                if normalized_query
+                in canonical_aliases
+                else 1
+            )
+
+
             all_matches.append(
                 (
+                    match_rank,
                     asset,
                     resource_type,
                 )
@@ -395,7 +439,7 @@ class OperationTargetResolver:
             typed_matches = [
                 item
                 for item in all_matches
-                if item[1]
+                if item[2]
                 == requested_type
             ]
 
@@ -404,7 +448,7 @@ class OperationTargetResolver:
                 actual_types = tuple(
                     sorted(
                         {
-                            item[1]
+                            item[2]
                             for item
                             in all_matches
                         }
@@ -424,9 +468,41 @@ class OperationTargetResolver:
             all_matches = typed_matches
 
 
+        # Canonical identity always outranks a derived shorthand.
+        #
+        # Example:
+        #
+        #   olivasat
+        #       exact name -> LXC 103
+        #
+        #   olivasat.service
+        #       derived shorthand -> olivasat
+        #
+        # Without an explicit resource type, the exact asset
+        # identity must win deterministically.
+        #
+        # When the user explicitly requests resource_type=service,
+        # type filtering above occurs first and therefore preserves
+        # the useful service shorthand.
+        best_rank = min(
+            item[0]
+            for item
+            in all_matches
+        )
+
+
+        all_matches = [
+            item
+            for item
+            in all_matches
+            if item[0]
+            == best_rank
+        ]
+
+
         unique = {}
 
-        for asset, resource_type in all_matches:
+        for _, asset, resource_type in all_matches:
 
             unique[
                 str(

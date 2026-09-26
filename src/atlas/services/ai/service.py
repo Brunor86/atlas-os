@@ -899,8 +899,8 @@ class AIService:
                             print(
                                 "[AI OPERATION TARGET] "
                                 "status=RESOLVED "
-                                f"requested={operation_materialized.get(requested_target)} "
-                                f"asset={operation_materialized.get(asset_name)} "
+                                f"requested={operation_materialized.get("requested_target")} "
+                                f"asset={operation_materialized.get("asset_name")} "
                                 f"resource_type={operation_plan.resource_type} "
                                 f"target={operation_plan.target}"
                             )
@@ -910,9 +910,9 @@ class AIService:
 
                             print(
                                 "[AI OPERATION TARGET] "
-                                f"status={operation_materialized.get(status)} "
-                                f"requested={operation_materialized.get(requested_target)} "
-                                f"reason={operation_materialized.get(reason)}"
+                                f"status={operation_materialized.get("status")} "
+                                f"requested={operation_materialized.get("requested_target")} "
+                                f"reason={operation_materialized.get("reason")}"
                             )
 
 
