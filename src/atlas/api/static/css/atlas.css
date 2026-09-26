@@ -4446,6 +4446,70 @@ body {
 }
 
 
+
+.operator-control-auth {
+    display: flex;
+    align-items: center;
+
+    gap: 7px;
+}
+
+
+.operator-control-auth input {
+    min-width: 160px;
+
+    padding: 8px 10px;
+
+    border: 1px solid var(--border);
+    border-radius: 10px;
+
+    background: white;
+
+    font-size: 10px;
+}
+
+
+.operator-auth-state {
+    display: inline-flex;
+    align-items: center;
+
+    padding: 5px 8px;
+
+    border-radius: 999px;
+
+    font-size: 9px;
+    font-weight: 750;
+
+    white-space: nowrap;
+}
+
+
+.operator-auth-state.locked {
+    color: #8a5a00;
+
+    background: rgba(255, 170, 0, .12);
+}
+
+
+.operator-auth-state.unlocked {
+    color: #20853a;
+
+    background: rgba(40, 167, 69, .10);
+}
+
+
+.operator-control-auth .operator-lock {
+    background: transparent;
+    color: var(--text);
+}
+
+
+.operator-control-toolbar button:disabled {
+    cursor: default;
+    opacity: .55;
+}
+
+
 @media (max-width: 850px) {
 
     .operator-control-header,

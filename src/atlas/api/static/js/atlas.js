@@ -1081,37 +1081,56 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    function getOperatorToken() {
+    function getStoredOperatorToken() {
 
-        let token = String(
+        return String(
             sessionStorage.getItem(
                 OPERATOR_TOKEN_KEY
             )
             || ""
         ).trim();
+    }
 
 
-        if (!token) {
+    function setOperatorToken(
+        token
+    ) {
 
-            token = String(
-                window.prompt(
-                    "ATLAS Operator token"
-                )
+        const normalized =
+            String(
+                token
                 || ""
             ).trim();
 
 
-            if (!token) {
+        if (!normalized) {
 
-                throw new Error(
-                    "Operator authentication required"
-                );
-            }
+            throw new Error(
+                "Operator authentication required"
+            );
+        }
 
 
-            sessionStorage.setItem(
-                OPERATOR_TOKEN_KEY,
-                token
+        sessionStorage.setItem(
+            OPERATOR_TOKEN_KEY,
+            normalized
+        );
+
+
+        return normalized;
+    }
+
+
+    function getOperatorToken() {
+
+        const token =
+            getStoredOperatorToken();
+
+
+        if (!token) {
+
+            throw new Error(
+                "Operator authentication required"
             );
         }
 
@@ -1155,6 +1174,16 @@ document.addEventListener("DOMContentLoaded", () => {
         ) {
 
             clearOperatorToken();
+
+            if (
+                typeof lockOperatorControlCenter
+                === "function"
+            ) {
+
+                lockOperatorControlCenter(
+                    "Operator authentication expired. Unlock again."
+                );
+            }
         }
 
 
@@ -2382,6 +2411,26 @@ document.addEventListener("DOMContentLoaded", () => {
             "operatorControlRefresh"
         );
 
+    const operatorControlAuthState =
+        document.getElementById(
+            "operatorControlAuthState"
+        );
+
+    const operatorControlToken =
+        document.getElementById(
+            "operatorControlToken"
+        );
+
+    const operatorControlUnlock =
+        document.getElementById(
+            "operatorControlUnlock"
+        );
+
+    const operatorControlLock =
+        document.getElementById(
+            "operatorControlLock"
+        );
+
     const operatorControlFilter =
         document.getElementById(
             "operatorControlFilter"
@@ -2413,6 +2462,264 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
     let operatorControlLoaded = false;
+
+
+    function setOperatorControlAuthState(
+        unlocked
+    ) {
+
+        if (operatorControlAuthState) {
+
+            operatorControlAuthState.textContent =
+                unlocked
+                ? "Unlocked"
+                : "Locked";
+
+            operatorControlAuthState.className =
+                "operator-auth-state "
+                + (
+                    unlocked
+                    ? "unlocked"
+                    : "locked"
+                );
+        }
+
+
+        if (operatorControlToken) {
+
+            operatorControlToken.hidden =
+                unlocked;
+
+            if (!unlocked) {
+
+                operatorControlToken.value =
+                    "";
+            }
+        }
+
+
+        if (operatorControlUnlock) {
+
+            operatorControlUnlock.hidden =
+                unlocked;
+        }
+
+
+        if (operatorControlLock) {
+
+            operatorControlLock.hidden =
+                !unlocked;
+        }
+
+
+        if (operatorControlRefresh) {
+
+            operatorControlRefresh.disabled =
+                !unlocked;
+
+            operatorControlRefresh.textContent =
+                "Refresh";
+        }
+    }
+
+
+    function lockOperatorControlCenter(
+        message = (
+            "Operator authentication is required "
+            + "to inspect operational history."
+        )
+    ) {
+
+        clearOperatorToken();
+
+        operatorControlLoaded = false;
+
+        setOperatorControlAuthState(
+            false
+        );
+
+
+        if (operatorControlSummary) {
+
+            operatorControlSummary.hidden =
+                true;
+        }
+
+
+        if (operatorControlBody) {
+
+            operatorControlBody.hidden =
+                true;
+        }
+
+
+        if (operatorControlList) {
+
+            operatorControlList.innerHTML =
+                "";
+        }
+
+
+        if (operatorControlDetail) {
+
+            operatorControlDetail.innerHTML = `
+                <div class="operator-control-empty">
+                    Unlock Operator to inspect
+                    operational state.
+                </div>
+            `;
+        }
+
+
+        if (operatorControlMessage) {
+
+            operatorControlMessage.hidden =
+                false;
+
+            operatorControlMessage.textContent =
+                message;
+        }
+    }
+
+
+    async function unlockOperatorControlCenter() {
+
+        if (!operatorControlToken) {
+            return;
+        }
+
+
+        const token =
+            String(
+                operatorControlToken.value
+                || ""
+            ).trim();
+
+
+        if (!token) {
+
+            if (operatorControlMessage) {
+
+                operatorControlMessage.hidden =
+                    false;
+
+                operatorControlMessage.textContent =
+                    "Enter the Operator token to unlock.";
+            }
+
+            operatorControlToken.focus();
+
+            return;
+        }
+
+
+        if (operatorControlUnlock) {
+
+            operatorControlUnlock.disabled =
+                true;
+
+            operatorControlUnlock.textContent =
+                "Unlocking…";
+        }
+
+
+        operatorControlToken.disabled =
+            true;
+
+
+        try {
+
+            const headers =
+                new Headers();
+
+            headers.set(
+                "Authorization",
+                "Bearer " + token
+            );
+
+
+            const response =
+                await fetch(
+                    "/api/operator/actions?limit=1",
+                    {
+                        headers,
+                    }
+                );
+
+
+            let payload = {};
+
+            try {
+
+                payload =
+                    await response.json();
+            }
+
+            catch (error) {
+
+                payload = {};
+            }
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    payload.detail
+                    || "Operator authentication failed"
+                );
+            }
+
+
+            setOperatorToken(
+                token
+            );
+
+            operatorControlToken.value =
+                "";
+
+            setOperatorControlAuthState(
+                true
+            );
+
+
+            await loadOperatorControlCenter();
+
+        }
+
+        catch (error) {
+
+            clearOperatorToken();
+
+            setOperatorControlAuthState(
+                false
+            );
+
+
+            if (operatorControlMessage) {
+
+                operatorControlMessage.hidden =
+                    false;
+
+                operatorControlMessage.textContent =
+                    error.message;
+            }
+        }
+
+        finally {
+
+            operatorControlToken.disabled =
+                false;
+
+            if (operatorControlUnlock) {
+
+                operatorControlUnlock.disabled =
+                    false;
+
+                operatorControlUnlock.textContent =
+                    "Unlock";
+            }
+        }
+    }
 
 
     function operatorStateClass(
@@ -3214,12 +3521,57 @@ document.addEventListener("DOMContentLoaded", () => {
             if (operatorControlRefresh) {
 
                 operatorControlRefresh.disabled =
-                    false;
+                    !getStoredOperatorToken();
 
                 operatorControlRefresh.textContent =
                     "Refresh";
             }
         }
+    }
+
+
+    if (operatorControlUnlock) {
+
+        operatorControlUnlock.addEventListener(
+            "click",
+            unlockOperatorControlCenter
+        );
+    }
+
+
+    if (operatorControlToken) {
+
+        operatorControlToken.addEventListener(
+            "keydown",
+            event => {
+
+                if (
+                    event.key
+                    === "Enter"
+                ) {
+
+                    event.preventDefault();
+
+                    unlockOperatorControlCenter();
+                }
+            }
+        );
+    }
+
+
+    if (operatorControlLock) {
+
+        operatorControlLock.addEventListener(
+            "click",
+            () => {
+
+                lockOperatorControlCenter(
+                    "Operator locked. "
+                    + "No operational action can be approved "
+                    + "from this browser session."
+                );
+            }
+        );
     }
 
 
@@ -3244,6 +3596,25 @@ document.addEventListener("DOMContentLoaded", () => {
                     loadOperatorControlCenter();
                 }
             }
+        );
+    }
+
+
+    if (
+        getStoredOperatorToken()
+    ) {
+
+        setOperatorControlAuthState(
+            true
+        );
+
+        loadOperatorControlCenter();
+    }
+
+    else {
+
+        setOperatorControlAuthState(
+            false
         );
     }
 

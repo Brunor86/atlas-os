@@ -138,3 +138,96 @@ def test_pending_actions_wire_both_decision_controls():
         'operation === "reverify"'
         in control
     )
+
+
+
+def test_operator_auth_uses_explicit_inline_session_controls():
+
+    js = normalized(JS)
+    html = normalized(HTML)
+
+    assert (
+        "id=\"operatorControlAuthState\""
+        in html
+    )
+
+    assert (
+        "id=\"operatorControlToken\""
+        in html
+    )
+
+    assert (
+        "type=\"password\""
+        in html
+    )
+
+    assert (
+        "id=\"operatorControlUnlock\""
+        in html
+    )
+
+    assert (
+        "id=\"operatorControlLock\""
+        in html
+    )
+
+    assert (
+        "window.prompt("
+        not in js
+    )
+
+    assert (
+        "getStoredOperatorToken"
+        in js
+    )
+
+    assert (
+        "unlockOperatorControlCenter"
+        in js
+    )
+
+    assert (
+        "lockOperatorControlCenter"
+        in js
+    )
+
+
+def test_operator_session_has_explicit_locked_and_unlocked_states():
+
+    js = normalized(JS)
+    css = normalized(CSS)
+
+    assert (
+        ".operator-auth-state.locked"
+        in css
+    )
+
+    assert (
+        ".operator-auth-state.unlocked"
+        in css
+    )
+
+    assert (
+        "setOperatorControlAuthState"
+        in js
+    )
+
+    assert (
+        "sessionStorage.getItem"
+        in js
+    )
+
+    assert (
+        "sessionStorage.setItem"
+        in js
+    )
+
+    assert (
+        "sessionStorage.removeItem"
+        in js
+    )
+
+    assert (
+        "Operator locked."
+        in js
+    )
