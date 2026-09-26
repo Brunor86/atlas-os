@@ -23,9 +23,48 @@
 
         <div class="operator-control-toolbar">
 
+            <div
+                class="operator-control-auth"
+                id="operatorControlAuth"
+            >
+
+                <span
+                    class="operator-auth-state locked"
+                    id="operatorControlAuthState"
+                >
+                    Locked
+                </span>
+
+                <input
+                    type="password"
+                    id="operatorControlToken"
+                    autocomplete="off"
+                    aria-label="ATLAS Operator token"
+                    placeholder="Operator token"
+                >
+
+                <button
+                    type="button"
+                    id="operatorControlUnlock"
+                >
+                    Unlock
+                </button>
+
+                <button
+                    type="button"
+                    id="operatorControlLock"
+                    class="operator-lock"
+                    hidden
+                >
+                    Lock
+                </button>
+
+            </div>
+
             <select
                 id="operatorControlFilter"
                 aria-label="Filter operator actions"
+                disabled
             >
                 <option value="ALL">
                     All states
@@ -55,8 +94,9 @@
             <button
                 type="button"
                 id="operatorControlRefresh"
+                disabled
             >
-                Open Operator
+                Refresh
             </button>
 
         </div>

@@ -4035,6 +4035,120 @@ body {
 
 
 
+.atlas-operator-confirmation {
+    margin-top: 12px;
+    padding: 12px;
+
+    border:
+        1px solid rgba(138, 90, 0, .22);
+
+    border-radius: 11px;
+
+    background:
+        rgba(255, 170, 0, .08);
+}
+
+
+.atlas-operator-confirmation[hidden] {
+    display: none !important;
+}
+
+
+.atlas-operator-confirmation > strong {
+    display: block;
+
+    font-size: 11px;
+}
+
+
+.atlas-operator-confirmation > span {
+    display: block;
+
+    margin-top: 4px;
+
+    color: var(--muted);
+
+    font-size: 9px;
+    line-height: 1.45;
+}
+
+
+.atlas-operator-confirmation-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    gap: 7px;
+
+    margin-top: 10px;
+}
+
+
+.atlas-operator-confirmation-grid > div {
+    padding: 8px;
+
+    background:
+        rgba(255, 255, 255, .65);
+
+    border-radius: 8px;
+}
+
+
+.atlas-operator-confirmation-grid small {
+    display: block;
+
+    margin-bottom: 3px;
+
+    color: var(--muted);
+
+    font-size: 8px;
+}
+
+
+.atlas-operator-confirmation-grid strong {
+    display: block;
+
+    overflow: hidden;
+
+    font-size: 9px;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+.atlas-operator-confirmation-actions {
+    display: flex;
+    justify-content: flex-end;
+
+    gap: 7px;
+
+    margin-top: 10px;
+}
+
+
+.atlas-operator-confirmation-actions button {
+    padding: 8px 13px;
+
+    border: 1px solid var(--border);
+    border-radius: 9px;
+
+    background: transparent;
+
+    cursor: pointer;
+
+    font-size: 10px;
+}
+
+
+.atlas-operator-confirmation-actions
+.atlas-operator-approve {
+    background: var(--text);
+    color: white;
+}
+
+
 /* ============================================================
    ATLAS OPERATOR · HIDDEN STATE FIX
    ============================================================ */
@@ -4138,6 +4252,12 @@ body {
 }
 
 
+.operator-control-summary[hidden],
+.operator-control-body[hidden] {
+    display: none !important;
+}
+
+
 .operator-control-body {
     display: grid;
 
@@ -4197,6 +4317,15 @@ body {
 
 .operator-operation-row:hover {
     background: rgba(0, 0, 0, .025);
+}
+
+
+.operator-operation-row.selected {
+    background:
+        rgba(0, 0, 0, .055);
+
+    box-shadow:
+        inset 3px 0 0 var(--text);
 }
 
 
@@ -4399,6 +4528,82 @@ body {
 }
 
 
+
+.operator-approval-confirmation {
+    margin-top: 12px;
+    padding: 12px;
+
+    border: 1px solid rgba(138, 90, 0, .22);
+    border-radius: 11px;
+
+    background: rgba(255, 170, 0, .08);
+}
+
+
+.operator-approval-confirmation[hidden] {
+    display: none !important;
+}
+
+
+.operator-approval-confirmation > strong {
+    display: block;
+
+    font-size: 11px;
+}
+
+
+.operator-approval-confirmation > p {
+    margin: 4px 0 10px;
+
+    color: var(--muted);
+
+    font-size: 9px;
+    line-height: 1.45;
+}
+
+
+.operator-confirmation-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    gap: 7px;
+}
+
+
+.operator-confirmation-grid > div {
+    padding: 8px;
+
+    background: rgba(255, 255, 255, .65);
+
+    border-radius: 8px;
+}
+
+
+.operator-confirmation-grid small {
+    display: block;
+
+    margin-bottom: 3px;
+
+    color: var(--muted);
+
+    font-size: 8px;
+}
+
+
+.operator-confirmation-grid strong {
+    display: block;
+
+    overflow: hidden;
+
+    font-size: 9px;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
 .operator-audit {
     margin-top: 15px;
 }
@@ -4443,6 +4648,119 @@ body {
     background: rgba(0, 0, 0, .025);
 
     border-radius: 10px;
+}
+
+
+
+.operator-control-auth {
+    display: flex;
+    align-items: center;
+
+    gap: 7px;
+}
+
+
+.operator-control-auth input {
+    min-width: 160px;
+
+    padding: 8px 10px;
+
+    border: 1px solid var(--border);
+    border-radius: 10px;
+
+    background: white;
+
+    font-size: 10px;
+}
+
+
+.operator-auth-state {
+    display: inline-flex;
+    align-items: center;
+
+    padding: 5px 8px;
+
+    border-radius: 999px;
+
+    font-size: 9px;
+    font-weight: 750;
+
+    white-space: nowrap;
+}
+
+
+.operator-auth-state.locked {
+    color: #8a5a00;
+
+    background: rgba(255, 170, 0, .12);
+}
+
+
+.operator-auth-state.unlocked {
+    color: #20853a;
+
+    background: rgba(40, 167, 69, .10);
+}
+
+
+.operator-control-auth .operator-lock {
+    background: transparent;
+    color: var(--text);
+}
+
+
+.operator-control-toolbar button:disabled {
+    cursor: default;
+    opacity: .55;
+}
+
+
+
+.operator-summary-freshness {
+    margin-left: auto;
+
+    color: var(--muted);
+
+    font-size: 9px;
+    font-weight: 600;
+}
+
+
+@media (max-width: 850px) {
+
+    .operator-control-auth {
+        width: 100%;
+
+        flex-wrap: wrap;
+    }
+
+
+    .operator-control-auth input {
+        flex: 1 1 220px;
+
+        min-width: 0;
+    }
+
+
+    .operator-summary-freshness {
+        margin-left: 0;
+    }
+}
+
+
+@media (max-width: 520px) {
+
+    .operator-control-auth input {
+        width: 100%;
+
+        flex-basis: 100%;
+    }
+
+
+    .operator-confirmation-grid,
+    .atlas-operator-confirmation-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 

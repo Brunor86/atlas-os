@@ -138,3 +138,493 @@ def test_pending_actions_wire_both_decision_controls():
         'operation === "reverify"'
         in control
     )
+
+
+
+def test_operator_auth_uses_explicit_inline_session_controls():
+
+    js = normalized(JS)
+    html = normalized(HTML)
+
+    assert (
+        "id=\"operatorControlAuthState\""
+        in html
+    )
+
+    assert (
+        "id=\"operatorControlToken\""
+        in html
+    )
+
+    assert (
+        "type=\"password\""
+        in html
+    )
+
+    assert (
+        "id=\"operatorControlUnlock\""
+        in html
+    )
+
+    assert (
+        "id=\"operatorControlLock\""
+        in html
+    )
+
+    assert (
+        "window.prompt("
+        not in js
+    )
+
+    assert (
+        "getStoredOperatorToken"
+        in js
+    )
+
+    assert (
+        "unlockOperatorControlCenter"
+        in js
+    )
+
+    assert (
+        "lockOperatorControlCenter"
+        in js
+    )
+
+
+def test_operator_session_has_explicit_locked_and_unlocked_states():
+
+    js = normalized(JS)
+    css = normalized(CSS)
+
+    assert (
+        ".operator-auth-state.locked"
+        in css
+    )
+
+    assert (
+        ".operator-auth-state.unlocked"
+        in css
+    )
+
+    assert (
+        "setOperatorControlAuthState"
+        in js
+    )
+
+    assert (
+        "sessionStorage.getItem"
+        in js
+    )
+
+    assert (
+        "sessionStorage.setItem"
+        in js
+    )
+
+    assert (
+        "sessionStorage.removeItem"
+        in js
+    )
+
+    assert (
+        "Operator locked."
+        in js
+    )
+
+
+
+def test_control_center_requires_explicit_approval_confirmation():
+
+    js = normalized(JS)
+
+    control_start = js.index(
+        "ATLAS OPERATOR CONTROL CENTER V1"
+    )
+
+    control_end = js.index(
+        "form.addEventListener",
+        control_start,
+    )
+
+    control = js[
+        control_start:
+        control_end
+    ]
+
+    confirmation_gate = (
+        "control.dataset.confirmed "
+        "!== \"true\""
+    )
+
+    approve_endpoint = (
+        "/approve"
+    )
+
+    assert (
+        confirmation_gate
+        in control
+    )
+
+    assert (
+        "Confirm infrastructure execution"
+        in control
+    )
+
+    assert (
+        "Confirm & execute"
+        in control
+    )
+
+    assert (
+        "data-operator-confirm=\"cancel\""
+        in control
+    )
+
+    assert (
+        "data-operator-confirm=\"execute\""
+        in control
+    )
+
+    assert (
+        control.index(
+            confirmation_gate
+        )
+        < control.index(
+            approve_endpoint
+        )
+    )
+
+
+def test_control_center_confirmation_shows_execution_identity():
+
+    js = normalized(JS)
+    css = normalized(CSS)
+
+    control_start = js.index(
+        "ATLAS OPERATOR CONTROL CENTER V1"
+    )
+
+    control_end = js.index(
+        "form.addEventListener",
+        control_start,
+    )
+
+    control = js[
+        control_start:
+        control_end
+    ]
+
+    assert (
+        "action.action"
+        in control
+    )
+
+    assert (
+        "action.target"
+        in control
+    )
+
+    assert (
+        "action.risk"
+        in control
+    )
+
+    assert (
+        "approvalControl.dataset .confirmed"
+        in control
+    )
+
+    assert (
+        ".operator-approval-confirmation"
+        in css
+    )
+
+    assert (
+        ".operator-confirmation-grid"
+        in css
+    )
+
+    assert (
+        "window.confirm("
+        not in control
+    )
+
+
+
+def test_ask_atlas_operator_card_requires_explicit_execution_confirmation():
+
+    js = normalized(JS)
+
+    start = js.index(
+        "function renderOperatorCard"
+    )
+
+    end = js.index(
+        "async function startOperator",
+        start,
+    )
+
+    card = js[
+        start:
+        end
+    ]
+
+    confirmation = (
+        "Confirm & execute"
+    )
+
+    gate = (
+        "approve.dataset.confirmed "
+        "!== \"true\""
+    )
+
+    endpoint = (
+        "/approve"
+    )
+
+    assert confirmation in card
+    assert gate in card
+    assert endpoint in card
+
+    assert (
+        card.index(confirmation)
+        < card.index(gate)
+        < card.index(endpoint)
+    )
+
+    assert (
+        "approval-cancel"
+        in card
+    )
+
+    assert (
+        "approval-confirm"
+        in card
+    )
+
+
+def test_ask_atlas_confirmation_exposes_action_target_and_risk():
+
+    js = normalized(JS)
+    css = normalized(CSS)
+
+    start = js.index(
+        "function renderOperatorCard"
+    )
+
+    end = js.index(
+        "async function startOperator",
+        start,
+    )
+
+    card = js[
+        start:
+        end
+    ]
+
+    assert (
+        "Confirm infrastructure execution"
+        in card
+    )
+
+    assert (
+        "${action}"
+        in card
+    )
+
+    assert (
+        "${target}"
+        in card
+    )
+
+    assert (
+        "${risk}"
+        in card
+    )
+
+    assert (
+        ".atlas-operator-confirmation"
+        in css
+    )
+
+    assert (
+        ".atlas-operator-confirmation-grid"
+        in css
+    )
+
+    assert (
+        "window.confirm("
+        not in card
+    )
+
+
+
+def test_ask_atlas_proposal_syncs_into_unlocked_control_center():
+
+    js = normalized(JS)
+
+    assert (
+        "async function syncOperatorControlProposal"
+        in js
+    )
+
+    assert (
+        "await loadOperatorControlCenter()"
+        in js
+    )
+
+    assert (
+        "await loadOperatorControlDetail( normalizedId )"
+        in js
+    )
+
+    assert (
+        "syncOperatorControlProposal( request.id )"
+        in js
+    )
+
+    assert (
+        "!getStoredOperatorToken()"
+        in js
+    )
+
+
+def test_control_center_tracks_selected_operation_visually():
+
+    js = normalized(JS)
+    css = normalized(CSS)
+
+    assert (
+        "classList.toggle( \"selected\""
+        in js
+    )
+
+    assert (
+        ".operator-operation-row.selected"
+        in css
+    )
+
+    assert (
+        "Ask ATLAS proposal loaded in Operator Control Center."
+        in js
+    )
+
+
+
+def test_control_center_prioritizes_operational_attention_states():
+
+    js = normalized(JS)
+
+    assert (
+        "function operatorControlPriority"
+        in js
+    )
+
+    pending = js.index(
+        "case \"PENDING_APPROVAL\""
+    )
+
+    recovery = js.index(
+        "case \"RECOVERY_REQUIRED\""
+    )
+
+    failed = js.index(
+        "case \"EXECUTION_FAILED\""
+    )
+
+    assert (
+        pending
+        < recovery
+        < failed
+    )
+
+    assert (
+        "operatorControlPriority( left.state )"
+        in js
+    )
+
+    assert (
+        "operatorControlPriority( right.state )"
+        in js
+    )
+
+
+def test_control_center_shows_freshness_and_mobile_polish():
+
+    js = normalized(JS)
+    css = normalized(CSS)
+
+    assert (
+        "operator-summary-freshness"
+        in js
+    )
+
+    assert (
+        "\"Updated \""
+        in js
+    )
+
+    assert (
+        "new Date() .toISOString()"
+        in js
+    )
+
+    assert (
+        ".operator-summary-freshness"
+        in css
+    )
+
+    assert (
+        ".operator-control-auth input"
+        in css
+    )
+
+    assert (
+        ".operator-confirmation-grid"
+        in css
+    )
+
+    assert (
+        ".atlas-operator-confirmation-grid"
+        in css
+    )
+
+
+
+def test_locked_control_center_hides_operational_panels():
+
+    css = normalized(CSS)
+
+    assert (
+        ".operator-control-summary[hidden]"
+        in css
+    )
+
+    assert (
+        ".operator-control-body[hidden]"
+        in css
+    )
+
+    assert (
+        "display: none !important"
+        in css
+    )
+
+
+def test_locked_control_center_disables_operational_filter():
+
+    js = normalized(JS)
+    html = normalized(HTML)
+
+    assert (
+        "id=\"operatorControlFilter\" "
+        "aria-label=\"Filter operator actions\" "
+        "disabled"
+        in html
+    )
+
+    assert (
+        "operatorControlFilter.disabled = !unlocked"
+        in js
+    )

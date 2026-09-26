@@ -1081,37 +1081,56 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    function getOperatorToken() {
+    function getStoredOperatorToken() {
 
-        let token = String(
+        return String(
             sessionStorage.getItem(
                 OPERATOR_TOKEN_KEY
             )
             || ""
         ).trim();
+    }
 
 
-        if (!token) {
+    function setOperatorToken(
+        token
+    ) {
 
-            token = String(
-                window.prompt(
-                    "ATLAS Operator token"
-                )
+        const normalized =
+            String(
+                token
                 || ""
             ).trim();
 
 
-            if (!token) {
+        if (!normalized) {
 
-                throw new Error(
-                    "Operator authentication required"
-                );
-            }
+            throw new Error(
+                "Operator authentication required"
+            );
+        }
 
 
-            sessionStorage.setItem(
-                OPERATOR_TOKEN_KEY,
-                token
+        sessionStorage.setItem(
+            OPERATOR_TOKEN_KEY,
+            normalized
+        );
+
+
+        return normalized;
+    }
+
+
+    function getOperatorToken() {
+
+        const token =
+            getStoredOperatorToken();
+
+
+        if (!token) {
+
+            throw new Error(
+                "Operator authentication required"
             );
         }
 
@@ -1155,6 +1174,16 @@ document.addEventListener("DOMContentLoaded", () => {
         ) {
 
             clearOperatorToken();
+
+            if (
+                typeof lockOperatorControlCenter
+                === "function"
+            ) {
+
+                lockOperatorControlCenter(
+                    "Operator authentication expired. Unlock again."
+                );
+            }
         }
 
 
@@ -1745,6 +1774,70 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 </div>
 
+
+                <div
+                    class="atlas-operator-confirmation"
+                    data-role="approval-confirmation"
+                    hidden
+                >
+
+                    <strong>
+                        Confirm infrastructure execution
+                    </strong>
+
+                    <span>
+                        Review the governed operation before
+                        ATLAS is allowed to execute it.
+                    </span>
+
+
+                    <div class="atlas-operator-confirmation-grid">
+
+                        <div>
+                            <small>Action</small>
+                            <strong>
+                                ${action}
+                            </strong>
+                        </div>
+
+                        <div>
+                            <small>Target</small>
+                            <strong>
+                                ${target}
+                            </strong>
+                        </div>
+
+                        <div>
+                            <small>Risk</small>
+                            <strong>
+                                ${risk}
+                            </strong>
+                        </div>
+
+                    </div>
+
+
+                    <div class="atlas-operator-confirmation-actions">
+
+                        <button
+                            type="button"
+                            data-role="approval-cancel"
+                        >
+                            Cancel
+                        </button>
+
+                        <button
+                            type="button"
+                            class="atlas-operator-approve"
+                            data-role="approval-confirm"
+                        >
+                            Confirm & execute
+                        </button>
+
+                    </div>
+
+                </div>
+
             </div>
         `;
 
@@ -1753,6 +1846,11 @@ document.addEventListener("DOMContentLoaded", () => {
             answer.querySelector(
                 ".atlas-operator-card"
             );
+
+
+        syncOperatorControlProposal(
+            request.id
+        );
 
         const approve =
             card.querySelector(
@@ -1776,7 +1874,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const actions =
             card.querySelector(
-                '[data-role="actions"]'
+                "[data-role=\"actions\"]"
+            );
+
+        const confirmation =
+            card.querySelector(
+                "[data-role=\"approval-confirmation\"]"
+            );
+
+        const cancelApproval =
+            card.querySelector(
+                "[data-role=\"approval-cancel\"]"
+            );
+
+        const confirmApproval =
+            card.querySelector(
+                "[data-role=\"approval-confirm\"]"
             );
 
 
@@ -1857,9 +1970,89 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
 
+        cancelApproval.addEventListener(
+            "click",
+            () => {
+
+                confirmation.hidden =
+                    true;
+
+                actions.hidden =
+                    false;
+
+
+                updateEvent(
+                    "approval",
+                    "Human approval",
+                    "Waiting for your decision",
+                    "working"
+                );
+            }
+        );
+
+
+        confirmApproval.addEventListener(
+            "click",
+            () => {
+
+                cancelApproval.disabled =
+                    true;
+
+                confirmApproval.disabled =
+                    true;
+
+                approve.dataset
+                    .confirmed =
+                        "true";
+
+                approve.click();
+            }
+        );
+
+
         approve.addEventListener(
             "click",
             async () => {
+
+                if (
+                    approve.dataset.confirmed
+                    !== "true"
+                ) {
+
+                    cancelApproval.disabled =
+                        false;
+
+                    confirmApproval.disabled =
+                        false;
+
+                    actions.hidden =
+                        true;
+
+                    confirmation.hidden =
+                        false;
+
+
+                    updateEvent(
+                        "approval",
+                        "Human approval",
+                        "Explicit execution confirmation required",
+                        "working"
+                    );
+
+
+                    return;
+                }
+
+
+                delete approve.dataset
+                    .confirmed;
+
+                confirmation.hidden =
+                    true;
+
+                actions.hidden =
+                    false;
+
 
                 approve.disabled = true;
                 reject.disabled = true;
@@ -2382,6 +2575,26 @@ document.addEventListener("DOMContentLoaded", () => {
             "operatorControlRefresh"
         );
 
+    const operatorControlAuthState =
+        document.getElementById(
+            "operatorControlAuthState"
+        );
+
+    const operatorControlToken =
+        document.getElementById(
+            "operatorControlToken"
+        );
+
+    const operatorControlUnlock =
+        document.getElementById(
+            "operatorControlUnlock"
+        );
+
+    const operatorControlLock =
+        document.getElementById(
+            "operatorControlLock"
+        );
+
     const operatorControlFilter =
         document.getElementById(
             "operatorControlFilter"
@@ -2413,6 +2626,348 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
     let operatorControlLoaded = false;
+
+
+    function setOperatorControlAuthState(
+        unlocked
+    ) {
+
+        if (operatorControlAuthState) {
+
+            operatorControlAuthState.textContent =
+                unlocked
+                ? "Unlocked"
+                : "Locked";
+
+            operatorControlAuthState.className =
+                "operator-auth-state "
+                + (
+                    unlocked
+                    ? "unlocked"
+                    : "locked"
+                );
+        }
+
+
+        if (operatorControlToken) {
+
+            operatorControlToken.hidden =
+                unlocked;
+
+            if (!unlocked) {
+
+                operatorControlToken.value =
+                    "";
+            }
+        }
+
+
+        if (operatorControlUnlock) {
+
+            operatorControlUnlock.hidden =
+                unlocked;
+        }
+
+
+        if (operatorControlLock) {
+
+            operatorControlLock.hidden =
+                !unlocked;
+        }
+
+
+        if (operatorControlFilter) {
+
+            operatorControlFilter.disabled =
+                !unlocked;
+        }
+
+
+        if (operatorControlRefresh) {
+
+            operatorControlRefresh.disabled =
+                !unlocked;
+
+            operatorControlRefresh.textContent =
+                "Refresh";
+        }
+    }
+
+
+    function lockOperatorControlCenter(
+        message = (
+            "Operator authentication is required "
+            + "to inspect operational history."
+        )
+    ) {
+
+        clearOperatorToken();
+
+        operatorControlLoaded = false;
+
+        setOperatorControlAuthState(
+            false
+        );
+
+
+        if (operatorControlSummary) {
+
+            operatorControlSummary.hidden =
+                true;
+        }
+
+
+        if (operatorControlBody) {
+
+            operatorControlBody.hidden =
+                true;
+        }
+
+
+        if (operatorControlList) {
+
+            operatorControlList.innerHTML =
+                "";
+        }
+
+
+        if (operatorControlDetail) {
+
+            operatorControlDetail.innerHTML = `
+                <div class="operator-control-empty">
+                    Unlock Operator to inspect
+                    operational state.
+                </div>
+            `;
+        }
+
+
+        if (operatorControlMessage) {
+
+            operatorControlMessage.hidden =
+                false;
+
+            operatorControlMessage.textContent =
+                message;
+        }
+    }
+
+
+    async function unlockOperatorControlCenter() {
+
+        if (!operatorControlToken) {
+            return;
+        }
+
+
+        const token =
+            String(
+                operatorControlToken.value
+                || ""
+            ).trim();
+
+
+        if (!token) {
+
+            if (operatorControlMessage) {
+
+                operatorControlMessage.hidden =
+                    false;
+
+                operatorControlMessage.textContent =
+                    "Enter the Operator token to unlock.";
+            }
+
+            operatorControlToken.focus();
+
+            return;
+        }
+
+
+        if (operatorControlUnlock) {
+
+            operatorControlUnlock.disabled =
+                true;
+
+            operatorControlUnlock.textContent =
+                "Unlocking…";
+        }
+
+
+        operatorControlToken.disabled =
+            true;
+
+
+        try {
+
+            const headers =
+                new Headers();
+
+            headers.set(
+                "Authorization",
+                "Bearer " + token
+            );
+
+
+            const response =
+                await fetch(
+                    "/api/operator/actions?limit=1",
+                    {
+                        headers,
+                    }
+                );
+
+
+            let payload = {};
+
+            try {
+
+                payload =
+                    await response.json();
+            }
+
+            catch (error) {
+
+                payload = {};
+            }
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    payload.detail
+                    || "Operator authentication failed"
+                );
+            }
+
+
+            setOperatorToken(
+                token
+            );
+
+            operatorControlToken.value =
+                "";
+
+            setOperatorControlAuthState(
+                true
+            );
+
+
+            await loadOperatorControlCenter();
+
+        }
+
+        catch (error) {
+
+            clearOperatorToken();
+
+            setOperatorControlAuthState(
+                false
+            );
+
+
+            if (operatorControlMessage) {
+
+                operatorControlMessage.hidden =
+                    false;
+
+                operatorControlMessage.textContent =
+                    error.message;
+            }
+        }
+
+        finally {
+
+            operatorControlToken.disabled =
+                false;
+
+            if (operatorControlUnlock) {
+
+                operatorControlUnlock.disabled =
+                    false;
+
+                operatorControlUnlock.textContent =
+                    "Unlock";
+            }
+        }
+    }
+
+
+    async function syncOperatorControlProposal(
+        actionId
+    ) {
+
+        const normalizedId =
+            String(
+                actionId
+                || ""
+            ).trim();
+
+
+        if (
+            !normalizedId
+            || !operatorControlCenter
+            || !getStoredOperatorToken()
+        ) {
+
+            return;
+        }
+
+
+        try {
+
+            await loadOperatorControlCenter();
+
+            await loadOperatorControlDetail(
+                normalizedId
+            );
+
+
+            const rows = [
+                ...operatorControlList
+                    ?.querySelectorAll(
+                        "[data-action-id]"
+                    )
+                || []
+            ];
+
+
+            rows.forEach(
+                row => {
+
+                    row.classList.toggle(
+                        "selected",
+                        row.dataset.actionId
+                            === normalizedId
+                    );
+                }
+            );
+
+
+            if (operatorControlMessage) {
+
+                operatorControlMessage.hidden =
+                    false;
+
+                operatorControlMessage.textContent =
+                    "Ask ATLAS proposal loaded in Operator Control Center.";
+            }
+
+        }
+
+        catch (error) {
+
+            if (operatorControlMessage) {
+
+                operatorControlMessage.hidden =
+                    false;
+
+                operatorControlMessage.textContent =
+                    "Operator proposal sync failed: "
+                    + error.message;
+            }
+        }
+    }
 
 
     function operatorStateClass(
@@ -2668,7 +3223,10 @@ document.addEventListener("DOMContentLoaded", () => {
         ) {
 
             actionControls = `
-                <div class="operator-detail-actions">
+                <div
+                    class="operator-detail-actions"
+                    data-role="operator-decision-actions"
+                >
 
                     <button
                         type="button"
@@ -2684,6 +3242,79 @@ document.addEventListener("DOMContentLoaded", () => {
                     >
                         Approve
                     </button>
+
+                </div>
+
+
+                <div
+                    class="operator-approval-confirmation"
+                    data-role="operator-approval-confirmation"
+                    hidden
+                >
+
+                    <strong>
+                        Confirm infrastructure execution
+                    </strong>
+
+                    <p>
+                        Review the operation before ATLAS
+                        is allowed to execute it.
+                    </p>
+
+
+                    <div class="operator-confirmation-grid">
+
+                        <div>
+                            <small>Action</small>
+                            <strong>
+                                ${escapeOperatorHTML(
+                                    action.action
+                                    || "operation"
+                                )}
+                            </strong>
+                        </div>
+
+                        <div>
+                            <small>Target</small>
+                            <strong>
+                                ${escapeOperatorHTML(
+                                    action.target
+                                    || "—"
+                                )}
+                            </strong>
+                        </div>
+
+                        <div>
+                            <small>Risk</small>
+                            <strong>
+                                ${escapeOperatorHTML(
+                                    action.risk
+                                    || "UNKNOWN"
+                                )}
+                            </strong>
+                        </div>
+
+                    </div>
+
+
+                    <div class="operator-detail-actions">
+
+                        <button
+                            type="button"
+                            data-operator-confirm="cancel"
+                        >
+                            Cancel
+                        </button>
+
+                        <button
+                            type="button"
+                            class="primary"
+                            data-operator-confirm="execute"
+                        >
+                            Confirm & execute
+                        </button>
+
+                    </div>
 
                 </div>
             `;
@@ -2877,6 +3508,105 @@ document.addEventListener("DOMContentLoaded", () => {
                                 .operatorAction;
 
 
+                        if (
+                            operation
+                            === "approve"
+                            && control.dataset.confirmed
+                            !== "true"
+                        ) {
+
+                            const confirmation =
+                                operatorControlDetail
+                                    .querySelector(
+                                        "[data-role=\"operator-approval-confirmation\"]"
+                                    );
+
+                            const decisions =
+                                operatorControlDetail
+                                    .querySelector(
+                                        "[data-role=\"operator-decision-actions\"]"
+                                    );
+
+
+                            if (
+                                !confirmation
+                                || !decisions
+                            ) {
+
+                                throw new Error(
+                                    "Approval confirmation UI is unavailable"
+                                );
+                            }
+
+
+                            decisions.hidden =
+                                true;
+
+                            confirmation.hidden =
+                                false;
+
+
+                            if (
+                                operatorControlMessage
+                            ) {
+
+                                operatorControlMessage.hidden =
+                                    false;
+
+                                operatorControlMessage.textContent =
+                                    "Human confirmation required before execution.";
+                            }
+
+
+                            return;
+                        }
+
+
+                        if (
+                            operation
+                            === "approve"
+                        ) {
+
+                            delete control.dataset
+                                .confirmed;
+
+                            const confirmation =
+                                operatorControlDetail
+                                    .querySelector(
+                                        "[data-role=\"operator-approval-confirmation\"]"
+                                    );
+
+                            const decisions =
+                                operatorControlDetail
+                                    .querySelector(
+                                        "[data-role=\"operator-decision-actions\"]"
+                                    );
+
+
+                            if (confirmation) {
+
+                                confirmation.hidden =
+                                    true;
+                            }
+
+
+                            if (decisions) {
+
+                                decisions.hidden =
+                                    false;
+                            }
+
+
+                            if (
+                                operatorControlMessage
+                            ) {
+
+                                operatorControlMessage.hidden =
+                                    true;
+                            }
+                        }
+
+
                         controls.forEach(
                             item => {
                                 item.disabled = true;
@@ -2993,7 +3723,147 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                 );
             }
+
+
+        const confirmationControls = [
+            ...operatorControlDetail
+                .querySelectorAll(
+                    "[data-operator-confirm]"
+                )
+        ];
+
+        const approvalControl =
+            operatorControlDetail
+                .querySelector(
+                    "[data-operator-action=\"approve\"]"
+                );
+
+        const decisionActions =
+            operatorControlDetail
+                .querySelector(
+                    "[data-role=\"operator-decision-actions\"]"
+                );
+
+        const approvalConfirmation =
+            operatorControlDetail
+                .querySelector(
+                    "[data-role=\"operator-approval-confirmation\"]"
+                );
+
+
+        confirmationControls.forEach(
+            confirmControl => {
+
+                confirmControl.addEventListener(
+                    "click",
+                    () => {
+
+                        const decision =
+                            confirmControl.dataset
+                                .operatorConfirm;
+
+
+                        if (
+                            decision
+                            === "cancel"
+                        ) {
+
+                            if (
+                                approvalConfirmation
+                            ) {
+
+                                approvalConfirmation.hidden =
+                                    true;
+                            }
+
+
+                            if (
+                                decisionActions
+                            ) {
+
+                                decisionActions.hidden =
+                                    false;
+                            }
+
+
+                            if (
+                                operatorControlMessage
+                            ) {
+
+                                operatorControlMessage.hidden =
+                                    true;
+                            }
+
+
+                            return;
+                        }
+
+
+                        if (
+                            decision
+                            !== "execute"
+                        ) {
+
+                            return;
+                        }
+
+
+                        if (
+                            !approvalControl
+                        ) {
+
+                            throw new Error(
+                                "Approval control is unavailable"
+                            );
+                        }
+
+
+                        confirmationControls.forEach(
+                            item => {
+
+                                item.disabled =
+                                    true;
+                            }
+                        );
+
+
+                        approvalControl.dataset
+                            .confirmed =
+                                "true";
+
+                        approvalControl.click();
+                    }
+                );
+            }
         );
+
+        );
+    }
+
+
+    function operatorControlPriority(
+        state
+    ) {
+
+        switch (
+            String(
+                state
+                || ""
+            )
+        ) {
+
+            case "PENDING_APPROVAL":
+                return 0;
+
+            case "RECOVERY_REQUIRED":
+                return 1;
+
+            case "EXECUTION_FAILED":
+                return 2;
+
+            default:
+                return 10;
+        }
     }
 
 
@@ -3074,9 +3944,51 @@ document.addEventListener("DOMContentLoaded", () => {
             );
 
 
-            const actions =
-                payload.actions
-                || [];
+            if (operatorControlSummary) {
+
+                const freshness =
+                    document.createElement(
+                        "span"
+                    );
+
+                freshness.className =
+                    "operator-summary-freshness";
+
+                freshness.textContent =
+                    "Updated "
+                    + operatorTimestamp(
+                        new Date()
+                            .toISOString()
+                    );
+
+                operatorControlSummary
+                    .appendChild(
+                        freshness
+                    );
+            }
+
+
+            const actions = [
+                ...(
+                    payload.actions
+                    || []
+                )
+            ].sort(
+                (
+                    left,
+                    right
+                ) => {
+
+                    return (
+                        operatorControlPriority(
+                            left.state
+                        )
+                        - operatorControlPriority(
+                            right.state
+                        )
+                    );
+                }
+            );
 
 
             if (!actions.length) {
@@ -3175,6 +4087,21 @@ document.addEventListener("DOMContentLoaded", () => {
                                             .actionId
                                     );
 
+
+                                    operatorControlList
+                                        .querySelectorAll(
+                                            "[data-action-id]"
+                                        )
+                                        .forEach(
+                                            item => {
+
+                                                item.classList.toggle(
+                                                    "selected",
+                                                    item === row
+                                                );
+                                            }
+                                        );
+
                                 }
                                 catch (error) {
 
@@ -3214,12 +4141,57 @@ document.addEventListener("DOMContentLoaded", () => {
             if (operatorControlRefresh) {
 
                 operatorControlRefresh.disabled =
-                    false;
+                    !getStoredOperatorToken();
 
                 operatorControlRefresh.textContent =
                     "Refresh";
             }
         }
+    }
+
+
+    if (operatorControlUnlock) {
+
+        operatorControlUnlock.addEventListener(
+            "click",
+            unlockOperatorControlCenter
+        );
+    }
+
+
+    if (operatorControlToken) {
+
+        operatorControlToken.addEventListener(
+            "keydown",
+            event => {
+
+                if (
+                    event.key
+                    === "Enter"
+                ) {
+
+                    event.preventDefault();
+
+                    unlockOperatorControlCenter();
+                }
+            }
+        );
+    }
+
+
+    if (operatorControlLock) {
+
+        operatorControlLock.addEventListener(
+            "click",
+            () => {
+
+                lockOperatorControlCenter(
+                    "Operator locked. "
+                    + "No operational action can be approved "
+                    + "from this browser session."
+                );
+            }
+        );
     }
 
 
@@ -3244,6 +4216,25 @@ document.addEventListener("DOMContentLoaded", () => {
                     loadOperatorControlCenter();
                 }
             }
+        );
+    }
+
+
+    if (
+        getStoredOperatorToken()
+    ) {
+
+        setOperatorControlAuthState(
+            true
+        );
+
+        loadOperatorControlCenter();
+    }
+
+    else {
+
+        setOperatorControlAuthState(
+            false
         );
     }
 
