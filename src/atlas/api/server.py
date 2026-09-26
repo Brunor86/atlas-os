@@ -811,11 +811,12 @@ async def ai_ask(
             "error": "question is required",
         }
 
-    response = ai_service.ask_operator(
+    response = await asyncio.to_thread(
+        ai_service.ask_operator,
         AIRequest(
             task="incident_reasoning",
             user_prompt=question,
-        )
+        ),
     )
 
     metadata = (
