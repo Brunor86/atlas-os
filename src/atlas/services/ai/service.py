@@ -170,6 +170,127 @@ def _operation_action_is_executable(
     )
 
 
+def _materialize_operation_plan(
+    operation_plan,
+    *,
+    resolver=None,
+):
+    """
+    Resolve a typed operational intent against authoritative
+    ATLAS infrastructure identity.
+
+    The LLM may preserve a human asset name such as olivasat
+    or atlas-ai.
+
+    This boundary converts that human target into the canonical
+    resource type and execution target using deterministic
+    Asset Registry knowledge.
+
+    This function does not authorize or execute an operation.
+    """
+
+    intent = str(
+        getattr(
+            operation_plan,
+            "intent",
+            "",
+        )
+        or ""
+    ).strip().upper()
+
+
+    if intent != "PROPOSE":
+
+        return {
+            "status":
+                "NOT_APPLICABLE",
+
+            "requested_target":
+                getattr(
+                    operation_plan,
+                    "target",
+                    None,
+                ),
+
+            "resource_type":
+                None,
+
+            "target":
+                None,
+
+            "asset_id":
+                None,
+
+            "asset_name":
+                None,
+
+            "reason":
+                "operation plan is not a proposal",
+
+            "candidates":
+                [],
+        }
+
+
+    from atlas.services.ai.operator.target_resolver import (
+        OperationTargetResolver,
+    )
+
+
+    target_resolver = (
+        resolver
+        or OperationTargetResolver()
+    )
+
+
+    resolution = (
+        target_resolver.resolve(
+            getattr(
+                operation_plan,
+                "target",
+                None,
+            ),
+            requested_resource_type=(
+                getattr(
+                    operation_plan,
+                    "resource_type",
+                    None,
+                )
+            ),
+        )
+    )
+
+
+    return {
+        "status":
+            resolution.status,
+
+        "requested_target":
+            resolution.query,
+
+        "resource_type":
+            resolution.resource_type,
+
+        "target":
+            resolution.target,
+
+        "asset_id":
+            resolution.asset_id,
+
+        "asset_name":
+            resolution.asset_name,
+
+        "reason":
+            resolution.reason,
+
+        "candidates":
+            list(
+                resolution.candidates
+                or ()
+            ),
+    }
+
+
 class AIService:
 
 
@@ -739,6 +860,62 @@ class AIService:
                         )
 
 
+                        requested_operation_plan = (
+                            operation_plan.model_dump()
+                        )
+
+
+                        operation_materialized = (
+                            _materialize_operation_plan(
+                                operation_plan
+                            )
+                        )
+
+
+                        if (
+                            operation_materialized.get(
+                                "status"
+                            )
+                            == "RESOLVED"
+                        ):
+
+                            operation_plan = (
+                                operation_plan.model_copy(
+                                    update={
+                                        "resource_type":
+                                            operation_materialized.get(
+                                                "resource_type"
+                                            ),
+
+                                        "target":
+                                            operation_materialized.get(
+                                                "target"
+                                            ),
+                                    }
+                                )
+                            )
+
+
+                            print(
+                                "[AI OPERATION TARGET] "
+                                "status=RESOLVED "
+                                f"requested={operation_materialized.get(requested_target)} "
+                                f"asset={operation_materialized.get(asset_name)} "
+                                f"resource_type={operation_plan.resource_type} "
+                                f"target={operation_plan.target}"
+                            )
+
+
+                        else:
+
+                            print(
+                                "[AI OPERATION TARGET] "
+                                f"status={operation_materialized.get(status)} "
+                                f"requested={operation_materialized.get(requested_target)} "
+                                f"reason={operation_materialized.get(reason)}"
+                            )
+
+
                         canonical_execution_action = (
                             _canonical_execution_action(
                                 operation_plan.action,
@@ -755,6 +932,98 @@ class AIService:
 
 
                         if (
+                            operation_plan.intent
+                            == "PROPOSE"
+                            and operation_plan.confidence
+                            >= 0.80
+                            and operation_materialized.get(
+                                "status"
+                            )
+                            != "RESOLVED"
+                        ):
+
+                            blocked_reason = (
+                                "target resolution "
+                                + str(
+                                    operation_materialized.get(
+                                        "status",
+                                        "FAILED",
+                                    )
+                                )
+                                + ": "
+                                + str(
+                                    operation_materialized.get(
+                                        "reason",
+                                        "target could not be resolved",
+                                    )
+                                )
+                            )
+
+
+                            candidates = (
+                                operation_materialized.get(
+                                    "candidates",
+                                    []
+                                )
+                                or []
+                            )
+
+
+                            if candidates:
+
+                                blocked_reason += (
+                                    " · candidates="
+                                    + ", ".join(
+                                        str(item)
+                                        for item
+                                        in candidates
+                                    )
+                                )
+
+
+                            result[
+                                "answer"
+                            ] = (
+                                "ATLAS could not resolve "
+                                "the requested operation target: "
+                                + blocked_reason
+                            )
+
+
+                            if (
+                                event_callback
+                                is not None
+                            ):
+
+                                try:
+
+                                    event_callback(
+                                        "operation_blocked",
+                                        {
+                                            "message":
+                                                blocked_reason,
+
+                                            "plan":
+                                                requested_operation_plan,
+
+                                            "target_resolution":
+                                                operation_materialized,
+                                        },
+                                    )
+
+                                except Exception:
+
+                                    pass
+
+
+                            print(
+                                "[AI OPERATION PLANNER] "
+                                "proposal=false "
+                                f"reason={blocked_reason}"
+                            )
+
+
+                        elif (
                             operation_plan.intent
                             == "PROPOSE"
                             and operation_plan.confidence
@@ -838,6 +1107,20 @@ class AIService:
                                 ] = (
                                     operation_plan
                                     .model_dump()
+                                )
+
+
+                                proposal[
+                                    "requested_plan"
+                                ] = (
+                                    requested_operation_plan
+                                )
+
+
+                                proposal[
+                                    "target_resolution"
+                                ] = (
+                                    operation_materialized
                                 )
 
 
