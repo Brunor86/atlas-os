@@ -780,6 +780,153 @@ class SemanticQueryEngine:
         return resolved.id
 
 
+    def query_inventory_selectors(
+        self,
+        *,
+        question: str | None = None,
+        asset_types=None,
+        statuses=None,
+    ) -> dict[str, Any]:
+        """
+        Execute a structured read-only inventory query.
+
+        Natural-language interpretation happens before this boundary.
+
+        This method accepts only canonical semantic selectors and
+        obtains infrastructure facts exclusively from AtlasSemanticAPI
+        and its live Asset Registry.
+
+        No LLM is involved in execution.
+        """
+
+        canonical_types = list(
+            dict.fromkeys(
+                str(value)
+                .strip()
+                .upper()
+                for value in (
+                    asset_types
+                    or []
+                )
+                if str(value).strip()
+            )
+        )
+
+        canonical_statuses = list(
+            dict.fromkeys(
+                str(value)
+                .strip()
+                .upper()
+                for value in (
+                    statuses
+                    or []
+                )
+                if str(value).strip()
+            )
+        )
+
+        asset_type = (
+            canonical_types[0]
+            if len(
+                canonical_types
+            ) == 1
+            else None
+        )
+
+        status = (
+            canonical_statuses[0]
+            if len(
+                canonical_statuses
+            ) == 1
+            else None
+        )
+
+        semantic = {
+            "intent":
+                "INVENTORY",
+
+            "asset_type":
+                asset_type,
+
+            "asset_types":
+                canonical_types,
+
+            "status":
+                status,
+
+            "statuses":
+                canonical_statuses,
+
+            "role":
+                None,
+
+            "target":
+                None,
+
+            "direction":
+                None,
+
+            "entity_text":
+                None,
+
+            "relationship":
+                None,
+
+            "orientation":
+                None,
+
+            "depth":
+                5,
+        }
+
+        if len(
+            canonical_types
+        ) > 1:
+
+            result = (
+                self._assets_for_types(
+                    canonical_types,
+                    statuses=(
+                        canonical_statuses
+                    ),
+                    role=None,
+                )
+            )
+
+        elif len(
+            canonical_statuses
+        ) > 1:
+
+            result = (
+                self._assets_for_statuses(
+                    canonical_statuses,
+                    asset_type=(
+                        asset_type
+                    ),
+                    role=None,
+                )
+            )
+
+        else:
+
+            result = self.api.assets(
+                status=status,
+                asset_type=asset_type,
+            )
+
+        return self._with_metadata(
+            result,
+            (
+                str(
+                    question
+                    or ""
+                ).strip()
+                or "structured inventory query"
+            ),
+            semantic,
+        )
+
+
     def query(
         self,
         question: str,

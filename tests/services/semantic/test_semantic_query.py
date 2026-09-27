@@ -1,3 +1,7 @@
+from atlas.core.asset import (
+    AssetStatus,
+)
+
 from atlas.services.semantic.query import (
     SemanticQueryEngine,
 )
@@ -318,3 +322,138 @@ def test_semantic_query_unions_multiple_asset_types(
         "node-alpha",
         "runtime-alpha",
     }
+
+
+
+def test_structured_inventory_executor_supports_broad_inventory(
+    semantic_runtime,
+):
+
+    engine = semantic_runtime[
+        "engine"
+    ]
+
+    result = (
+        engine
+        .query_inventory_selectors(
+            question=(
+                "synthetic broad inventory"
+            ),
+            asset_types=[],
+            statuses=[],
+        )
+    )
+
+    assert (
+        result["status"]
+        == "SUCCESS"
+    )
+
+    assert (
+        result["semantic"][
+            "intent"
+        ]
+        == "INVENTORY"
+    )
+
+    assert (
+        result["semantic"][
+            "asset_types"
+        ]
+        == []
+    )
+
+    assert (
+        result["semantic"][
+            "statuses"
+        ]
+        == []
+    )
+
+    assert (
+        result["count"]
+        == len(
+            engine.registry.assets()
+        )
+    )
+
+
+def test_structured_inventory_executor_unions_types_and_status(
+    semantic_runtime,
+):
+
+    engine = semantic_runtime[
+        "engine"
+    ]
+
+    registry = semantic_runtime[
+        "registry"
+    ]
+
+    for asset in registry.assets():
+
+        if asset.type.name in {
+            "VM",
+            "SERVICE",
+        }:
+
+            asset.status = (
+                AssetStatus.ONLINE
+            )
+
+    result = (
+        engine
+        .query_inventory_selectors(
+            question=(
+                "synthetic typed inventory"
+            ),
+            asset_types=[
+                "VM",
+                "SERVICE",
+            ],
+            statuses=[
+                "ONLINE",
+            ],
+        )
+    )
+
+    assert (
+        result["status"]
+        == "SUCCESS"
+    )
+
+    assert set(
+        result["semantic"][
+            "asset_types"
+        ]
+    ) == {
+        "VM",
+        "SERVICE",
+    }
+
+    assert (
+        result["semantic"][
+            "statuses"
+        ]
+        == [
+            "ONLINE",
+        ]
+    )
+
+    assert {
+        asset["type"]
+        for asset in result[
+            "assets"
+        ]
+    } == {
+        "VM",
+        "SERVICE",
+    }
+
+    assert all(
+        asset["status"]
+        == "ONLINE"
+        for asset in result[
+            "assets"
+        ]
+    )
