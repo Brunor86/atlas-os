@@ -240,3 +240,81 @@ def test_semantic_query_and_plan_agree_on_target(
         result["asset"]["id"]
         == target
     )
+
+
+
+def test_semantic_plan_preserves_multiple_asset_types(
+    semantic_runtime,
+):
+
+    engine = semantic_runtime[
+        "engine"
+    ]
+
+    plan = engine.plan(
+        "Mostrame servidores y máquinas virtuales"
+    )
+
+    assert (
+        plan.operation
+        == "ASSETS"
+    )
+
+    assert (
+        plan.asset_type
+        is None
+    )
+
+    assert set(
+        plan.asset_types
+    ) == {
+        "SERVER",
+        "VM",
+    }
+
+
+def test_semantic_query_unions_multiple_asset_types(
+    semantic_runtime,
+):
+
+    engine = semantic_runtime[
+        "engine"
+    ]
+
+    result = engine.query(
+        "Mostrame máquinas virtuales y servicios"
+    )
+
+    assert (
+        result["status"]
+        == "SUCCESS"
+    )
+
+    assert (
+        result["semantic"]["intent"]
+        == "INVENTORY"
+    )
+
+    assert set(
+        result["semantic"][
+            "asset_types"
+        ]
+    ) == {
+        "VM",
+        "SERVICE",
+    }
+
+    assert (
+        result["count"]
+        == 2
+    )
+
+    assert {
+        asset["name"]
+        for asset in result[
+            "assets"
+        ]
+    } == {
+        "node-alpha",
+        "runtime-alpha",
+    }

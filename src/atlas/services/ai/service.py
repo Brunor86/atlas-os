@@ -2148,13 +2148,30 @@ class AIService:
                 "asset_type"
             )
 
+            asset_types = list(
+                semantic.get(
+                    "asset_types"
+                )
+                or []
+            )
+
             status = semantic.get(
                 "status"
             )
 
             filters = []
 
-            if asset_type:
+            if asset_types:
+
+                filters.append(
+                    "/".join(
+                        str(item)
+                        for item in asset_types
+                    )
+                )
+
+            elif asset_type:
+
                 filters.append(
                     str(
                         asset_type

@@ -30,6 +30,10 @@ class SemanticPlan:
 
     asset_type: str | None = None
 
+    asset_types: list[str] = field(
+        default_factory=list
+    )
+
     status: str | None = None
 
     statuses: list[str] = field(
@@ -72,6 +76,9 @@ class SemanticPlan:
             "operation": self.operation,
             "query": self.query,
             "asset_type": self.asset_type,
+            "asset_types": list(
+                self.asset_types
+            ),
             "status": self.status,
             "statuses": list(
                 self.statuses
@@ -509,8 +516,14 @@ class SemanticQueryEngine:
             text
         )
 
-        asset_type = self._detect_type(
+        asset_types = self._detect_types(
             text
+        )
+
+        asset_type = (
+            asset_types[0]
+            if len(asset_types) == 1
+            else None
         )
 
         statuses = self._detect_statuses(
@@ -613,6 +626,7 @@ class SemanticQueryEngine:
         # A type/status question is inventory, not global overview.
         if is_overview and not (
             asset_type
+            or asset_types
             or status
             or statuses
         ):
@@ -632,6 +646,7 @@ class SemanticQueryEngine:
 
         if (
             asset_type
+            or asset_types
             or status
             or statuses
         ):
@@ -641,6 +656,14 @@ class SemanticQueryEngine:
             if asset_type:
                 evidence.append(
                     f"asset type detected: {asset_type}"
+                )
+
+            elif asset_types:
+                evidence.append(
+                    "asset types detected: "
+                    + ", ".join(
+                        asset_types
+                    )
                 )
 
             if status:
@@ -660,6 +683,7 @@ class SemanticQueryEngine:
                 operation="ASSETS",
                 query=original,
                 asset_type=asset_type,
+                asset_types=asset_types,
                 status=status,
                 statuses=statuses,
                 confidence=0.95,
@@ -933,6 +957,9 @@ class SemanticQueryEngine:
 
         if (
             semantic["asset_type"]
+            or semantic.get(
+                "asset_types"
+            )
             or semantic["status"]
             or semantic.get(
                 "statuses"
@@ -947,7 +974,28 @@ class SemanticQueryEngine:
                 or []
             )
 
-            if len(statuses) > 1:
+            asset_types = list(
+                semantic.get(
+                    "asset_types"
+                )
+                or []
+            )
+
+            if len(asset_types) > 1:
+
+                result = (
+                    self._assets_for_types(
+                        asset_types,
+                        statuses=statuses,
+                        role=(
+                            semantic[
+                                "role"
+                            ]
+                        ),
+                    )
+                )
+
+            elif len(statuses) > 1:
 
                 result = (
                     self._assets_for_statuses(
@@ -1057,6 +1105,9 @@ class SemanticQueryEngine:
                 "asset_type":
                     None,
 
+                "asset_types":
+                    [],
+
                 "status":
                     None,
 
@@ -1095,7 +1146,15 @@ class SemanticQueryEngine:
                     ],
             }
 
-        asset_type = self._detect_type(text)
+        asset_types = self._detect_types(
+            text
+        )
+
+        asset_type = (
+            asset_types[0]
+            if len(asset_types) == 1
+            else None
+        )
 
         statuses = self._detect_statuses(
             text
@@ -1124,6 +1183,7 @@ class SemanticQueryEngine:
         intent = self._detect_intent(
             text,
             asset_type=asset_type,
+            asset_types=asset_types,
             status=(
                 status
                 or (
@@ -1139,6 +1199,7 @@ class SemanticQueryEngine:
         return {
             "intent": intent,
             "asset_type": asset_type,
+            "asset_types": asset_types,
             "status": status,
             "statuses": statuses,
             "role": role,
@@ -1159,6 +1220,7 @@ class SemanticQueryEngine:
         text: str,
         *,
         asset_type: str | None = None,
+        asset_types: list[str] | None = None,
         status: str | None = None,
         role: str | None = None,
         target: str | None = None,
@@ -1190,6 +1252,7 @@ class SemanticQueryEngine:
 
         if (
             asset_type
+            or asset_types
             or status
             or role
         ):
@@ -1204,15 +1267,66 @@ class SemanticQueryEngine:
     # TYPE
     # ==============================================================
 
+    def _detect_types(
+        self,
+        text: str,
+    ) -> list[str]:
+
+        text = self._normalize(
+            text
+        )
+
+        detected = []
+
+        for (
+            category,
+            values,
+        ) in self.TYPE_KEYWORDS.items():
+
+            for value in values:
+
+                normalized = self._normalize(
+                    value
+                )
+
+                if not normalized:
+                    continue
+
+                pattern = (
+                    r"(?<![a-z0-9_])"
+                    + re.escape(
+                        normalized
+                    )
+                    + r"(?![a-z0-9_])"
+                )
+
+                if re.search(
+                    pattern,
+                    text,
+                ):
+
+                    detected.append(
+                        category
+                    )
+
+                    break
+
+        return detected
+
+
     def _detect_type(
         self,
         text: str,
     ) -> str | None:
 
-        return self._best_category(
-            text,
-            self.TYPE_KEYWORDS,
+        detected = self._detect_types(
+            text
         )
+
+        if len(detected) == 1:
+            return detected[0]
+
+        return None
 
     # ==============================================================
     # STATUS
@@ -1323,6 +1437,111 @@ class SemanticQueryEngine:
                 )
 
         return detected
+
+    def _assets_for_types(
+        self,
+        asset_types,
+        *,
+        statuses=None,
+        role=None,
+    ):
+
+        assets = []
+        seen = set()
+
+        status_selectors = list(
+            statuses
+            or [
+                None
+            ]
+        )
+
+        for asset_type in asset_types:
+
+            for status in status_selectors:
+
+                result = self.api.assets(
+                    status=status,
+                    asset_type=asset_type,
+                    role=role,
+                )
+
+                if (
+                    not isinstance(
+                        result,
+                        dict,
+                    )
+                    or result.get(
+                        "status"
+                    )
+                    != "SUCCESS"
+                ):
+
+                    return result
+
+                for asset in (
+                    result.get(
+                        "assets",
+                        []
+                    )
+                    or []
+                ):
+
+                    if not isinstance(
+                        asset,
+                        dict,
+                    ):
+                        continue
+
+                    key = (
+                        asset.get(
+                            "id"
+                        )
+                        or repr(
+                            asset
+                        )
+                    )
+
+                    if key in seen:
+                        continue
+
+                    seen.add(
+                        key
+                    )
+
+                    assets.append(
+                        asset
+                    )
+
+        return {
+            "status":
+                "SUCCESS",
+
+            "count":
+                len(
+                    assets
+                ),
+
+            "filters": {
+                "asset_types":
+                    list(
+                        asset_types
+                    ),
+
+                "statuses":
+                    list(
+                        statuses
+                        or []
+                    ),
+
+                "role":
+                    role,
+            },
+
+            "assets":
+                assets,
+        }
+
 
     def _assets_for_statuses(
         self,
@@ -2089,6 +2308,12 @@ class SemanticQueryEngine:
             {
                 "intent": semantic["intent"],
                 "asset_type": semantic["asset_type"],
+                "asset_types": list(
+                    semantic.get(
+                        "asset_types"
+                    )
+                    or []
+                ),
                 "status": semantic["status"],
                 "statuses": list(
                     semantic.get(
