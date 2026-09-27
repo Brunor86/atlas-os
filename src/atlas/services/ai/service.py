@@ -1631,6 +1631,20 @@ class AIService:
                 "planner_calls":
                     planner_calls,
 
+                "semantic_planner_calls":
+                    int(
+                        result.get(
+                            "semantic_planner_calls",
+                            0,
+                        )
+                        or 0
+                    ),
+
+                "semantic_plan":
+                    result.get(
+                        "semantic_plan"
+                    ),
+
                 "persistent_planner_session":
                     bool(
                         planner_calls
@@ -1649,12 +1663,17 @@ class AIService:
 
                 "context_mode":
                     (
-                        "deterministic"
-                        if deterministic
-                        else (
-                            "mcp_read_only"
-                            if mcp_agent
-                            else "operator"
+                        result.get(
+                            "context_mode"
+                        )
+                        or (
+                            "deterministic"
+                            if deterministic
+                            else (
+                                "mcp_read_only"
+                                if mcp_agent
+                                else "operator"
+                            )
                         )
                     ),
             },
@@ -1987,6 +2006,330 @@ class AIService:
             break
 
         return result
+
+    def planned_inventory_query(
+        self,
+        user_prompt: str,
+    ) -> dict | None:
+        """
+        Interpret an open-language read-only inventory question using
+        a typed planner, then execute the resulting canonical selectors
+        deterministically against ATLAS semantic infrastructure.
+
+        The planner has no tools and no Asset Registry access.
+
+        Infrastructure facts come only from SemanticQueryEngine and
+        AtlasSemanticAPI after planning has completed.
+        """
+
+        if not isinstance(
+            user_prompt,
+            str,
+        ):
+
+            return None
+
+        if not user_prompt.strip():
+
+            return None
+
+
+        model = (
+            self._select_model_with_refresh(
+                "reasoning"
+            )
+        )
+
+        if model is None:
+
+            return None
+
+
+        if (
+            str(
+                getattr(
+                    model,
+                    "provider",
+                    "",
+                )
+                or ""
+            ).strip().lower()
+            != "ollama"
+        ):
+
+            return None
+
+
+        base_url = (
+            self.runtime_target.url
+            .replace(
+                "ollama://",
+                "http://",
+                1,
+            )
+            .rstrip("/")
+            + "/v1"
+        )
+
+
+        started = (
+            time.perf_counter()
+        )
+
+
+        self.runtime.load(
+            model.name
+        )
+
+        self.runtime.record_request(
+            model.name
+        )
+
+
+        try:
+
+            from atlas.services.ai.semantic.pydantic_planner import (
+                PydanticInventoryPlanner,
+            )
+
+
+            planner = (
+                PydanticInventoryPlanner
+                .for_ollama(
+                    model_name=(
+                        model.provider_model
+                    ),
+                    base_url=base_url,
+                )
+            )
+
+
+            plan = planner.plan(
+                user_prompt
+            )
+
+
+            print(
+                "[AI INVENTORY PLANNER] "
+                f"intent={plan.intent} "
+                f"asset_types={plan.asset_types} "
+                f"statuses={plan.statuses} "
+                f"confidence={plan.confidence:.2f}"
+            )
+
+
+            if (
+                plan.intent
+                != "INVENTORY"
+                or plan.confidence
+                < 0.80
+            ):
+
+                elapsed_ms = (
+                    time.perf_counter()
+                    - started
+                ) * 1000
+
+                self.runtime.record_success(
+                    model.name,
+                    round(
+                        elapsed_ms,
+                        2,
+                    ),
+                )
+
+                return None
+
+
+            engine = (
+                SemanticQueryEngine()
+            )
+
+
+            semantic_result = (
+                engine
+                .query_inventory_selectors(
+                    question=user_prompt,
+                    asset_types=(
+                        plan.asset_types
+                    ),
+                    statuses=(
+                        plan.statuses
+                    ),
+                )
+            )
+
+
+            if (
+                not isinstance(
+                    semantic_result,
+                    dict,
+                )
+                or semantic_result.get(
+                    "status"
+                )
+                != "SUCCESS"
+            ):
+
+                raise RuntimeError(
+                    "Structured inventory execution failed"
+                )
+
+
+            answer = (
+                self.synthesize_semantic_result(
+                    semantic_result
+                )
+            )
+
+
+            elapsed_ms = (
+                time.perf_counter()
+                - started
+            ) * 1000
+
+
+            self.runtime.record_success(
+                model.name,
+                round(
+                    elapsed_ms,
+                    2,
+                ),
+            )
+
+
+            return {
+                "status":
+                    "SUCCESS",
+
+                "answer":
+                    answer,
+
+                "steps":
+                    1,
+
+                "model":
+                    model.name,
+
+                "provider":
+                    model.provider,
+
+                "llm_used":
+                    True,
+
+                "tools_used":
+                    [],
+
+                "semantic_planner_calls":
+                    1,
+
+                "semantic_plan":
+                    plan.model_dump(
+                        mode="json"
+                    ),
+
+                "context_mode":
+                    "semantic_planner",
+
+                "observations": [
+                    {
+                        "step":
+                            1,
+
+                        "tool":
+                            (
+                                "semantic_inventory_"
+                                "executor"
+                            ),
+
+                        "arguments": {
+                            "asset_types":
+                                list(
+                                    plan.asset_types
+                                ),
+
+                            "statuses":
+                                list(
+                                    plan.statuses
+                                ),
+                        },
+
+                        "status":
+                            "SUCCESS",
+
+                        "result":
+                            semantic_result,
+
+                        "error":
+                            None,
+
+                        "evidence": [
+                            (
+                                "typed inventory "
+                                "language plan"
+                            ),
+                            (
+                                "deterministic "
+                                "Asset Registry query"
+                            ),
+                        ],
+                    }
+                ],
+            }
+
+
+        except Exception as exc:
+
+            elapsed_ms = (
+                time.perf_counter()
+                - started
+            ) * 1000
+
+
+            self.runtime.record_failure(
+                model.name,
+                str(
+                    exc
+                ),
+                round(
+                    elapsed_ms,
+                    2,
+                ),
+            )
+
+
+            print(
+                "[AI INVENTORY PLANNER] "
+                "route=MISS "
+                "error="
+                + str(
+                    exc
+                )
+            )
+
+
+            return None
+
+
+        finally:
+
+            try:
+
+                self._unload_model(
+                    model
+                )
+
+            except Exception as cleanup_exc:
+
+                print(
+                    "[AI INVENTORY PLANNER] "
+                    "unload=false "
+                    "error="
+                    + str(
+                        cleanup_exc
+                    )
+                )
+
 
     def deterministic_semantic_query(
         self,
