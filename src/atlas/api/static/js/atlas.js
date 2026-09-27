@@ -1025,7 +1025,26 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    function completeOperatorHeader() {
+    function setOperatorHeader(
+        message
+    ) {
+
+        const title =
+            document.querySelector(
+                ".atlas-live-header strong"
+            );
+
+        if (title) {
+
+            title.textContent =
+                message;
+        }
+    }
+
+
+    function completeOperatorHeader(
+        message = "ATLAS operation complete"
+    ) {
 
         const dot =
             document.querySelector(
@@ -1041,16 +1060,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
 
-        const title =
-            document.querySelector(
-                ".atlas-live-header strong"
-            );
-
-        if (title) {
-
-            title.textContent =
-                "ATLAS operation complete";
-        }
+        setOperatorHeader(
+            message
+        );
     }
 
 
@@ -1066,6 +1078,103 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
         completeOperatorHeader();
+    }
+
+
+
+    function operatorDecisionAuthRequired(
+        statusNode,
+        resultNode,
+        approveButton,
+        rejectButton,
+        decision
+    ) {
+
+        const normalizedDecision =
+            String(
+                decision
+                || "complete this decision"
+            );
+
+
+        statusNode.textContent =
+            "AUTH REQUIRED";
+
+        statusNode.className =
+            "atlas-operator-status pending";
+
+
+        approveButton.disabled =
+            false;
+
+        rejectButton.disabled =
+            false;
+
+        approveButton.textContent =
+            "Approve";
+
+
+        resultNode.hidden =
+            false;
+
+        resultNode.textContent =
+            "Operator authentication is required. "
+            + "Unlock Operator to "
+            + normalizedDecision
+            + ", then retry the decision.";
+
+
+        updateEvent(
+            "approval",
+            "Operator authentication",
+            "Unlock Operator to continue",
+            "working"
+        );
+
+
+        setOperatorHeader(
+            "ATLAS awaiting operator authentication"
+        );
+
+
+        if (
+            typeof lockOperatorControlCenter
+            === "function"
+        ) {
+
+            lockOperatorControlCenter(
+                "Unlock Operator to "
+                + normalizedDecision
+                + "."
+            );
+        }
+
+
+        if (operatorControlCenter) {
+
+            operatorControlCenter
+                .scrollIntoView(
+                    {
+                        behavior:
+                            "smooth",
+
+                        block:
+                            "start",
+                    }
+                );
+        }
+
+
+        if (operatorControlToken) {
+
+            window.setTimeout(
+                () => {
+                    operatorControlToken
+                        .focus();
+                },
+                0
+            );
+        }
     }
 
 
@@ -1897,6 +2006,22 @@ document.addEventListener("DOMContentLoaded", () => {
             "click",
             async () => {
 
+                if (
+                    !getStoredOperatorToken()
+                ) {
+
+                    operatorDecisionAuthRequired(
+                        status,
+                        result,
+                        approve,
+                        reject,
+                        "reject this operation"
+                    );
+
+                    return;
+                }
+
+
                 approve.disabled = true;
                 reject.disabled = true;
 
@@ -1920,6 +2045,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     const data =
                         await response.json();
+
+
+                    if (
+                        response.status
+                        === 401
+                    ) {
+
+                        operatorDecisionAuthRequired(
+                            status,
+                            result,
+                            approve,
+                            reject,
+                            "reject this operation"
+                        );
+
+                        return;
+                    }
 
 
                     if (!response.ok) {
@@ -1953,16 +2095,48 @@ document.addEventListener("DOMContentLoaded", () => {
                         "done"
                     );
 
-                    completeOperatorHeader();
+                    completeOperatorHeader(
+                        "ATLAS operation rejected"
+                    );
 
                 }
                 catch (error) {
 
-                    approve.disabled = false;
-                    reject.disabled = false;
+                    approve.disabled =
+                        false;
 
-                    operatorError(
-                        error.message
+                    reject.disabled =
+                        false;
+
+
+                    status.textContent =
+                        "PENDING APPROVAL";
+
+                    status.className =
+                        "atlas-operator-status pending";
+
+
+                    result.hidden =
+                        false;
+
+                    result.textContent =
+                        "Rejection was not recorded. "
+                        + "The operation remains pending approval.";
+
+
+                    updateEvent(
+                        "approval",
+                        "Human approval",
+                        (
+                            error.message
+                            || "Rejection failed"
+                        ),
+                        "error"
+                    );
+
+
+                    setOperatorHeader(
+                        "ATLAS decision pending"
                     );
                 }
 
@@ -2054,6 +2228,22 @@ document.addEventListener("DOMContentLoaded", () => {
                     false;
 
 
+                if (
+                    !getStoredOperatorToken()
+                ) {
+
+                    operatorDecisionAuthRequired(
+                        status,
+                        result,
+                        approve,
+                        reject,
+                        "approve this operation"
+                    );
+
+                    return;
+                }
+
+
                 approve.disabled = true;
                 reject.disabled = true;
 
@@ -2094,34 +2284,13 @@ document.addEventListener("DOMContentLoaded", () => {
                         response.status === 401
                     ) {
 
-                        status.textContent =
-                            "AUTH REQUIRED";
-
-                        status.className =
-                            "atlas-operator-status pending";
-
-                        approve.disabled = false;
-                        reject.disabled = false;
-
-                        approve.textContent =
-                            "Approve";
-
-                        actions.hidden = false;
-
-                        result.hidden = false;
-
-                        result.textContent =
-                            "Operator authentication failed. "
-                            + "Retry to enter the current token.";
-
-                        updateEvent(
-                            "approval",
-                            "Operator authentication",
-                            "Authentication required",
-                            "error"
+                        operatorDecisionAuthRequired(
+                            status,
+                            result,
+                            approve,
+                            reject,
+                            "approve this operation"
                         );
-
-                        completeOperatorHeader();
 
                         return;
                     }

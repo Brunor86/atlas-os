@@ -657,3 +657,190 @@ def test_confirmation_controls_are_outside_action_control_loop():
     assert correctly_closed in js
 
     assert broken_tail not in js
+
+
+
+def test_ask_atlas_reject_has_clean_terminal_state():
+
+    js = normalized(JS)
+
+    start = js.index(
+        "reject.addEventListener"
+    )
+
+    end = js.index(
+        "cancelApproval.addEventListener",
+        start,
+    )
+
+    reject = js[
+        start:
+        end
+    ]
+
+    assert (
+        "PENDING APPROVAL"
+        in reject
+    )
+
+    assert (
+        "REJECTED"
+        in reject
+    )
+
+    assert (
+        "Operation rejected."
+        in reject
+    )
+
+    assert (
+        "No infrastructure change was made."
+        in reject
+    )
+
+    assert (
+        "ATLAS operation rejected"
+        in reject
+    )
+
+    assert (
+        "actions.hidden = true"
+        in reject
+    )
+
+
+def test_ask_atlas_reject_authentication_is_nonterminal():
+
+    js = normalized(JS)
+
+    start = js.index(
+        "reject.addEventListener"
+    )
+
+    end = js.index(
+        "cancelApproval.addEventListener",
+        start,
+    )
+
+    reject = js[
+        start:
+        end
+    ]
+
+    assert (
+        "!getStoredOperatorToken()"
+        in reject
+    )
+
+    assert (
+        "response.status === 401"
+        in reject
+    )
+
+    assert (
+        "operatorDecisionAuthRequired"
+        in reject
+    )
+
+    assert (
+        "Rejection was not recorded."
+        in reject
+    )
+
+    assert (
+        "The operation remains pending approval."
+        in reject
+    )
+
+    assert (
+        "ATLAS decision pending"
+        in reject
+    )
+
+    assert (
+        "operatorError("
+        not in reject
+    )
+
+
+def test_operator_decision_auth_redirects_to_unlock_without_completion():
+
+    js = normalized(JS)
+
+    start = js.index(
+        "function operatorDecisionAuthRequired"
+    )
+
+    end = js.index(
+        "const OPERATOR_TOKEN_KEY",
+        start,
+    )
+
+    helper = js[
+        start:
+        end
+    ]
+
+    assert (
+        "AUTH REQUIRED"
+        in helper
+    )
+
+    assert (
+        "ATLAS awaiting operator authentication"
+        in helper
+    )
+
+    assert (
+        "lockOperatorControlCenter"
+        in helper
+    )
+
+    assert (
+        "scrollIntoView"
+        in helper
+    )
+
+    assert (
+        "operatorControlToken .focus()"
+        in helper
+    )
+
+    assert (
+        "completeOperatorHeader"
+        not in helper
+    )
+
+
+def test_ask_atlas_approve_authentication_is_nonterminal():
+
+    js = normalized(JS)
+
+    start = js.index(
+        "approve.addEventListener"
+    )
+
+    end = js.index(
+        "async function startOperator",
+        start,
+    )
+
+    approve = js[
+        start:
+        end
+    ]
+
+    assert (
+        "!getStoredOperatorToken()"
+        in approve
+    )
+
+    assert (
+        "response.status === 401"
+        in approve
+    )
+
+    assert (
+        "operatorDecisionAuthRequired"
+        in approve
+    )
