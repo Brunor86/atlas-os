@@ -1423,7 +1423,18 @@ class SemanticQueryEngine:
             text
         )
 
-        detected = []
+        candidates = []
+
+        category_order = {
+            category:
+                index
+            for (
+                index,
+                category,
+            ) in enumerate(
+                self.TYPE_KEYWORDS
+            )
+        }
 
         for (
             category,
@@ -1447,16 +1458,116 @@ class SemanticQueryEngine:
                     + r"(?![a-z0-9_])"
                 )
 
-                if re.search(
+                for match in re.finditer(
                     pattern,
                     text,
                 ):
 
-                    detected.append(
-                        category
+                    candidates.append(
+                        {
+                            "category":
+                                category,
+
+                            "start":
+                                match.start(),
+
+                            "end":
+                                match.end(),
+
+                            "length":
+                                (
+                                    match.end()
+                                    - match.start()
+                                ),
+                        }
                     )
 
-                    break
+        # ----------------------------------------------------------
+        # GENERIC ALIAS PRECEDENCE
+        #
+        # Prefer the longest semantic phrase whenever aliases overlap.
+        #
+        # Example shape:
+        #
+        #     longer category phrase
+        #         contains
+        #     shorter generic phrase
+        #
+        # The shorter nested match must not create a second asset type.
+        #
+        # Distinct non-overlapping phrases remain independent selectors.
+        # This rule contains no infrastructure-specific exceptions.
+        # ----------------------------------------------------------
+
+        candidates.sort(
+            key=lambda item: (
+                -item[
+                    "length"
+                ],
+                item[
+                    "start"
+                ],
+                category_order[
+                    item[
+                        "category"
+                    ]
+                ],
+            )
+        )
+
+        selected = []
+
+        for candidate in candidates:
+
+            overlaps = any(
+                (
+                    candidate[
+                        "start"
+                    ]
+                    < existing[
+                        "end"
+                    ]
+                    and candidate[
+                        "end"
+                    ]
+                    > existing[
+                        "start"
+                    ]
+                )
+                for existing in selected
+            )
+
+            if overlaps:
+                continue
+
+            selected.append(
+                candidate
+            )
+
+        selected.sort(
+            key=lambda item: (
+                item[
+                    "start"
+                ],
+                item[
+                    "end"
+                ],
+            )
+        )
+
+        detected = []
+
+        for match in selected:
+
+            category = match[
+                "category"
+            ]
+
+            if category not in detected:
+
+                detected.append(
+                    category
+                )
 
         return detected
 

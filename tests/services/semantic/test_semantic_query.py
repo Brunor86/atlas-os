@@ -457,3 +457,54 @@ def test_structured_inventory_executor_unions_types_and_status(
             "assets"
         ]
     )
+
+
+
+def test_type_alias_prefers_longest_overlapping_phrase(
+    semantic_runtime,
+):
+
+    engine = semantic_runtime[
+        "engine"
+    ]
+
+    plan = engine.plan(
+        "¿Qué contenedores LXC tengo?"
+    )
+
+    assert (
+        plan.asset_type
+        == "LXC"
+    )
+
+    assert (
+        plan.asset_types
+        == [
+            "LXC",
+        ]
+    )
+
+
+def test_type_alias_preserves_distinct_non_overlapping_categories(
+    semantic_runtime,
+):
+
+    engine = semantic_runtime[
+        "engine"
+    ]
+
+    plan = engine.plan(
+        "Mostrame contenedores y LXC"
+    )
+
+    assert (
+        plan.asset_type
+        is None
+    )
+
+    assert set(
+        plan.asset_types
+    ) == {
+        "CONTAINER",
+        "LXC",
+    }
