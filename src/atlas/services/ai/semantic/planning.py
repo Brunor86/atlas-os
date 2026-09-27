@@ -41,7 +41,7 @@ class InventoryQueryPlan(BaseModel):
     intent: Literal[
         "NONE",
         "INVENTORY",
-    ] = "NONE"
+    ]
 
     asset_types: list[
         AssetTypeSelector

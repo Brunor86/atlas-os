@@ -296,3 +296,33 @@ def test_instructions_forbid_infrastructure_invention():
         "ATLAS performs all actual inventory queries deterministically"
         in normalized
     )
+
+
+
+def test_inventory_intent_is_required():
+
+    with pytest.raises(
+        ValidationError,
+    ):
+
+        InventoryQueryPlan(
+            asset_types=[],
+            statuses=[],
+            reason="Intent omitted",
+            confidence=1.0,
+        )
+
+
+def test_inventory_schema_requires_intent():
+
+    schema = (
+        InventoryQueryPlan
+        .model_json_schema()
+    )
+
+    assert (
+        "intent"
+        in schema[
+            "required"
+        ]
+    )
