@@ -662,6 +662,27 @@ Rules:
         }
 
 
+    def _planned_inventory_fast_path(
+        self,
+        user_request,
+    ):
+
+        planned_query = getattr(
+            self.ai,
+            "planned_inventory_query",
+            None,
+        )
+
+        if not callable(
+            planned_query
+        ):
+            return None
+
+        return planned_query(
+            user_request
+        )
+
+
     @staticmethod
     def _verified_relation_answer(
         arguments,
@@ -951,6 +972,39 @@ Rules:
             "tool_preflight_completed",
             status="MISS",
         )
+
+
+        self._emit(
+            "inventory_planner_started",
+            query=user_request,
+        )
+
+        planned_inventory = (
+            self._planned_inventory_fast_path(
+                user_request
+            )
+        )
+
+        if planned_inventory is not None:
+
+            self._emit(
+                "inventory_planner_completed",
+                status="SUCCESS",
+            )
+
+            self._emit(
+                "answer_ready",
+                status="SUCCESS",
+                llm_used=True,
+            )
+
+            return planned_inventory
+
+        self._emit(
+            "inventory_planner_completed",
+            status="MISS",
+        )
+
 
         observations = []
 

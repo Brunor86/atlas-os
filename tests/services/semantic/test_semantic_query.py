@@ -1,3 +1,7 @@
+from atlas.core.asset import (
+    AssetStatus,
+)
+
 from atlas.services.semantic.query import (
     SemanticQueryEngine,
 )
@@ -240,3 +244,267 @@ def test_semantic_query_and_plan_agree_on_target(
         result["asset"]["id"]
         == target
     )
+
+
+
+def test_semantic_plan_preserves_multiple_asset_types(
+    semantic_runtime,
+):
+
+    engine = semantic_runtime[
+        "engine"
+    ]
+
+    plan = engine.plan(
+        "Mostrame servidores y máquinas virtuales"
+    )
+
+    assert (
+        plan.operation
+        == "ASSETS"
+    )
+
+    assert (
+        plan.asset_type
+        is None
+    )
+
+    assert set(
+        plan.asset_types
+    ) == {
+        "SERVER",
+        "VM",
+    }
+
+
+def test_semantic_query_unions_multiple_asset_types(
+    semantic_runtime,
+):
+
+    engine = semantic_runtime[
+        "engine"
+    ]
+
+    result = engine.query(
+        "Mostrame máquinas virtuales y servicios"
+    )
+
+    assert (
+        result["status"]
+        == "SUCCESS"
+    )
+
+    assert (
+        result["semantic"]["intent"]
+        == "INVENTORY"
+    )
+
+    assert set(
+        result["semantic"][
+            "asset_types"
+        ]
+    ) == {
+        "VM",
+        "SERVICE",
+    }
+
+    assert (
+        result["count"]
+        == 2
+    )
+
+    assert {
+        asset["name"]
+        for asset in result[
+            "assets"
+        ]
+    } == {
+        "node-alpha",
+        "runtime-alpha",
+    }
+
+
+
+def test_structured_inventory_executor_supports_broad_inventory(
+    semantic_runtime,
+):
+
+    engine = semantic_runtime[
+        "engine"
+    ]
+
+    result = (
+        engine
+        .query_inventory_selectors(
+            question=(
+                "synthetic broad inventory"
+            ),
+            asset_types=[],
+            statuses=[],
+        )
+    )
+
+    assert (
+        result["status"]
+        == "SUCCESS"
+    )
+
+    assert (
+        result["semantic"][
+            "intent"
+        ]
+        == "INVENTORY"
+    )
+
+    assert (
+        result["semantic"][
+            "asset_types"
+        ]
+        == []
+    )
+
+    assert (
+        result["semantic"][
+            "statuses"
+        ]
+        == []
+    )
+
+    assert (
+        result["count"]
+        == len(
+            engine.registry.assets()
+        )
+    )
+
+
+def test_structured_inventory_executor_unions_types_and_status(
+    semantic_runtime,
+):
+
+    engine = semantic_runtime[
+        "engine"
+    ]
+
+    registry = semantic_runtime[
+        "registry"
+    ]
+
+    for asset in registry.assets():
+
+        if asset.type.name in {
+            "VM",
+            "SERVICE",
+        }:
+
+            asset.status = (
+                AssetStatus.ONLINE
+            )
+
+    result = (
+        engine
+        .query_inventory_selectors(
+            question=(
+                "synthetic typed inventory"
+            ),
+            asset_types=[
+                "VM",
+                "SERVICE",
+            ],
+            statuses=[
+                "ONLINE",
+            ],
+        )
+    )
+
+    assert (
+        result["status"]
+        == "SUCCESS"
+    )
+
+    assert set(
+        result["semantic"][
+            "asset_types"
+        ]
+    ) == {
+        "VM",
+        "SERVICE",
+    }
+
+    assert (
+        result["semantic"][
+            "statuses"
+        ]
+        == [
+            "ONLINE",
+        ]
+    )
+
+    assert {
+        asset["type"]
+        for asset in result[
+            "assets"
+        ]
+    } == {
+        "VM",
+        "SERVICE",
+    }
+
+    assert all(
+        asset["status"]
+        == "ONLINE"
+        for asset in result[
+            "assets"
+        ]
+    )
+
+
+
+def test_type_alias_prefers_longest_overlapping_phrase(
+    semantic_runtime,
+):
+
+    engine = semantic_runtime[
+        "engine"
+    ]
+
+    plan = engine.plan(
+        "¿Qué contenedores LXC tengo?"
+    )
+
+    assert (
+        plan.asset_type
+        == "LXC"
+    )
+
+    assert (
+        plan.asset_types
+        == [
+            "LXC",
+        ]
+    )
+
+
+def test_type_alias_preserves_distinct_non_overlapping_categories(
+    semantic_runtime,
+):
+
+    engine = semantic_runtime[
+        "engine"
+    ]
+
+    plan = engine.plan(
+        "Mostrame contenedores y LXC"
+    )
+
+    assert (
+        plan.asset_type
+        is None
+    )
+
+    assert set(
+        plan.asset_types
+    ) == {
+        "CONTAINER",
+        "LXC",
+    }
