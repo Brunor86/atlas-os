@@ -7,6 +7,9 @@ from datetime import (
 from atlas.services.sentinel.engine import (
     SentinelEngine,
 )
+from atlas.services.sentinel.infrastructure_sources import (
+    build_infrastructure_sources,
+)
 from atlas.services.sentinel.sources import (
     AtlasHealthSource,
     BackupSource,
@@ -48,9 +51,12 @@ class SentinelLiveService:
             tuple(sources)
             if sources is not None
             else (
-                IncidentSource(),
-                BackupSource(),
-                AtlasHealthSource(),
+                (
+                    IncidentSource(),
+                    BackupSource(),
+                    AtlasHealthSource(),
+                )
+                + build_infrastructure_sources()
             )
         )
 
