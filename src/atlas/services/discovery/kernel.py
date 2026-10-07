@@ -523,12 +523,22 @@ class DiscoveryKernel:
                 + dependency_relationships
             )
 
-            self.graph_service.persist(
-                relationships
+            graph_persisted = (
+                self.graph_service.persist(
+                    relationships,
+                    authoritative=(
+                        len(discovery_errors)
+                        == 0
+                    ),
+                )
             )
 
             _diagnostic(
-                "ASSET GRAPH PERSISTED:",
+                (
+                    "ASSET GRAPH PERSISTED:"
+                    if graph_persisted
+                    else "ASSET GRAPH PRESERVED:"
+                ),
                 len(relationships)
             )
 

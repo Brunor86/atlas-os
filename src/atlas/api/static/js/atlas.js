@@ -4407,6 +4407,1066 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
+
+    // ============================================================
+    // ATLAS MAP v1
+    // ============================================================
+
+    const atlasMap =
+        document.getElementById(
+            "atlasTopologyMap"
+        );
+
+    const atlasMapCanvas =
+        document.getElementById(
+            "atlasMapCanvas"
+        );
+
+    const atlasMapSummary =
+        document.getElementById(
+            "atlasMapSummary"
+        );
+
+    const atlasMapDetail =
+        document.getElementById(
+            "atlasMapDetail"
+        );
+
+    const atlasMapSearch =
+        document.getElementById(
+            "atlasMapSearch"
+        );
+
+    const atlasMapServices =
+        document.getElementById(
+            "atlasMapServices"
+        );
+
+    const atlasMapRefresh =
+        document.getElementById(
+            "atlasMapRefresh"
+        );
+
+    const atlasMapMessage =
+        document.getElementById(
+            "atlasMapMessage"
+        );
+
+    let atlasMapPayload = null;
+
+
+    function atlasMapVisibleNodes(
+        payload
+    ) {
+
+        const query =
+            String(
+                atlasMapSearch?.value
+                || ""
+            )
+            .trim()
+            .toLowerCase();
+
+        const showServices =
+            Boolean(
+                atlasMapServices?.checked
+            );
+
+
+        return payload.nodes.filter(
+            node => {
+
+                if (
+                    node.type === "SERVICE"
+                    && !showServices
+                ) {
+                    return false;
+                }
+
+                if (!query) {
+                    return true;
+                }
+
+                return [
+                    node.name,
+                    node.type,
+                    node.status,
+                    node.id,
+                    node.network?.hostname,
+                    node.network?.ip,
+                    node.network?.ip_address,
+                    node.network?.vmid,
+                ]
+                    .filter(Boolean)
+                    .join(" ")
+                    .toLowerCase()
+                    .includes(query);
+            }
+        );
+    }
+
+
+    function atlasMapDepths(
+        nodes,
+        edges,
+        roots
+    ) {
+
+        const ids =
+            new Set(
+                nodes.map(
+                    node => node.id
+                )
+            );
+
+        const children =
+            new Map();
+
+        edges.forEach(
+            edge => {
+
+                if (
+                    !ids.has(edge.source)
+                    || !ids.has(edge.target)
+                ) {
+                    return;
+                }
+
+                if (
+                    !children.has(
+                        edge.source
+                    )
+                ) {
+                    children.set(
+                        edge.source,
+                        []
+                    );
+                }
+
+                children
+                    .get(edge.source)
+                    .push(edge.target);
+            }
+        );
+
+
+        const depth =
+            new Map();
+
+        const queue = [];
+
+
+        roots.forEach(
+            id => {
+
+                if (!ids.has(id)) {
+                    return;
+                }
+
+                depth.set(
+                    id,
+                    0
+                );
+
+                queue.push(id);
+            }
+        );
+
+
+        if (!queue.length) {
+
+            nodes
+                .filter(
+                    node =>
+                        node.type === "SERVER"
+                )
+                .forEach(
+                    node => {
+
+                        depth.set(
+                            node.id,
+                            0
+                        );
+
+                        queue.push(
+                            node.id
+                        );
+                    }
+                );
+        }
+
+
+        while (queue.length) {
+
+            const current =
+                queue.shift();
+
+            const currentDepth =
+                depth.get(current)
+                || 0;
+
+            for (
+                const child
+                of (
+                    children.get(current)
+                    || []
+                )
+            ) {
+
+                if (depth.has(child)) {
+                    continue;
+                }
+
+                depth.set(
+                    child,
+                    currentDepth + 1
+                );
+
+                queue.push(child);
+            }
+        }
+
+
+        nodes.forEach(
+            node => {
+
+                if (!depth.has(node.id)) {
+
+                    depth.set(
+                        node.id,
+                        1
+                    );
+                }
+            }
+        );
+
+
+        return depth;
+    }
+
+
+    function atlasMapShowDetail(
+        node
+    ) {
+
+        if (!atlasMapDetail) {
+            return;
+        }
+
+
+        const network =
+            Object.entries(
+                node.network
+                || {}
+            );
+
+
+        atlasMapDetail.innerHTML = "";
+
+        const title =
+            document.createElement(
+                "h4"
+            );
+
+        title.textContent =
+            node.name;
+
+
+        const type =
+            document.createElement(
+                "div"
+            );
+
+        type.className =
+            "atlas-map-detail-type";
+
+        type.textContent =
+            node.type
+            + " · "
+            + node.status;
+
+
+        const meta =
+            document.createElement(
+                "div"
+            );
+
+        meta.className =
+            "atlas-map-detail-grid";
+
+
+        const values = [
+            [
+                "Health",
+                Number(
+                    node.health
+                    || 0
+                ).toFixed(1)
+                + "%"
+            ],
+            [
+                "Criticality",
+                node.criticality
+            ],
+            [
+                "Presence",
+                node.presence
+            ],
+            [
+                "Role",
+                node.primary_role
+            ],
+        ];
+
+
+        values.forEach(
+            item => {
+
+                const box =
+                    document.createElement(
+                        "div"
+                    );
+
+                const label =
+                    document.createElement(
+                        "small"
+                    );
+
+                const value =
+                    document.createElement(
+                        "strong"
+                    );
+
+                label.textContent =
+                    item[0];
+
+                value.textContent =
+                    item[1];
+
+                box.appendChild(label);
+                box.appendChild(value);
+
+                meta.appendChild(box);
+            }
+        );
+
+
+        atlasMapDetail.appendChild(type);
+        atlasMapDetail.appendChild(title);
+        atlasMapDetail.appendChild(meta);
+
+
+        if (network.length) {
+
+            const networkBox =
+                document.createElement(
+                    "div"
+                );
+
+            networkBox.className =
+                "atlas-map-network";
+
+            const heading =
+                document.createElement(
+                    "strong"
+                );
+
+            heading.textContent =
+                "Network / identity";
+
+            networkBox.appendChild(
+                heading
+            );
+
+
+            network.forEach(
+                item => {
+
+                    const row =
+                        document.createElement(
+                            "div"
+                        );
+
+                    const key =
+                        document.createElement(
+                            "small"
+                        );
+
+                    const value =
+                        document.createElement(
+                            "span"
+                        );
+
+                    key.textContent =
+                        item[0];
+
+                    value.textContent =
+                        String(
+                            item[1]
+                        );
+
+                    row.appendChild(key);
+                    row.appendChild(value);
+
+                    networkBox.appendChild(
+                        row
+                    );
+                }
+            );
+
+
+            atlasMapDetail.appendChild(
+                networkBox
+            );
+        }
+
+
+        const id =
+            document.createElement(
+                "div"
+            );
+
+        id.className =
+            "atlas-map-id";
+
+        id.textContent =
+            node.id;
+
+        atlasMapDetail.appendChild(id);
+    }
+
+
+    function atlasMapRender(
+        payload
+    ) {
+
+        if (
+            !atlasMapCanvas
+            || !atlasMapSummary
+        ) {
+            return;
+        }
+
+
+        const nodes =
+            atlasMapVisibleNodes(
+                payload
+            );
+
+        const ids =
+            new Set(
+                nodes.map(
+                    node => node.id
+                )
+            );
+
+
+        const edges =
+            payload.edges.filter(
+                edge =>
+                    ids.has(edge.source)
+                    && ids.has(edge.target)
+            );
+
+
+        const depths =
+            atlasMapDepths(
+                nodes,
+                edges,
+                payload.root_ids
+                || []
+            );
+
+
+        const levels =
+            new Map();
+
+
+        nodes.forEach(
+            node => {
+
+                const level =
+                    depths.get(node.id)
+                    || 0;
+
+                if (!levels.has(level)) {
+
+                    levels.set(
+                        level,
+                        []
+                    );
+                }
+
+                levels
+                    .get(level)
+                    .push(node);
+            }
+        );
+
+
+        const levelNumbers =
+            [
+                ...levels.keys()
+            ].sort(
+                (a, b) => a - b
+            );
+
+
+        levelNumbers.forEach(
+            level => {
+
+                levels
+                    .get(level)
+                    .sort(
+                        (left, right) =>
+                            left.name.localeCompare(
+                                right.name
+                            )
+                    );
+            }
+        );
+
+
+        const nodeWidth = 170;
+        const nodeHeight = 54;
+        const columnGap = 80;
+        const rowGap = 18;
+        const margin = 35;
+
+
+        const maxRows =
+            Math.max(
+                1,
+                ...levelNumbers.map(
+                    level =>
+                        levels
+                            .get(level)
+                            .length
+                )
+            );
+
+
+        const width =
+            Math.max(
+                900,
+                margin * 2
+                + levelNumbers.length
+                * (
+                    nodeWidth
+                    + columnGap
+                )
+            );
+
+        const height =
+            Math.max(
+                460,
+                margin * 2
+                + maxRows
+                * (
+                    nodeHeight
+                    + rowGap
+                )
+            );
+
+
+        atlasMapCanvas.setAttribute(
+            "viewBox",
+            "0 0 "
+            + width
+            + " "
+            + height
+        );
+
+        atlasMapCanvas.innerHTML =
+            "";
+
+
+        const positions =
+            new Map();
+
+
+        levelNumbers.forEach(
+            level => {
+
+                const list =
+                    levels.get(level);
+
+                const total =
+                    list.length
+                    * nodeHeight
+                    + Math.max(
+                        0,
+                        list.length - 1
+                    )
+                    * rowGap;
+
+                const startY =
+                    Math.max(
+                        margin,
+                        (
+                            height
+                            - total
+                        ) / 2
+                    );
+
+
+                list.forEach(
+                    (node, index) => {
+
+                        positions.set(
+                            node.id,
+                            {
+                                x:
+                                    margin
+                                    + level
+                                    * (
+                                        nodeWidth
+                                        + columnGap
+                                    ),
+
+                                y:
+                                    startY
+                                    + index
+                                    * (
+                                        nodeHeight
+                                        + rowGap
+                                    ),
+                            }
+                        );
+                    }
+                );
+            }
+        );
+
+
+        const svgNS =
+            "http://www.w3.org/2000/svg";
+
+
+        edges.forEach(
+            edge => {
+
+                const source =
+                    positions.get(
+                        edge.source
+                    );
+
+                const target =
+                    positions.get(
+                        edge.target
+                    );
+
+                if (
+                    !source
+                    || !target
+                ) {
+                    return;
+                }
+
+
+                const path =
+                    document.createElementNS(
+                        svgNS,
+                        "path"
+                    );
+
+                const x1 =
+                    source.x
+                    + nodeWidth;
+
+                const y1 =
+                    source.y
+                    + nodeHeight / 2;
+
+                const x2 =
+                    target.x;
+
+                const y2 =
+                    target.y
+                    + nodeHeight / 2;
+
+                const middle =
+                    (
+                        x1 + x2
+                    ) / 2;
+
+
+                path.setAttribute(
+                    "d",
+                    "M "
+                    + x1
+                    + " "
+                    + y1
+                    + " C "
+                    + middle
+                    + " "
+                    + y1
+                    + ", "
+                    + middle
+                    + " "
+                    + y2
+                    + ", "
+                    + x2
+                    + " "
+                    + y2
+                );
+
+                path.setAttribute(
+                    "class",
+                    "atlas-map-edge "
+                    + String(
+                        edge.type
+                    )
+                        .toLowerCase()
+                );
+
+                atlasMapCanvas
+                    .appendChild(path);
+            }
+        );
+
+
+        nodes.forEach(
+            node => {
+
+                const position =
+                    positions.get(
+                        node.id
+                    );
+
+                if (!position) {
+                    return;
+                }
+
+
+                const group =
+                    document.createElementNS(
+                        svgNS,
+                        "g"
+                    );
+
+                group.setAttribute(
+                    "class",
+                    "atlas-map-node "
+                    + String(
+                        node.status
+                        || "UNKNOWN"
+                    )
+                        .toLowerCase()
+                    + " "
+                    + String(
+                        node.type
+                        || "UNKNOWN"
+                    )
+                        .toLowerCase()
+                );
+
+                group.setAttribute(
+                    "transform",
+                    "translate("
+                    + position.x
+                    + ","
+                    + position.y
+                    + ")"
+                );
+
+
+                const rect =
+                    document.createElementNS(
+                        svgNS,
+                        "rect"
+                    );
+
+                rect.setAttribute(
+                    "width",
+                    nodeWidth
+                );
+
+                rect.setAttribute(
+                    "height",
+                    nodeHeight
+                );
+
+                rect.setAttribute(
+                    "rx",
+                    "11"
+                );
+
+
+                const type =
+                    document.createElementNS(
+                        svgNS,
+                        "text"
+                    );
+
+                type.setAttribute(
+                    "x",
+                    "13"
+                );
+
+                type.setAttribute(
+                    "y",
+                    "17"
+                );
+
+                type.setAttribute(
+                    "class",
+                    "atlas-map-node-type"
+                );
+
+                type.textContent =
+                    node.type;
+
+
+                const name =
+                    document.createElementNS(
+                        svgNS,
+                        "text"
+                    );
+
+                name.setAttribute(
+                    "x",
+                    "13"
+                );
+
+                name.setAttribute(
+                    "y",
+                    "36"
+                );
+
+                name.setAttribute(
+                    "class",
+                    "atlas-map-node-name"
+                );
+
+                name.textContent =
+                    node.name.length > 22
+                        ? (
+                            node.name.slice(
+                                0,
+                                20
+                            )
+                            + "…"
+                        )
+                        : node.name;
+
+
+                const dot =
+                    document.createElementNS(
+                        svgNS,
+                        "circle"
+                    );
+
+                dot.setAttribute(
+                    "cx",
+                    nodeWidth - 15
+                );
+
+                dot.setAttribute(
+                    "cy",
+                    "15"
+                );
+
+                dot.setAttribute(
+                    "r",
+                    "4"
+                );
+
+                dot.setAttribute(
+                    "class",
+                    "atlas-map-node-dot"
+                );
+
+
+                group.appendChild(rect);
+                group.appendChild(type);
+                group.appendChild(name);
+                group.appendChild(dot);
+
+
+                group.addEventListener(
+                    "click",
+                    () => {
+
+                        atlasMapCanvas
+                            .querySelectorAll(
+                                ".atlas-map-node"
+                            )
+                            .forEach(
+                                item =>
+                                    item.classList
+                                        .remove(
+                                            "selected"
+                                        )
+                            );
+
+                        group.classList.add(
+                            "selected"
+                        );
+
+                        atlasMapShowDetail(
+                            node
+                        );
+                    }
+                );
+
+
+                atlasMapCanvas
+                    .appendChild(group);
+            }
+        );
+
+
+        atlasMapSummary.textContent =
+            nodes.length
+            + " visible nodes · "
+            + edges.length
+            + " visible links · "
+            + (
+                payload.summary
+                    .by_status?.ONLINE
+                || 0
+            )
+            + " online · "
+            + (
+                payload.summary
+                    .by_status?.OFFLINE
+                || 0
+            )
+            + " offline";
+    }
+
+
+    async function atlasMapLoad() {
+
+        if (!atlasMap) {
+            return;
+        }
+
+
+        if (atlasMapRefresh) {
+
+            atlasMapRefresh.disabled =
+                true;
+
+            atlasMapRefresh.textContent =
+                "Refreshing…";
+        }
+
+
+        if (atlasMapMessage) {
+
+            atlasMapMessage.hidden =
+                true;
+        }
+
+
+        try {
+
+            const response =
+                await fetch(
+                    "/api/topology/map"
+                );
+
+            const payload =
+                await response.json();
+
+
+            if (
+                !response.ok
+                || payload.status
+                !== "SUCCESS"
+            ) {
+
+                throw new Error(
+                    payload.error
+                    || "Topology unavailable"
+                );
+            }
+
+
+            atlasMapPayload =
+                payload;
+
+            atlasMapRender(
+                payload
+            );
+
+        }
+
+        catch (error) {
+
+            if (atlasMapMessage) {
+
+                atlasMapMessage.hidden =
+                    false;
+
+                atlasMapMessage.textContent =
+                    "ATLAS Map unavailable: "
+                    + error.message;
+            }
+        }
+
+        finally {
+
+            if (atlasMapRefresh) {
+
+                atlasMapRefresh.disabled =
+                    false;
+
+                atlasMapRefresh.textContent =
+                    "Refresh";
+            }
+        }
+    }
+
+
+    if (atlasMapSearch) {
+
+        atlasMapSearch.addEventListener(
+            "input",
+            () => {
+
+                if (atlasMapPayload) {
+
+                    atlasMapRender(
+                        atlasMapPayload
+                    );
+                }
+            }
+        );
+    }
+
+
+    if (atlasMapServices) {
+
+        atlasMapServices.addEventListener(
+            "change",
+            () => {
+
+                if (atlasMapPayload) {
+
+                    atlasMapRender(
+                        atlasMapPayload
+                    );
+                }
+            }
+        );
+    }
+
+
+    if (atlasMapRefresh) {
+
+        atlasMapRefresh.addEventListener(
+            "click",
+            atlasMapLoad
+        );
+    }
+
+
+    atlasMapLoad();
+
+
     form.addEventListener(
         "submit",
         event => {

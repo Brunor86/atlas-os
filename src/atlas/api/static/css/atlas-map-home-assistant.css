@@ -1,0 +1,464 @@
+/*
+ * Detailed Home Assistant board supersedes
+ * the compact generic Smart Home domain card.
+ */
+.atlas-domain.home {
+    display: none;
+}
+
+.atlas-ha-board {
+    margin-top: 25px;
+    padding: 16px;
+    border: 1px solid rgba(41, 208, 199, 0.42);
+    border-radius: 14px;
+    background:
+        radial-gradient(
+            circle at 50% 0%,
+            rgba(32, 183, 190, 0.10),
+            transparent 42%
+        ),
+        linear-gradient(
+            160deg,
+            rgba(13, 29, 42, 0.98),
+            rgba(7, 16, 24, 0.99)
+        );
+}
+
+.atlas-ha-loading {
+    padding: 30px;
+    color: #829bad;
+    font-size: 11px;
+    text-align: center;
+}
+
+.atlas-ha-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+}
+
+.atlas-ha-title {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+}
+
+.atlas-ha-logo {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    color: #eaffff;
+    font-size: 23px;
+    border: 1px solid rgba(49, 215, 205, 0.45);
+    border-radius: 11px;
+    background:
+        linear-gradient(
+            145deg,
+            rgba(36, 200, 203, 0.24),
+            rgba(39, 107, 163, 0.17)
+        );
+    box-shadow:
+        0 0 24px rgba(34, 205, 201, 0.10);
+}
+
+.atlas-ha-title h3 {
+    margin: 0;
+    color: #f1fbff;
+    font-size: 15px;
+}
+
+.atlas-ha-title p {
+    margin: 4px 0 0;
+    color: #7392a5;
+    font-size: 9px;
+}
+
+.atlas-ha-summary {
+    display: grid;
+    grid-template-columns:
+        repeat(4, minmax(65px, 1fr));
+    gap: 6px;
+}
+
+.atlas-ha-summary > div {
+    min-width: 66px;
+    padding: 7px 9px;
+    border: 1px solid rgba(65, 156, 162, 0.19);
+    border-radius: 8px;
+    background: rgba(5, 14, 20, 0.53);
+    text-align: center;
+}
+
+.atlas-ha-summary strong,
+.atlas-ha-summary small {
+    display: block;
+}
+
+.atlas-ha-summary strong {
+    color: #adf6ef;
+    font-size: 14px;
+}
+
+.atlas-ha-summary small {
+    margin-top: 2px;
+    color: #62828b;
+    font-size: 7px;
+}
+
+.atlas-ha-area {
+    margin-top: 16px;
+}
+
+.atlas-ha-area-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+    padding-bottom: 7px;
+    border-bottom:
+        1px solid
+        rgba(73, 130, 145, 0.18);
+}
+
+.atlas-ha-area-heading strong {
+    color: #dff7f5;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.atlas-ha-area-heading span {
+    color: #5d7f87;
+    font-size: 8px;
+}
+
+.atlas-ha-device-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(185px, 1fr)
+        );
+    gap: 8px;
+}
+
+.atlas-ha-device {
+    position: relative;
+    min-width: 0;
+    min-height: 142px;
+    padding: 10px;
+    border:
+        1px solid
+        rgba(76, 121, 145, 0.29);
+    border-radius: 10px;
+    background:
+        linear-gradient(
+            155deg,
+            rgba(15, 31, 44, 0.94),
+            rgba(7, 16, 24, 0.98)
+        );
+    cursor: pointer;
+    transition:
+        transform 120ms ease,
+        border-color 120ms ease;
+}
+
+.atlas-ha-device:hover {
+    transform: translateY(-1px);
+    border-color:
+        rgba(52, 209, 201, 0.62);
+}
+
+.atlas-ha-device.zigbee {
+    border-color:
+        rgba(255, 200, 72, 0.38);
+}
+
+.atlas-ha-device.camera {
+    border-color:
+        rgba(83, 173, 255, 0.43);
+}
+
+.atlas-ha-device.iot {
+    border-color:
+        rgba(91, 222, 129, 0.38);
+}
+
+.atlas-ha-device.media {
+    border-color:
+        rgba(190, 100, 255, 0.37);
+}
+
+.atlas-ha-device.mobile {
+    border-color:
+        rgba(100, 166, 255, 0.35);
+}
+
+.atlas-ha-device.degraded {
+    box-shadow:
+        inset 0 0 0 1px
+        rgba(255, 208, 78, 0.08);
+}
+
+.atlas-ha-device.offline {
+    opacity: 0.70;
+    border-color:
+        rgba(255, 95, 119, 0.45);
+}
+
+.atlas-ha-device-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.atlas-ha-device-icon {
+    display: grid;
+    place-items: center;
+    width: 31px;
+    height: 31px;
+    flex: 0 0 31px;
+    color: #e8f7ff;
+    font-size: 16px;
+    border-radius: 8px;
+    background:
+        linear-gradient(
+            145deg,
+            rgba(38, 150, 182, 0.18),
+            rgba(66, 77, 155, 0.14)
+        );
+}
+
+.atlas-ha-device-name {
+    min-width: 0;
+    flex: 1;
+}
+
+.atlas-ha-device-name strong {
+    display: block;
+    overflow: hidden;
+    color: #edf8ff;
+    font-size: 9px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.atlas-ha-device-name small {
+    display: block;
+    overflow: hidden;
+    margin-top: 2px;
+    color: #668392;
+    font-size: 7px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.atlas-ha-status {
+    width: 7px;
+    height: 7px;
+    flex: 0 0 7px;
+    border-radius: 50%;
+    background: #54ef98;
+    box-shadow:
+        0 0 10px
+        rgba(84, 239, 152, 0.56);
+}
+
+.atlas-ha-status.degraded {
+    background: #ffd85a;
+    box-shadow:
+        0 0 10px
+        rgba(255, 216, 90, 0.50);
+}
+
+.atlas-ha-status.offline {
+    background: #ff667f;
+    box-shadow:
+        0 0 10px
+        rgba(255, 102, 127, 0.45);
+}
+
+.atlas-ha-status.unknown {
+    background: #77899b;
+    box-shadow: none;
+}
+
+.atlas-ha-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 9px;
+}
+
+.atlas-ha-badge {
+    padding: 3px 5px;
+    color: #82a5b5;
+    font-size: 6.5px;
+    border:
+        1px solid
+        rgba(80, 132, 152, 0.22);
+    border-radius: 5px;
+    background:
+        rgba(14, 39, 49, 0.34);
+}
+
+.atlas-ha-addresses {
+    display: grid;
+    gap: 3px;
+    margin-top: 8px;
+}
+
+.atlas-ha-address {
+    overflow: hidden;
+    color: #66cff0;
+    font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        monospace;
+    font-size: 7px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.atlas-ha-address.ieee {
+    color: #e1c876;
+}
+
+.atlas-ha-device-foot {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 8px;
+    color: #5d7886;
+    font-size: 6.5px;
+}
+
+.atlas-ha-system {
+    margin-top: 18px;
+    padding: 11px;
+    border:
+        1px solid
+        rgba(100, 117, 143, 0.22);
+    border-radius: 11px;
+    background:
+        rgba(8, 14, 23, 0.48);
+}
+
+.atlas-ha-system-heading {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.atlas-ha-system-heading strong {
+    color: #aebdca;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.atlas-ha-system-heading span {
+    color: #566b7d;
+    font-size: 7px;
+}
+
+.atlas-ha-system .atlas-ha-device {
+    min-height: 105px;
+    opacity: 0.82;
+}
+
+.atlas-ha-error {
+    padding: 18px;
+    color: #ffb5c0;
+    font-size: 10px;
+    text-align: center;
+}
+
+.atlas-ha-detail {
+    margin-top: 12px;
+    padding: 12px;
+    border:
+        1px solid
+        rgba(52, 209, 201, 0.33);
+    border-radius: 10px;
+    background:
+        rgba(6, 16, 23, 0.72);
+}
+
+.atlas-ha-detail h4 {
+    margin: 0;
+    color: #edfafa;
+    font-size: 11px;
+}
+
+.atlas-ha-detail-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(120px, 1fr)
+        );
+    gap: 6px;
+    margin-top: 9px;
+}
+
+.atlas-ha-detail-grid > div {
+    padding: 7px;
+    border:
+        1px solid
+        rgba(69, 114, 132, 0.17);
+    border-radius: 7px;
+    background:
+        rgba(3, 10, 16, 0.38);
+}
+
+.atlas-ha-detail-grid small,
+.atlas-ha-detail-grid strong {
+    display: block;
+}
+
+.atlas-ha-detail-grid small {
+    color: #5e7d89;
+    font-size: 6px;
+    text-transform: uppercase;
+}
+
+.atlas-ha-detail-grid strong {
+    overflow-wrap: anywhere;
+    margin-top: 3px;
+    color: #cae7e8;
+    font-size: 8px;
+}
+
+@media (max-width: 850px) {
+    .atlas-ha-heading {
+        flex-direction: column;
+    }
+
+    .atlas-ha-summary {
+        width: 100%;
+    }
+}
+
+@media (max-width: 600px) {
+    .atlas-ha-device-grid {
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0, 1fr)
+            );
+    }
+
+    .atlas-ha-summary {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+}

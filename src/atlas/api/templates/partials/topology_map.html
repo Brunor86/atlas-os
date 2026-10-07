@@ -1,0 +1,353 @@
+
+<link
+    rel="stylesheet"
+    href="/static/css/atlas-map-icons.css?v=1"
+>
+
+<link
+    rel="stylesheet"
+    href="/static/css/atlas-map-final.css?v=1"
+>
+
+<link
+    rel="stylesheet"
+    href="/static/css/atlas-map-home-assistant.css?v=1"
+>
+
+<link
+    rel="stylesheet"
+    href="/static/css/atlas-map-network.css?v=1"
+>
+<link
+    rel="stylesheet"
+    href="/static/css/atlas-map-premium.css?v=1"
+>
+
+<section
+    class="atlas-premium-map"
+    id="atlasPremiumMap"
+>
+    <header class="atlas-premium-header">
+
+        <div class="atlas-premium-brand">
+            <div class="atlas-premium-logo">
+                A
+            </div>
+
+            <div>
+                <span class="atlas-premium-kicker">
+                    LIVE INFRASTRUCTURE TOPOLOGY
+                </span>
+
+                <h2>ATLAS Map</h2>
+
+                <p>
+                    Homelab · Smart Home · Data · AI · Satellite
+                </p>
+            </div>
+        </div>
+
+        <div class="atlas-premium-header-actions">
+
+            <label class="atlas-premium-search">
+                <span>⌕</span>
+                <input
+                    id="atlasPremiumSearch"
+                    type="search"
+                    placeholder="Find asset…"
+                    autocomplete="off"
+                >
+            </label>
+
+            <label class="atlas-premium-toggle">
+                <input
+                    id="atlasPremiumServices"
+                    type="checkbox"
+                >
+                <span>System services</span>
+            </label>
+
+            <button
+                id="atlasPremiumRefresh"
+                class="atlas-premium-refresh"
+                type="button"
+            >
+                Refresh
+            </button>
+
+            <div
+                class="atlas-premium-health"
+                id="atlasPremiumHealth"
+            >
+                <i></i>
+                <div>
+                    <strong>Loading topology</strong>
+                    <small>Please wait…</small>
+                </div>
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <div class="atlas-premium-overview">
+
+        <aside class="atlas-premium-legend">
+
+            <div class="atlas-premium-panel-title">
+                Legend
+            </div>
+
+            <div class="atlas-premium-legend-row">
+                <i class="link physical"></i>
+                <span>Infrastructure / host</span>
+            </div>
+
+            <div class="atlas-premium-legend-row">
+                <i class="link application"></i>
+                <span>Application / service</span>
+            </div>
+
+            <div class="atlas-premium-legend-row">
+                <i class="link storage"></i>
+                <span>Storage</span>
+            </div>
+
+            <div class="atlas-premium-legend-row">
+                <i class="state online"></i>
+                <span>Online / healthy</span>
+            </div>
+
+            <div class="atlas-premium-legend-row">
+                <i class="state degraded"></i>
+                <span>Degraded</span>
+            </div>
+
+            <div class="atlas-premium-legend-row">
+                <i class="state offline"></i>
+                <span>Offline</span>
+            </div>
+
+        </aside>
+
+
+        <div class="atlas-premium-uplink">
+
+            <div class="atlas-cloud-card">
+                <span class="atlas-cloud-icon">☁</span>
+
+                <div>
+                    <strong>Internet</strong>
+                    <small>Starlink uplink</small>
+                </div>
+            </div>
+
+            <div class="atlas-uplink-line"></div>
+
+            <div
+                class="atlas-remote-card"
+                id="atlasPremiumRemote"
+            >
+                <span class="atlas-remote-icon">◉</span>
+
+                <div>
+                    <strong>Remote access</strong>
+                    <small>Detecting Tailscale…</small>
+                </div>
+            </div>
+
+        </div>
+
+
+        <aside
+            class="atlas-premium-stats"
+            id="atlasPremiumStats"
+        >
+            <div class="atlas-premium-panel-title">
+                Topology snapshot
+            </div>
+
+            <div class="atlas-stat-grid">
+                <div>
+                    <strong>—</strong>
+                    <small>Assets</small>
+                </div>
+                <div>
+                    <strong>—</strong>
+                    <small>Relations</small>
+                </div>
+                <div>
+                    <strong>—</strong>
+                    <small>Online</small>
+                </div>
+                <div>
+                    <strong>—</strong>
+                    <small>Connected</small>
+                </div>
+            </div>
+        </aside>
+
+    </div>
+
+
+    <main class="atlas-premium-board">
+
+        <div class="atlas-host-stage">
+
+            <div class="atlas-stage-line top"></div>
+
+            <article
+                class="atlas-main-host"
+                id="atlasPremiumHost"
+            >
+                <div class="atlas-card-loading">
+                    Loading Proxmox host…
+                </div>
+            </article>
+
+            <div class="atlas-stage-line bottom"></div>
+
+        </div>
+
+
+        <section class="atlas-guest-stage">
+
+            <div
+                class="atlas-guests"
+                id="atlasPremiumGuests"
+            ></div>
+
+        </section>
+
+
+
+        <section
+            class="atlas-network-board"
+            id="atlasPremiumNetwork"
+        >
+            <div class="atlas-network-loading">
+                Discovering local network…
+            </div>
+        </section>
+
+
+
+        <section
+            class="atlas-ha-board"
+            id="atlasPremiumHomeAssistant"
+        >
+            <div class="atlas-ha-loading">
+                Loading Home Assistant devices…
+            </div>
+        </section>
+
+
+        <section class="atlas-domain-grid">
+
+            <article
+                class="atlas-domain storage"
+                id="atlasPremiumStorage"
+            ></article>
+
+            <article
+                class="atlas-domain docker"
+                id="atlasPremiumDocker"
+            ></article>
+
+            <article
+                class="atlas-domain home"
+                id="atlasPremiumHome"
+            ></article>
+
+            <article
+                class="atlas-domain olivasat"
+                id="atlasPremiumOlivaSat"
+            ></article>
+
+            <article
+                class="atlas-domain ai"
+                id="atlasPremiumAI"
+            ></article>
+
+        </section>
+
+
+        <section
+            class="atlas-services-domain"
+            id="atlasPremiumSystemServices"
+            hidden
+        >
+        </section>
+
+    </main>
+
+
+    <aside
+        class="atlas-premium-detail"
+        id="atlasPremiumDetail"
+        hidden
+    >
+    </aside>
+
+
+    <div
+        class="atlas-premium-error"
+        id="atlasPremiumError"
+        hidden
+    ></div>
+
+</section>
+
+
+<!--
+    Compatibility sink for the first ATLAS Map implementation.
+
+    The existing atlas.js map code remains untouched during redesign.
+    Keeping these IDs prevents the old renderer and its tests from
+    becoming a source of risk while the premium board is evaluated.
+-->
+<section
+    id="atlasTopologyMap"
+    class="atlas-map atlas-map-legacy-sink"
+    aria-hidden="true"
+>
+    <input id="atlasMapSearch" type="search">
+    <input id="atlasMapServices" type="checkbox">
+    <button id="atlasMapRefresh" type="button"></button>
+
+    <div id="atlasMapSummary"></div>
+    <svg id="atlasMapCanvas"></svg>
+    <div id="atlasMapDetail"></div>
+    <div id="atlasMapMessage"></div>
+</section>
+
+
+<script
+    defer
+    src="/static/js/atlas-map-premium.js?v=1"
+></script>
+
+
+<script
+    defer
+    src="/static/js/atlas-map-network.js?v=1"
+></script>
+
+
+<script
+    defer
+    src="/static/js/atlas-map-home-assistant.js?v=1"
+></script>
+
+
+<script
+    defer
+    src="/static/js/atlas-map-final.js?v=1"
+></script>
+
+
+<script
+    defer
+    src="/static/js/atlas-map-icons.js?v=1"
+></script>

@@ -125,6 +125,56 @@ class GraphRepository:
             + self.get_children(asset_id)
         )
 
+    def list_relationships(
+        self,
+    ):
+        cursor = self.database.conn.cursor()
+
+        cursor.execute(
+            """
+            SELECT
+                source_asset_id,
+                target_asset_id,
+                relationship_type,
+                metadata_json,
+                created_at,
+                confidence,
+                evidence_json
+            FROM asset_relationships
+            ORDER BY
+                source_asset_id,
+                target_asset_id,
+                relationship_type
+            """
+        )
+
+        rows = cursor.fetchall()
+
+        return [
+            {
+                "source": row[0],
+                "target": row[1],
+                "type": row[2],
+                "metadata": (
+                    json.loads(row[3])
+                    if row[3]
+                    else {}
+                ),
+                "created_at": row[4],
+                "confidence": float(
+                    row[5]
+                    or 0.0
+                ),
+                "evidence": (
+                    json.loads(row[6])
+                    if row[6]
+                    else []
+                ),
+            }
+            for row in rows
+        ]
+
+
     def exists_relationship(
         self,
         source,

@@ -1,0 +1,91 @@
+/* ============================================================
+   ATLAS MAP v1 · FINAL PRESENTATION LAYER
+   ============================================================ */
+
+.atlas-final-host-ip,
+.atlas-final-guest-state {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 7px;
+    padding: 4px 7px;
+    border: 1px solid rgba(71, 183, 246, 0.25);
+    border-radius: 6px;
+    background: rgba(29, 112, 166, 0.08);
+    color: #75d7ff;
+    font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        monospace;
+    font-size: 8px;
+    font-weight: 600;
+}
+
+.atlas-final-guest-state.stopped {
+    border-color: rgba(255, 104, 126, 0.28);
+    background: rgba(154, 45, 65, 0.08);
+    color: #ff8496;
+}
+
+.atlas-ha-system {
+    position: relative;
+}
+
+.atlas-ha-system-toggle {
+    appearance: none;
+    padding: 4px 8px;
+    border: 1px solid rgba(91, 127, 151, 0.25);
+    border-radius: 6px;
+    background: rgba(15, 29, 41, 0.72);
+    color: #8da6b8;
+    font: inherit;
+    font-size: 7px;
+    cursor: pointer;
+}
+
+.atlas-ha-system-toggle:hover {
+    border-color: rgba(65, 197, 194, 0.45);
+    color: #bcecea;
+}
+
+.atlas-ha-system.is-collapsed
+.atlas-ha-device-grid {
+    display: none;
+}
+
+.atlas-ha-system.is-collapsed {
+    padding-bottom: 10px;
+}
+
+.atlas-ha-system.is-collapsed
+.atlas-ha-system-heading {
+    margin-bottom: 0;
+}
+
+.atlas-premium-host .atlas-final-host-ip,
+#atlasPremiumHost .atlas-final-host-ip {
+    margin-left: 8px;
+}
+
+/*
+ * Stopped infrastructure should remain visible,
+ * but visually subordinate to live infrastructure.
+ */
+.atlas-guest-card.atlas-final-stopped {
+    opacity: 0.68;
+}
+
+.atlas-guest-card.atlas-final-stopped:hover {
+    opacity: 0.88;
+}
+
+/*
+ * Keep the infrastructure hierarchy visually dominant.
+ */
+.atlas-network-board,
+.atlas-ha-board {
+    scroll-margin-top: 18px;
+}

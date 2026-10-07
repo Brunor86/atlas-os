@@ -1,0 +1,219 @@
+/* ============================================================
+   ATLAS MAP v1 · SERVICE IDENTITY ICONOGRAPHY
+   ============================================================ */
+
+.atlas-service-icon {
+    --atlas-icon-accent: #6fd7ff;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    box-sizing: border-box;
+
+    width: 23px;
+    height: 23px;
+
+    flex: 0 0 23px;
+
+    margin-right: 6px;
+
+    border:
+        1px solid
+        color-mix(
+            in srgb,
+            var(--atlas-icon-accent) 55%,
+            transparent
+        );
+
+    border-radius: 6px;
+
+    background:
+        linear-gradient(
+            145deg,
+            color-mix(
+                in srgb,
+                var(--atlas-icon-accent) 22%,
+                rgba(7, 17, 26, 0.96)
+            ),
+            rgba(5, 13, 20, 0.96)
+        );
+
+    color:
+        color-mix(
+            in srgb,
+            var(--atlas-icon-accent) 82%,
+            white
+        );
+
+    box-shadow:
+        inset 0 0 10px
+        color-mix(
+            in srgb,
+            var(--atlas-icon-accent) 8%,
+            transparent
+        );
+
+    font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        monospace;
+
+    font-size: 7px;
+    font-weight: 800;
+    line-height: 1;
+
+    letter-spacing: -0.02em;
+
+    vertical-align: middle;
+
+    text-transform: uppercase;
+}
+
+.atlas-service-icon--wide {
+    width: 28px;
+    flex-basis: 28px;
+}
+
+.atlas-service-icon--device {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+
+    border: 0;
+    border-radius: inherit;
+
+    font-size: 7px;
+}
+
+.atlas-ha-device-icon
+.atlas-service-icon {
+    width: 31px;
+    height: 31px;
+}
+
+.atlas-service-icon-title {
+    white-space: normal;
+}
+
+.atlas-service-icon[data-atlas-icon="proxmox"] {
+    --atlas-icon-accent: #ff9d45;
+}
+
+.atlas-service-icon[data-atlas-icon="homeassistant"] {
+    --atlas-icon-accent: #36c9ff;
+}
+
+.atlas-service-icon[data-atlas-icon="docker"] {
+    --atlas-icon-accent: #4b9fff;
+}
+
+.atlas-service-icon[data-atlas-icon="tailscale"] {
+    --atlas-icon-accent: #d7e4ee;
+}
+
+.atlas-service-icon[data-atlas-icon="debian"] {
+    --atlas-icon-accent: #e36b9d;
+}
+
+.atlas-service-icon[data-atlas-icon="windows"] {
+    --atlas-icon-accent: #42a5ff;
+}
+
+.atlas-service-icon[data-atlas-icon="grafana"] {
+    --atlas-icon-accent: #ff9e42;
+}
+
+.atlas-service-icon[data-atlas-icon="prometheus"] {
+    --atlas-icon-accent: #ff704f;
+}
+
+.atlas-service-icon[data-atlas-icon="adguard"] {
+    --atlas-icon-accent: #5ee58d;
+}
+
+.atlas-service-icon[data-atlas-icon="immich"] {
+    --atlas-icon-accent: #b384ff;
+}
+
+.atlas-service-icon[data-atlas-icon="jellyfin"] {
+    --atlas-icon-accent: #bf79ff;
+}
+
+.atlas-service-icon[data-atlas-icon="postgresql"] {
+    --atlas-icon-accent: #64a9e8;
+}
+
+.atlas-service-icon[data-atlas-icon="redis"] {
+    --atlas-icon-accent: #ff6464;
+}
+
+.atlas-service-icon[data-atlas-icon="mariadb"] {
+    --atlas-icon-accent: #7bbdd1;
+}
+
+.atlas-service-icon[data-atlas-icon="monitoring"] {
+    --atlas-icon-accent: #67e0a7;
+}
+
+.atlas-service-icon[data-atlas-icon="media"] {
+    --atlas-icon-accent: #b78cff;
+}
+
+.atlas-service-icon[data-atlas-icon="satellite"] {
+    --atlas-icon-accent: #73c7ff;
+}
+
+.atlas-service-icon[data-atlas-icon="ai"] {
+    --atlas-icon-accent: #da82ff;
+}
+
+.atlas-service-icon[data-atlas-icon="camera"] {
+    --atlas-icon-accent: #69afff;
+}
+
+.atlas-service-icon[data-atlas-icon="zigbee"] {
+    --atlas-icon-accent: #ffd359;
+}
+
+.atlas-service-icon[data-atlas-icon="iot"] {
+    --atlas-icon-accent: #62df8f;
+}
+
+.atlas-service-icon[data-atlas-icon="storage"] {
+    --atlas-icon-accent: #74c5d9;
+}
+
+.atlas-service-icon[data-atlas-icon="network"] {
+    --atlas-icon-accent: #6ecbf6;
+}
+
+.atlas-service-icon[data-atlas-icon="mobile"] {
+    --atlas-icon-accent: #94b8ff;
+}
+
+.atlas-service-icon[data-atlas-icon="system"] {
+    --atlas-icon-accent: #8aa0b7;
+}
+
+.atlas-service-icon[data-atlas-icon="mqtt"] {
+    --atlas-icon-accent: #c481ff;
+}
+
+.atlas-service-icon[data-atlas-icon="backup"] {
+    --atlas-icon-accent: #7ad9bf;
+}
+
+/*
+ * Give guest/service titles some visual breathing room after
+ * inserting identity badges.
+ */
+.atlas-guest-card h4
+.atlas-service-icon,
+.atlas-network-device strong
+.atlas-service-icon {
+    margin-right: 7px;
+}

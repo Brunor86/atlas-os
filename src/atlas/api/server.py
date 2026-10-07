@@ -46,6 +46,7 @@ from atlas.services.assets.api import AssetAPIService
 from atlas.api.assets import router as assets_router
 from atlas.api.operator_actions import router as operator_actions_router
 from atlas.api.backups import router as backups_router
+from atlas.api.topology import router as topology_router
 
 
 from atlas.storage.repository import SnapshotRepository
@@ -113,6 +114,11 @@ app.include_router(
 
 app.include_router(
     backups_router
+)
+
+
+app.include_router(
+    topology_router
 )
 
 

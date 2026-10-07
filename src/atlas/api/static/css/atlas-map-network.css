@@ -1,0 +1,368 @@
+.atlas-network-board {
+    position: relative;
+    margin-top: 25px;
+    padding: 15px;
+    border: 1px solid rgba(62, 166, 238, 0.38);
+    border-radius: 14px;
+    background:
+        radial-gradient(
+            circle at 50% 0%,
+            rgba(52, 161, 240, 0.10),
+            transparent 40%
+        ),
+        linear-gradient(
+            160deg,
+            rgba(14, 26, 40, 0.98),
+            rgba(8, 15, 24, 0.99)
+        );
+}
+
+.atlas-network-loading {
+    padding: 25px;
+    color: #8299b3;
+    font-size: 11px;
+    text-align: center;
+}
+
+.atlas-network-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.atlas-network-heading h3 {
+    margin: 0;
+    color: #eef7ff;
+    font-size: 15px;
+}
+
+.atlas-network-heading p {
+    margin: 4px 0 0;
+    color: #7189a4;
+    font-size: 9px;
+}
+
+.atlas-network-count {
+    display: flex;
+    gap: 7px;
+}
+
+.atlas-network-count > div {
+    min-width: 66px;
+    padding: 7px 9px;
+    border: 1px solid rgba(82, 130, 175, 0.22);
+    border-radius: 8px;
+    background: rgba(5, 12, 20, 0.56);
+    text-align: center;
+}
+
+.atlas-network-count strong,
+.atlas-network-count small {
+    display: block;
+}
+
+.atlas-network-count strong {
+    color: #bfeaff;
+    font-size: 14px;
+}
+
+.atlas-network-count small {
+    margin-top: 2px;
+    color: #66809a;
+    font-size: 7px;
+}
+
+.atlas-network-tree {
+    position: relative;
+    padding-top: 18px;
+}
+
+.atlas-router-card {
+    width: min(340px, 100%);
+    margin: 0 auto;
+    padding: 13px 15px;
+    border: 1px solid rgba(68, 190, 255, 0.70);
+    border-radius: 12px;
+    background:
+        linear-gradient(
+            150deg,
+            rgba(27, 66, 91, 0.72),
+            rgba(11, 24, 36, 0.92)
+        );
+    box-shadow:
+        0 0 28px rgba(64, 177, 239, 0.09);
+}
+
+.atlas-router-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.atlas-router-icon {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
+    color: #dff5ff;
+    font-size: 20px;
+    border: 1px solid rgba(86, 192, 250, 0.34);
+    border-radius: 10px;
+    background: rgba(35, 124, 177, 0.15);
+}
+
+.atlas-router-card strong {
+    display: block;
+    color: #f0f8ff;
+    font-size: 12px;
+}
+
+.atlas-router-card small {
+    display: block;
+    margin-top: 3px;
+    color: #75a5c5;
+    font-size: 8px;
+}
+
+.atlas-router-address {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.atlas-router-address > div {
+    padding: 7px 8px;
+    border: 1px solid rgba(92, 136, 176, 0.18);
+    border-radius: 7px;
+    background: rgba(3, 10, 17, 0.48);
+}
+
+.atlas-router-address span {
+    display: block;
+    color: #607a95;
+    font-size: 7px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.atlas-router-address b {
+    display: block;
+    overflow: hidden;
+    margin-top: 3px;
+    color: #ccecff;
+    font-size: 9px;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.atlas-network-trunk {
+    width: 1px;
+    height: 28px;
+    margin: 0 auto;
+    background: rgba(73, 184, 244, 0.64);
+}
+
+.atlas-network-bus {
+    height: 1px;
+    margin: 0 4%;
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(73, 184, 244, 0.55) 5%,
+            rgba(73, 184, 244, 0.55) 95%,
+            transparent
+        );
+}
+
+.atlas-network-clients {
+    display: grid;
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(155px, 1fr)
+        );
+    gap: 8px;
+    padding-top: 18px;
+}
+
+.atlas-network-device {
+    position: relative;
+    min-width: 0;
+    min-height: 103px;
+    padding: 10px;
+    border: 1px solid rgba(83, 121, 158, 0.29);
+    border-radius: 10px;
+    background:
+        linear-gradient(
+            155deg,
+            rgba(16, 29, 43, 0.94),
+            rgba(8, 15, 24, 0.97)
+        );
+}
+
+.atlas-network-device::before {
+    content: "";
+    position: absolute;
+    top: -18px;
+    left: 50%;
+    width: 1px;
+    height: 18px;
+    background: rgba(73, 184, 244, 0.36);
+}
+
+.atlas-network-device.known {
+    border-color: rgba(75, 184, 248, 0.53);
+}
+
+.atlas-network-device.home-assistant {
+    border-color: rgba(59, 213, 203, 0.52);
+}
+
+.atlas-network-device.proxmox {
+    border-color: rgba(255, 151, 63, 0.55);
+}
+
+.atlas-network-device.atlas-ai {
+    border-color: rgba(192, 93, 255, 0.52);
+}
+
+.atlas-network-device-top {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.atlas-network-device-icon {
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    flex: 0 0 26px;
+    color: #dbedff;
+    font-size: 13px;
+    border-radius: 7px;
+    background: rgba(62, 124, 174, 0.14);
+}
+
+.atlas-network-device-name {
+    min-width: 0;
+}
+
+.atlas-network-device-name strong {
+    display: block;
+    overflow: hidden;
+    color: #eaf4ff;
+    font-size: 9px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.atlas-network-device-name small {
+    display: block;
+    margin-top: 2px;
+    color: #627b94;
+    font-size: 7px;
+}
+
+.atlas-network-ip {
+    margin-top: 9px;
+    color: #6fd0ff;
+    font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        monospace;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.atlas-network-mac {
+    overflow: hidden;
+    margin-top: 3px;
+    color: #60778d;
+    font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        monospace;
+    font-size: 7px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.atlas-network-mode {
+    margin-top: 10px;
+    color: #577088;
+    font-size: 7px;
+    text-align: right;
+}
+
+.atlas-guest-network-ip {
+    margin-top: 6px;
+    padding: 4px 6px;
+    color: #71d4ff;
+    font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        monospace;
+    font-size: 8px;
+    border: 1px solid rgba(61, 173, 239, 0.21);
+    border-radius: 6px;
+    background: rgba(31, 110, 160, 0.08);
+    text-align: center;
+}
+
+@media (max-width: 700px) {
+    .atlas-network-heading {
+        flex-direction: column;
+    }
+
+    .atlas-network-count {
+        width: 100%;
+    }
+
+    .atlas-network-count > div {
+        flex: 1;
+    }
+
+    .atlas-network-clients {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+}
+
+.atlas-network-origin {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    margin-top: 6px;
+}
+
+.atlas-network-origin span {
+    padding: 2px 4px;
+    color: #7294aa;
+    font-size: 6px;
+    border: 1px solid rgba(88, 132, 163, 0.20);
+    border-radius: 4px;
+    background: rgba(18, 42, 57, 0.28);
+}
+
+.atlas-network-device.vm {
+    border-color: rgba(90, 168, 255, 0.52);
+}
+
+.atlas-network-device.lxc {
+    border-color: rgba(255, 165, 79, 0.50);
+}

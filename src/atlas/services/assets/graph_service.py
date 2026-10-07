@@ -6,10 +6,22 @@ class AssetGraphService:
     def __init__(self):
         self.repository = GraphRepository()
 
-    def persist(self, relationships):
+    def persist(
+        self,
+        relationships,
+        *,
+        authoritative,
+    ):
         """
-        Rebuild graph from current discovery state.
+        Replace the persisted graph only from an authoritative
+        discovery snapshot.
+
+        Partial discovery is useful telemetry, but must never
+        destroy the last known-good topology.
         """
+
+        if authoritative is not True:
+            return False
 
         self.repository.clear_relationships()
 
@@ -17,6 +29,8 @@ class AssetGraphService:
             self.repository.save_relationship(
                 relationship
             )
+
+        return True
 
     def parents(self, asset_id):
         """
