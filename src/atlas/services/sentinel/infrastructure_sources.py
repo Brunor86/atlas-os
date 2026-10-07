@@ -91,7 +91,7 @@ class StorageHealthSource:
 
     name = "storage_health"
 
-    WARNING_TEMPERATURE_C = 50.0
+    WARNING_TEMPERATURE_C = 55.0
     CRITICAL_TEMPERATURE_C = 60.0
 
     def __init__(
@@ -202,10 +202,10 @@ class StorageHealthSource:
 
 
             #
-            # Reuse the thresholds already established by
-            # SmartObservationBuilder:
+            # Sentinel storage temperature thresholds are calibrated
+            # independently from baseline asset health:
             #
-            #   >= 50 C WARNING
+            #   >= 55 C WARNING
             #   >= 60 C CRITICAL
             #
             if (

@@ -69,7 +69,7 @@ def test_storage_temperature_below_warning_is_silent():
             [
                 _asset(
                     metadata={
-                        "temperature_c": 49,
+                        "temperature_c": 54,
                         "smart_available": True,
                         "smart_passed": True,
                     }
@@ -87,7 +87,7 @@ def test_storage_temperature_warning():
             [
                 _asset(
                     metadata={
-                        "temperature_c": 50,
+                        "temperature_c": 55,
                         "smart_available": True,
                         "smart_passed": True,
                     }
