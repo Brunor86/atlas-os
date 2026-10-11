@@ -78,11 +78,24 @@ class SkyObservationService:
         self,
     ) -> dict[str, Any]:
         observations = self.list_observations()
+        catalog = self.catalog()
 
         return {
             "available": self.available(),
             "root": str(self.root),
             "observations": len(observations),
+            "catalog_targets": len(catalog),
+            "current_candidates": sum(
+                1
+                for item in catalog
+                if int(
+                    item.get(
+                        "reception_score",
+                        0,
+                    )
+                    or 0
+                ) >= 60
+            ),
             "rf_confirmed": sum(
                 1
                 for item in observations
