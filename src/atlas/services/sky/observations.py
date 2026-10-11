@@ -170,10 +170,7 @@ class SkyObservationService:
                         "Objeto sin nombre",
                     ),
                     "norad_id": norad,
-                    "category": (
-                        item.get("service")
-                        or "Objeto con transmisor activo"
-                    ),
+                    "category": "Transmisor activo SatNOGS",
                     "primary_frequency_mhz": item.get(
                         "downlink_mhz"
                     ),
@@ -182,12 +179,9 @@ class SkyObservationService:
                         "Desconocido",
                     ),
                     "purpose": (
-                        item.get("description")
-                        or (
-                            "Transmisor activo registrado en SatNOGS DB. "
-                            "ATLAS Sky todavía no realizó una observación "
-                            "confirmada de este objetivo."
-                        )
+                        "Transmisor activo registrado en SatNOGS DB. "
+                        "ATLAS Sky todavía no realizó una observación "
+                        "confirmada de este objetivo."
                     ),
                     "atlas_can_read": [
                         "Firma Doppler orbital",
@@ -345,6 +339,27 @@ class SkyObservationService:
             )
         )
 
+        item["display_status"] = (
+            self._display_status(
+                item.get(
+                    "status",
+                    {},
+                )
+            )
+        )
+
+        item["display_summary"] = (
+            self._display_summary(
+                item
+            )
+        )
+
+        item["display_purpose"] = (
+            self._display_purpose(
+                item
+            )
+        )
+
         item["highlight_results"] = (
             self._highlight_results(
                 item
@@ -415,6 +430,98 @@ class SkyObservationService:
         return f"{year}-{month}-{day}"
 
     @staticmethod
+    def _display_status(
+        status: dict[str, Any],
+    ) -> dict[str, str]:
+        translations = {
+            "VERIFIED": "VERIFICADO",
+            "PRESENT": "PRESENTE",
+            "CONFIRMED": "CONFIRMADA",
+            "NOT_CONFIRMED": "NO CONFIRMADA",
+            "INCONCLUSIVE": "INCONCLUSA",
+            "PENDING": "PENDIENTE",
+            "PROBABLE_NOT_INTELLIGIBLE": "PROBABLE · NO INTELIGIBLE",
+            "HIGH": "ALTA",
+            "HIGH_RF": "ALTA · RF",
+        }
+
+        return {
+            key: translations.get(
+                str(value),
+                str(value).replace(
+                    "_",
+                    " ",
+                ),
+            )
+            for key, value in status.items()
+        }
+
+    @staticmethod
+    def _display_summary(
+        observation: dict[str, Any],
+    ) -> str:
+        known = {
+            "OUT-FM116-PRE": (
+                "ATLAS Sky recibió y decodificó la bajada digital de "
+                "ORBCOMM FM116, reconstruyó telemetría orbital transmitida "
+                "por la nave y validó la trayectoria contra CelesTrak."
+            ),
+            "OUT-ISS-001": (
+                "ATLAS Sky confirmó la bajada de la ISS en 437.800 MHz "
+                "mediante su firma Doppler orbital. Se recuperó un fragmento "
+                "compatible con voz, pero sin contenido inteligible; APRS "
+                "no quedó confirmado."
+            ),
+        }
+
+        return known.get(
+            observation.get("id"),
+            str(
+                observation.get(
+                    "summary",
+                    "Observación archivada por ATLAS Sky.",
+                )
+            ),
+        )
+
+    @staticmethod
+    def _display_purpose(
+        observation: dict[str, Any],
+    ) -> str:
+        norad = (
+            observation.get(
+                "target",
+                {},
+            ).get(
+                "norad_id"
+            )
+        )
+
+        for profile in TARGET_PROFILES:
+            if (
+                profile.get(
+                    "norad_id"
+                )
+                == norad
+            ):
+                return str(
+                    profile.get(
+                        "purpose",
+                        "",
+                    )
+                )
+
+        return str(
+            observation.get(
+                "target",
+                {},
+            ).get(
+                "purpose",
+                "",
+            )
+        )
+
+    @staticmethod
     def _highlight_results(
         observation: dict[str, Any],
     ) -> list[dict[str, str]]:
@@ -430,72 +537,72 @@ class SkyObservationService:
         if observation_id == "OUT-FM116-PRE":
             values = [
                 (
-                    "Decoded ephemerides",
+                    "Efemérides decodificadas",
                     results.get("ephemeris_frames"),
-                    "orbital states received over RF",
+                    "estados orbitales recibidos por radio",
                 ),
                 (
-                    "Strict valid frames",
+                    "Tramas válidas estrictas",
                     results.get("strict_valid_frames"),
-                    "raw packets with valid checksum",
+                    "paquetes crudos con checksum válido",
                 ),
                 (
-                    "Mean position error",
+                    "Error medio de posición",
                     (
                         f'{results.get("mean_position_error_km"):.3f} km'
                         if results.get("mean_position_error_km") is not None
                         else None
                     ),
-                    "decoded ephemeris vs independent TLE",
+                    "efemérides decodificadas vs TLE independiente",
                 ),
                 (
-                    "Mean velocity error",
+                    "Error medio de velocidad",
                     (
                         f'{results.get("mean_velocity_error_m_s"):.3f} m/s'
                         if results.get("mean_velocity_error_m_s") is not None
                         else None
                     ),
-                    "decoded velocity vs reference orbit",
+                    "velocidad decodificada vs órbita de referencia",
                 ),
             ]
 
         elif observation_id == "OUT-ISS-001":
             values = [
                 (
-                    "Doppler correlation",
+                    "Correlación Doppler",
                     (
                         f'{results.get("voice_doppler_correlation"):.4f}'
                         if results.get("voice_doppler_correlation") is not None
                         else None
                     ),
-                    "observed carrier vs ISS orbital model",
+                    "portadora observada vs modelo orbital de la ISS",
                 ),
                 (
-                    "Orbital advantage",
+                    "Ventaja orbital",
                     (
                         f'+{results.get("voice_orbital_advantage_db"):.2f} dB'
                         if results.get("voice_orbital_advantage_db") is not None
                         else None
                     ),
-                    "orbital model over stationary controls",
+                    "modelo orbital frente a controles estacionarios",
                 ),
                 (
-                    "Frequency excursion",
+                    "Excursión de frecuencia",
                     (
                         f'{results.get("voice_frequency_span_hz") / 1000:.3f} kHz'
                         if results.get("voice_frequency_span_hz") is not None
                         else None
                     ),
-                    "measured Doppler span during the pass",
+                    "rango Doppler medido durante el pase",
                 ),
                 (
-                    "Maximum elevation",
+                    "Elevación máxima",
                     (
                         f'{results.get("predicted_max_elevation_deg"):.2f}°'
                         if results.get("predicted_max_elevation_deg") is not None
                         else None
                     ),
-                    "predicted geometry for this pass",
+                    "geometría prevista para este pase",
                 ),
             ]
 
@@ -527,32 +634,32 @@ class SkyObservationService:
 
         presentations = {
             "trajectory_comparison.png": {
-                "title": "Orbital trajectory validation",
+                "title": "Validación de trayectoria orbital",
                 "description": (
                     "Decoded FM116 ephemerides compared with the "
                     "independent CelesTrak reference trajectory. "
                     "Near-overlap is the expected result."
                 ),
                 "metric": (
-                    f'Mean error {results.get("mean_position_error_km"):.3f} km'
+                    f'Error medio {results.get("mean_position_error_km"):.3f} km'
                     if results.get("mean_position_error_km") is not None
                     else None
                 ),
             },
             "ephemeris_position_error.png": {
-                "title": "Position error vs reference",
+                "title": "Error de posición vs referencia",
                 "description": (
                     "Distance between the position transmitted by "
                     "FM116 and the reference TLE solution over time."
                 ),
                 "metric": (
-                    f'Max {results.get("max_position_error_km"):.3f} km'
+                    f'Máx. {results.get("max_position_error_km"):.3f} km'
                     if results.get("max_position_error_km") is not None
                     else None
                 ),
             },
             "ephemeris_altitude.png": {
-                "title": "Altitude agreement",
+                "title": "Concordancia de altitud",
                 "description": (
                     "Altitude decoded directly from the satellite "
                     "compared with the independent orbital model."
@@ -570,7 +677,7 @@ class SkyObservationService:
                 ),
             },
             "OUT-ISS-001_strict_rf.png": {
-                "title": "ISS orbital Doppler confirmation",
+                "title": "Confirmación Doppler orbital de la ISS",
                 "description": (
                     "Received 437.800 MHz carrier tracked against the "
                     "predicted ISS Doppler curve after receiver-frame "
