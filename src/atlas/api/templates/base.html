@@ -24,7 +24,13 @@
 
             <h1>ATLAS</h1>
 
-            <span>Infrastructure Intelligence</span>
+            <span>
+                {% if request.url.path.startswith('/sky') %}
+                    Observatorio personal
+                {% else %}
+                    Infrastructure Intelligence
+                {% endif %}
+            </span>
 
         </div>
 
@@ -33,7 +39,11 @@
                 href="{{ atlas_home_url|default('/') }}"
                 class="{% if request.url.path == '/' %}is-active{% endif %}"
             >
-                Infrastructure
+                {% if request.url.path.startswith('/sky') %}
+                    Infraestructura
+                {% else %}
+                    Infrastructure
+                {% endif %}
             </a>
 
             <a
