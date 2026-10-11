@@ -113,6 +113,14 @@ class SkyPipelineService:
                 audit,
             )
             stage = "PUBLISHED"
+
+        elif self._already_published(
+            manifest
+        ):
+            # Compatibility with observations audited before
+            # the automatic audit.json contract existed.
+            stage = "PUBLISHED"
+
         else:
             stage = "AUDIT_PENDING"
 
@@ -489,6 +497,30 @@ class SkyPipelineService:
         return (
             digest.hexdigest()
             == expected
+        )
+
+    @staticmethod
+    def _already_published(
+        manifest: dict[str, Any],
+    ) -> bool:
+        status = manifest.get(
+            "status",
+            {},
+        )
+
+        results = manifest.get(
+            "results",
+            {},
+        )
+
+        return (
+            status.get("rf")
+            in {
+                "CONFIRMED",
+                "NOT_CONFIRMED",
+                "INCONCLUSIVE",
+            }
+            and bool(results)
         )
 
     @staticmethod
