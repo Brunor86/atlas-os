@@ -11,6 +11,8 @@
 	  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link rel="stylesheet"
           href="{{ url_for('static', path='css/atlas.css') }}?v={{ static_asset_version }}">
+    <link rel="stylesheet"
+          href="{{ url_for('static', path='css/atlas-sky.css') }}?v={{ static_asset_version }}">
 
 </head>
 
@@ -25,6 +27,11 @@
             <span>Infrastructure Intelligence</span>
 
         </div>
+
+        <nav class="atlas-nav">
+            <a href="/">Infrastructure</a>
+            <a href="/sky">Sky</a>
+        </nav>
 
         <div class="version">
 
