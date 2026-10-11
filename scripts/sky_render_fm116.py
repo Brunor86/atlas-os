@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 from pathlib import Path
 
 import matplotlib
@@ -363,6 +364,59 @@ def altitude(
     )
 
 
+def refresh_checksum_manifest(
+    directory: Path,
+):
+    manifest = (
+        directory
+        / "products.sha256"
+    )
+
+    if not manifest.exists():
+        return
+
+    names = []
+
+    for line in manifest.read_text(
+        encoding="utf-8"
+    ).splitlines():
+        parts = line.split(
+            None,
+            1,
+        )
+
+        if len(parts) != 2:
+            continue
+
+        name = parts[1].lstrip("*")
+
+        path = directory / name
+
+        if (
+            path.exists()
+            and path.is_file()
+        ):
+            names.append(name)
+
+    lines = []
+
+    for name in names:
+        path = directory / name
+
+        digest = hashlib.sha256(
+            path.read_bytes()
+        ).hexdigest()
+
+        lines.append(
+            f"{digest}  {name}"
+        )
+
+    manifest.write_text(
+        "\n".join(lines) + "\n",
+        encoding="utf-8",
+    )
+
+
 def main():
     parser = argparse.ArgumentParser(
         description=(
@@ -413,6 +467,10 @@ def main():
         directory,
     )
 
+    refresh_checksum_manifest(
+        directory
+    )
+
     print(
         "ATLAS SKY FM116 FIGURES: REGENERATED"
     )
@@ -426,6 +484,16 @@ def main():
 
         print(
             f"{name}: {path.stat().st_size:,} bytes"
+        )
+
+    manifest = (
+        directory
+        / "products.sha256"
+    )
+
+    if manifest.exists():
+        print(
+            "products.sha256: refreshed"
         )
 
 
