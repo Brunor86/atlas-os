@@ -30,7 +30,7 @@
 
         <nav class="atlas-nav">
             <a
-                href="/"
+                href="{{ atlas_home_url|default('/') }}"
                 class="{% if request.url.path == '/' %}is-active{% endif %}"
             >
                 Infrastructure
