@@ -29,13 +29,19 @@
         </div>
 
         <nav class="atlas-nav">
-            <a href="/">Infrastructure</a>
-            <a href="/sky">Sky</a>
-        </nav>
+            <a
+                href="/"
+                class="{% if request.url.path == '/' %}is-active{% endif %}"
+            >
+                Infrastructure
+            </a>
 
-        <nav class="atlas-nav">
-            <a href="/">Infrastructure</a>
-            <a href="/sky">Sky</a>
+            <a
+                href="/sky"
+                class="{% if request.url.path.startswith('/sky') %}is-active{% endif %}"
+            >
+                Sky
+            </a>
         </nav>
 
         <div class="version">
