@@ -1,3 +1,4 @@
+import hashlib
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, Request
@@ -17,6 +18,25 @@ templates = Jinja2Templates(
 )
 
 router = APIRouter()
+
+
+def _static_asset_version() -> str:
+    digest = hashlib.sha256()
+
+    for path in (
+        BASE_DIR / "static/css/atlas.css",
+        BASE_DIR / "static/css/atlas-sky.css",
+    ):
+        digest.update(
+            path.read_bytes()
+        )
+
+    return digest.hexdigest()[:12]
+
+
+SKY_STATIC_ASSET_VERSION = (
+    _static_asset_version()
+)
 
 
 def _service() -> SkyObservationService:
@@ -42,7 +62,7 @@ def sky_home(
         name="sky.html",
         context={
             "atlas_version": __version__,
-            "static_asset_version": __version__,
+            "static_asset_version": SKY_STATIC_ASSET_VERSION,
             "sky": service.overview(),
             "observations": observations,
             "selected": selected,
@@ -72,7 +92,7 @@ def sky_observation(
         name="sky.html",
         context={
             "atlas_version": __version__,
-            "static_asset_version": __version__,
+            "static_asset_version": SKY_STATIC_ASSET_VERSION,
             "sky": service.overview(),
             "observations": service.list_observations(),
             "selected": selected,
