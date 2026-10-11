@@ -122,8 +122,11 @@ class SkyDiscoveryService:
         *,
         max_pages: int = 100,
     ) -> dict[str, Any]:
+        # SatNOGS DB currently does not accept status=alive on the
+        # satellites endpoint. Fetch the catalog and apply the operational
+        # status filter locally when normalizing each transmitter.
         satellites = self._collect_endpoint(
-            f"{SATNOGS_BASE_URL}/satellites/?status=alive",
+            f"{SATNOGS_BASE_URL}/satellites/",
             max_pages=max_pages,
         )
 
