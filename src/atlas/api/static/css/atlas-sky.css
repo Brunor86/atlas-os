@@ -26,6 +26,11 @@
     background: rgba(0, 113, 227, 0.07);
 }
 
+.atlas-nav a.is-active {
+    color: var(--primary);
+    background: var(--primary-soft);
+}
+
 .sky-page {
     width: 100%;
 }
