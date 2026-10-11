@@ -706,3 +706,173 @@
         grid-template-columns: 1fr;
     }
 }
+
+
+/* ------------------------------------------------------------
+   SPACECRAFT LIBRARY
+   ------------------------------------------------------------ */
+
+.sky-catalog-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.sky-catalog-card,
+.sky-capability-card {
+    background: var(--panel-solid);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-soft);
+}
+
+.sky-catalog-card {
+    padding: 22px;
+}
+
+.sky-catalog-header,
+.sky-capability-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+}
+
+.sky-catalog-header h3,
+.sky-capability-top h3 {
+    margin: 5px 0 0;
+    color: var(--text);
+    font-size: 19px;
+    font-weight: 640;
+    letter-spacing: -.025em;
+}
+
+.sky-frequency-pill {
+    flex: 0 0 auto;
+    padding: 6px 9px;
+    color: var(--primary);
+    background: var(--primary-soft);
+    border-radius: 9px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.sky-catalog-purpose {
+    margin: 18px 0;
+    color: var(--text-secondary);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.sky-catalog-mode {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 11px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+}
+
+.sky-catalog-mode span,
+.sky-readable-list > span {
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.sky-catalog-mode strong {
+    color: var(--text);
+    font-size: 12px;
+}
+
+.sky-readable-list {
+    margin-top: 15px;
+}
+
+.sky-readable-list ul {
+    margin: 10px 0 0;
+    padding-left: 18px;
+}
+
+.sky-readable-list li {
+    margin: 6px 0;
+    color: var(--text-secondary);
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+
+/* ------------------------------------------------------------
+   SDR CAPABILITY
+   ------------------------------------------------------------ */
+
+.sky-capability-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.sky-capability-card {
+    min-height: 195px;
+    padding: 21px;
+}
+
+.sky-capability-band {
+    color: var(--primary);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.sky-capability-rating {
+    flex: 0 0 auto;
+    padding: 5px 8px;
+    border-radius: 999px;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .04em;
+}
+
+.sky-capability-rating.is-strong {
+    color: var(--success);
+    background: rgba(40, 167, 69, .08);
+}
+
+.sky-capability-rating.is-capable {
+    color: var(--primary);
+    background: var(--primary-soft);
+}
+
+.sky-capability-rating.is-limited {
+    color: #a56a00;
+    background: rgba(245, 166, 35, .10);
+}
+
+.sky-capability-rating.is-future {
+    color: var(--muted);
+    background: var(--bg-secondary);
+}
+
+.sky-capability-card p {
+    margin: 17px 0 14px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+.sky-capability-card small {
+    color: var(--muted);
+    font-size: 11px;
+}
+
+@media (max-width: 1050px) {
+    .sky-capability-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 850px) {
+    .sky-catalog-grid,
+    .sky-capability-grid {
+        grid-template-columns: 1fr;
+    }
+}
