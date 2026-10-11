@@ -11,7 +11,7 @@
             </span>
 
             <h1>
-                Radio & orbital observatory
+                Observatorio de radio y órbitas
             </h1>
 
             <p>
@@ -25,12 +25,12 @@
         <div class="sky-station-state">
             <span class="sky-live-dot"></span>
             <div>
-                <small>Observation archive</small>
+                <small>Archivo de observaciones</small>
                 <strong>
                     {% if sky.available %}
-                        Online
+                        En línea
                     {% else %}
-                        Unavailable
+                        No disponible
                     {% endif %}
                 </strong>
             </div>
@@ -40,27 +40,27 @@
 
     <section class="sky-metrics">
         <article>
-            <span>Observations</span>
+            <span>Observaciones</span>
             <strong>{{ sky.observations }}</strong>
-            <small>archived manifests</small>
+            <small>registros archivados</small>
         </article>
 
         <article>
-            <span>RF confirmed</span>
+            <span>RF confirmada</span>
             <strong>{{ sky.rf_confirmed }}</strong>
-            <small>orbital detections</small>
+            <small>detecciones orbitales</small>
         </article>
 
         <article>
-            <span>Valid digital frames</span>
+            <span>Tramas digitales válidas</span>
             <strong>{{ "{:,}".format(sky.strict_valid_frames) }}</strong>
-            <small>checksum validated</small>
+            <small>checksum validado</small>
         </article>
 
         <article>
-            <span>Ephemerides</span>
+            <span>Efemérides</span>
             <strong>{{ sky.ephemeris_frames }}</strong>
-            <small>decoded from spacecraft RF</small>
+            <small>decodificadas desde RF espacial</small>
         </article>
     </section>
 
@@ -72,10 +72,10 @@
         <div class="sky-section-heading">
             <div>
                 <span class="sky-section-kicker">
-                    Observatory log
+                    Bitácora del observatorio
                 </span>
                 <h2>
-                    What ATLAS has observed
+                    Lo que ATLAS logró observar
                 </h2>
             </div>
 
@@ -159,11 +159,11 @@
 
                 <div class="sky-card-footer">
                     <span>
-                        {{ observation.observation_date|default("unknown date") }}
+                        {{ observation.observation_date|default("fecha desconocida") }}
                     </span>
 
                     <strong>
-                        View observation →
+                        Ver observación →
                     </strong>
                 </div>
             </a>
@@ -195,7 +195,7 @@
             </div>
 
             <div class="sky-verdict">
-                <small>Observation verdict</small>
+                <small>Resultado de la observación</small>
                 <strong>
                     RF {{ selected.status.rf }}
                 </strong>
@@ -210,7 +210,7 @@
 
             <div>
                 <h3>
-                    What we learned
+                    Qué aprendimos
                 </h3>
 
                 <p>
@@ -222,7 +222,7 @@
 
         <div class="sky-fact-grid">
             <article>
-                <span>Primary frequency</span>
+                <span>Frecuencia principal</span>
                 <strong>
                     {{ "%.3f"|format(
                         selected.capture.frequency_hz / 1000000
@@ -232,21 +232,21 @@
             </article>
 
             <article>
-                <span>Modulation</span>
+                <span>Modulación</span>
                 <strong>
                     {{ selected.capture.modulation }}
                 </strong>
             </article>
 
             <article>
-                <span>NORAD catalog</span>
+                <span>Catálogo NORAD</span>
                 <strong>
                     {{ selected.target.norad_id }}
                 </strong>
             </article>
 
             <article>
-                <span>Captured</span>
+                <span>Capturada</span>
                 <strong>
                     {{ selected.capture_start|default(
                         selected.observation_date,
@@ -284,22 +284,22 @@
 
             <article class="sky-panel">
                 <span class="sky-panel-label">
-                    Evidence status
+                    Estado de la evidencia
                 </span>
 
                 <h3>
-                    What is confirmed
+                    Qué está confirmado
                 </h3>
 
                 <div class="sky-evidence">
-                    <span>Archive integrity</span>
+                    <span>Integridad del archivo</span>
                     <strong class="sky-status-chip is-confirmed">
                         {{ selected.status.archive }}
                     </strong>
                 </div>
 
                 <div class="sky-evidence">
-                    <span>RF identification</span>
+                    <span>Identificación RF</span>
                     <strong class="sky-status-chip is-confirmed">
                         {{ selected.status.rf }}
                     </strong>
@@ -307,7 +307,7 @@
 
                 {% if selected.status.digital %}
                 <div class="sky-evidence">
-                    <span>Digital decode</span>
+                    <span>Decodificación digital</span>
                     <strong
                         class="
                             sky-status-chip
@@ -323,7 +323,7 @@
 
                 {% if selected.status.voice %}
                 <div class="sky-evidence">
-                    <span>Voice content</span>
+                    <span>Contenido de voz</span>
                     <strong class="sky-status-chip is-warning">
                         {{ selected.status.voice|replace("_", " ") }}
                     </strong>
@@ -343,11 +343,11 @@
 
             <article class="sky-panel">
                 <span class="sky-panel-label">
-                    Mission context
+                    Contexto de la misión
                 </span>
 
                 <h3>
-                    Why this spacecraft is in orbit
+                    Para qué está en órbita
                 </h3>
 
                 <p class="sky-mission-copy">
@@ -369,11 +369,11 @@
         <div class="sky-section-heading sky-product-intro">
             <div>
                 <span class="sky-section-kicker">
-                    Science products
+                    Productos científicos
                 </span>
 
                 <h2>
-                    What the data shows
+                    Qué muestran los datos
                 </h2>
             </div>
 
@@ -453,11 +453,11 @@
 
         <article class="sky-panel sky-audio-panel">
             <span class="sky-panel-label">
-                Received audio
+                Audio recibido
             </span>
 
             <h3>
-                Radio products
+                Productos de radio
             </h3>
 
             {% for artifact in audio %}
@@ -481,11 +481,11 @@
 
         <article class="sky-panel sky-files">
             <span class="sky-panel-label">
-                Reproducibility
+                Reproducibilidad
             </span>
 
             <h3>
-                Observation products
+                Productos de la observación
             </h3>
 
             <div class="sky-file-grid">
@@ -523,11 +523,11 @@
         <div class="sky-section-heading">
             <div>
                 <span class="sky-section-kicker">
-                    Spacecraft library
+                    Biblioteca espacial
                 </span>
 
                 <h2>
-                    What is flying above us
+                    Qué está volando sobre nosotros
                 </h2>
             </div>
 
@@ -565,12 +565,12 @@
                 </p>
 
                 <div class="sky-catalog-mode">
-                    <span>Signal</span>
+                    <span>Señal</span>
                     <strong>{{ target.mode }}</strong>
                 </div>
 
                 <div class="sky-readable-list">
-                    <span>What ATLAS can learn</span>
+                    <span>Qué puede aprender ATLAS</span>
 
                     <ul>
                         {% for capability in target.atlas_can_read %}
@@ -593,11 +593,11 @@
         <div class="sky-section-heading">
             <div>
                 <span class="sky-section-kicker">
-                    Receiver capability
+                    Capacidad del receptor
                 </span>
 
                 <h2>
-                    What our SDR can do
+                    Qué puede hacer nuestro SDR
                 </h2>
             </div>
 
@@ -653,7 +653,7 @@
 
     <section class="sky-empty">
         <h2>
-            No observations discovered
+            No se encontraron observaciones
         </h2>
 
         <p>
