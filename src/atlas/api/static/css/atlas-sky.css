@@ -898,3 +898,33 @@
     color: var(--muted);
     background: var(--bg-secondary);
 }
+
+
+.sky-catalog-badges {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+}
+
+.sky-reception-pill {
+    flex: 0 0 auto;
+    padding: 5px 8px;
+    color: var(--success);
+    background: rgba(40, 167, 69, .08);
+    border-radius: 999px;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .035em;
+    white-space: nowrap;
+}
+
+.sky-reception-reason {
+    margin-top: 12px;
+    padding: 10px 12px;
+    color: var(--text-secondary);
+    background: var(--bg-secondary);
+    border-radius: 10px;
+    font-size: 11px;
+    line-height: 1.45;
+}
