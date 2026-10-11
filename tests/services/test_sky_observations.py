@@ -263,12 +263,47 @@ def test_science_presentation_metadata(
         figures[
             "trajectory_comparison.png"
         ]["title"]
-        == "Orbital trajectory validation"
+        == "Validación de trayectoria orbital"
     )
 
     assert (
         figures[
             "ephemeris_position_error.png"
         ]["metric"]
-        == "Max 1.583 km"
+        == "Máx. 1.583 km"
+    )
+
+
+def test_observation_display_is_localized_without_mutating_evidence(
+    tmp_path,
+):
+    _write_observation(
+        tmp_path,
+        "OUT-ISS-001",
+    )
+
+    observation = (
+        SkyObservationService(
+            tmp_path
+        )
+        .get_observation(
+            "OUT-ISS-001"
+        )
+    )
+
+    assert observation is not None
+
+    assert (
+        observation["status"]["rf"]
+        == "CONFIRMED"
+    )
+
+    assert (
+        observation["display_status"]["rf"]
+        == "CONFIRMADA"
+    )
+
+    assert (
+        "ATLAS Sky confirmó"
+        in observation["display_summary"]
     )
