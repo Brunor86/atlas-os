@@ -517,6 +517,138 @@
 
     {% endif %}
 
+
+    <section class="sky-section">
+
+        <div class="sky-section-heading">
+            <div>
+                <span class="sky-section-kicker">
+                    Spacecraft library
+                </span>
+
+                <h2>
+                    What is flying above us
+                </h2>
+            </div>
+
+            <p>
+                A learning catalog of the spacecraft ATLAS Sky is prepared
+                to observe, why they exist and what our station can extract
+                from their radio signals.
+            </p>
+        </div>
+
+        <div class="sky-catalog-grid">
+
+            {% for target in catalog %}
+
+            <article class="sky-catalog-card">
+
+                <div class="sky-catalog-header">
+                    <div>
+                        <span class="sky-object-type">
+                            {{ target.category }}
+                        </span>
+
+                        <h3>
+                            {{ target.name }}
+                        </h3>
+                    </div>
+
+                    <span class="sky-frequency-pill">
+                        {{ "%.3f"|format(target.primary_frequency_mhz) }} MHz
+                    </span>
+                </div>
+
+                <p class="sky-catalog-purpose">
+                    {{ target.purpose }}
+                </p>
+
+                <div class="sky-catalog-mode">
+                    <span>Signal</span>
+                    <strong>{{ target.mode }}</strong>
+                </div>
+
+                <div class="sky-readable-list">
+                    <span>What ATLAS can learn</span>
+
+                    <ul>
+                        {% for capability in target.atlas_can_read %}
+                        <li>{{ capability }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+            </article>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+
+    <section class="sky-section">
+
+        <div class="sky-section-heading">
+            <div>
+                <span class="sky-section-kicker">
+                    Receiver capability
+                </span>
+
+                <h2>
+                    What our SDR can do
+                </h2>
+            </div>
+
+            <p>
+                Capability depends on the receiver, antenna, filtering and
+                signal-to-noise ratio. The status below reflects the current
+                ATLAS Sky hardware, not merely the RTL-SDR tuning range.
+            </p>
+        </div>
+
+        <div class="sky-capability-grid">
+
+            {% for capability in capabilities %}
+
+            <article class="sky-capability-card">
+
+                <div class="sky-capability-top">
+                    <div>
+                        <span class="sky-capability-band">
+                            {{ capability.band }}
+                        </span>
+
+                        <h3>
+                            {{ capability.title }}
+                        </h3>
+                    </div>
+
+                    <span class="
+                        sky-capability-rating
+                        is-{{ capability.rating|lower }}
+                    ">
+                        {{ capability.rating }}
+                    </span>
+                </div>
+
+                <p>
+                    {{ capability.detail }}
+                </p>
+
+                <small>
+                    {{ capability.examples }}
+                </small>
+
+            </article>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
     {% else %}
 
     <section class="sky-empty">
