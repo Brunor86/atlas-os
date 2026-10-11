@@ -30,6 +30,7 @@ def test_normalizes_active_satnogs_transmitter():
         "ABC": {
             "name": "SAT PRUEBA",
             "norad_cat_id": 12345,
+            "status": "alive",
         }
     }
 
@@ -60,6 +61,11 @@ def test_normalizes_active_satnogs_transmitter():
     assert (
         result["current_antenna_candidate"]
         is True
+    )
+
+    assert (
+        result["priority_score"]
+        > result["reception_score"]
     )
 
 
@@ -120,3 +126,77 @@ def test_cache_is_local_and_offline(tmp_path):
     assert len(
         payload["targets"]
     ) == 1
+
+
+def test_rejects_transmitter_marked_not_alive():
+    satellites = {
+        "12345": {
+            "name": "SAT",
+            "norad_cat_id": 12345,
+            "status": "alive",
+        }
+    }
+
+    assert (
+        SkyDiscoveryService
+        ._normalize_transmitter(
+            {
+                "status": "active",
+                "alive": False,
+                "unconfirmed": False,
+                "norad_cat_id": 12345,
+                "downlink_low": 145_900_000,
+                "mode": "BPSK",
+            },
+            satellites,
+        )
+        is None
+    )
+
+
+def test_rejects_transmitter_without_alive_spacecraft():
+    satellites = {
+        "12345": {
+            "name": "SAT",
+            "norad_cat_id": 12345,
+            "status": "dead",
+        }
+    }
+
+    assert (
+        SkyDiscoveryService
+        ._normalize_transmitter(
+            {
+                "status": "active",
+                "alive": True,
+                "unconfirmed": False,
+                "norad_cat_id": 12345,
+                "downlink_low": 145_900_000,
+                "mode": "BPSK",
+            },
+            satellites,
+        )
+        is None
+    )
+
+
+def test_priority_rewards_decodable_modes_and_science():
+    interesting = (
+        SkyDiscoveryService._priority_score(
+            reception_score=100,
+            mode="GMSK",
+            service="Space Research",
+            baud=4800,
+        )
+    )
+
+    unknown = (
+        SkyDiscoveryService._priority_score(
+            reception_score=100,
+            mode="UNKNOWN",
+            service="Unknown",
+            baud=None,
+        )
+    )
+
+    assert interesting > unknown
