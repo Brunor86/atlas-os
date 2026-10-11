@@ -47,6 +47,7 @@ from atlas.api.assets import router as assets_router
 from atlas.api.operator_actions import router as operator_actions_router
 from atlas.api.backups import router as backups_router
 from atlas.api.topology import router as topology_router
+from atlas.api.sky import router as sky_router
 
 
 from atlas.storage.repository import SnapshotRepository
@@ -64,6 +65,7 @@ def _static_asset_version():
     for path in (
         BASE_DIR / "static/css/atlas.css",
         BASE_DIR / "static/js/atlas.js",
+        BASE_DIR / "static/css/atlas-sky.css",
     ):
 
         digest.update(
@@ -119,6 +121,11 @@ app.include_router(
 
 app.include_router(
     topology_router
+)
+
+
+app.include_router(
+    sky_router
 )
 
 
