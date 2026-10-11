@@ -3,6 +3,11 @@ import os
 from pathlib import Path
 from typing import Any
 
+from atlas.services.sky.profiles import (
+    STATION_CAPABILITIES,
+    TARGET_PROFILES,
+)
+
 
 DEFAULT_OBSERVATIONS_ROOT = Path(
     os.getenv(
@@ -110,6 +115,22 @@ class SkyObservationService:
                 for item in observations
             ),
         }
+
+    def catalog(
+        self,
+    ) -> list[dict[str, Any]]:
+        return [
+            dict(item)
+            for item in TARGET_PROFILES
+        ]
+
+    def station_capabilities(
+        self,
+    ) -> list[dict[str, Any]]:
+        return [
+            dict(item)
+            for item in STATION_CAPABILITIES
+        ]
 
     def get_observation(
         self,
