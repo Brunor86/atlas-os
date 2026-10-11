@@ -1,0 +1,436 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="sky-page">
+
+    <section class="sky-hero">
+        <div>
+            <span class="sky-eyebrow">
+                ATLAS SKY
+            </span>
+
+            <h1>
+                Radio & orbital observatory
+            </h1>
+
+            <p>
+                Real observations captured by the ATLAS Sky ground station,
+                decoded locally and preserved with their scientific products.
+            </p>
+        </div>
+
+        <div class="sky-station-state">
+            <span class="sky-live-dot"></span>
+            <div>
+                <small>Archive</small>
+                <strong>
+                    {% if sky.available %}
+                        ONLINE
+                    {% else %}
+                        UNAVAILABLE
+                    {% endif %}
+                </strong>
+            </div>
+        </div>
+    </section>
+
+
+    <section class="sky-metrics">
+
+        <article>
+            <span>Observations</span>
+            <strong>{{ sky.observations }}</strong>
+            <small>archived manifests</small>
+        </article>
+
+        <article>
+            <span>RF confirmed</span>
+            <strong>{{ sky.rf_confirmed }}</strong>
+            <small>orbital detections</small>
+        </article>
+
+        <article>
+            <span>Valid frames</span>
+            <strong>{{ "{:,}".format(sky.strict_valid_frames) }}</strong>
+            <small>strict checksum</small>
+        </article>
+
+        <article>
+            <span>Ephemerides</span>
+            <strong>{{ sky.ephemeris_frames }}</strong>
+            <small>decoded from space</small>
+        </article>
+
+    </section>
+
+
+    {% if observations %}
+
+    <section class="sky-section">
+
+        <div class="sky-heading">
+            <div>
+                <span>OBSERVATORY LOG</span>
+                <h2>Confirmed observations</h2>
+            </div>
+        </div>
+
+        <div class="sky-observation-grid">
+
+            {% for observation in observations %}
+
+            <a
+                class="sky-observation-card
+                {% if selected and selected.id == observation.id %}
+                    is-selected
+                {% endif %}
+                "
+                href="/sky/{{ observation.id }}"
+            >
+                <div class="sky-card-top">
+                    <div>
+                        <span class="sky-object-type">
+                            {{ observation.target.category|replace("_", " ")|upper }}
+                        </span>
+
+                        <h3>
+                            {{ observation.target.name }}
+                        </h3>
+                    </div>
+
+                    <span class="sky-confidence">
+                        {{ observation.status.confidence|default("UNKNOWN") }}
+                    </span>
+                </div>
+
+                <div class="sky-frequency">
+                    {{ "%.3f"|format(
+                        observation.capture.frequency_hz / 1000000
+                    ) }}
+                    MHz
+                    <span>
+                        {{ observation.capture.modulation }}
+                    </span>
+                </div>
+
+                <p>
+                    {{ observation.summary }}
+                </p>
+
+                <div class="sky-status-row">
+                    <span class="is-confirmed">
+                        RF {{ observation.status.rf }}
+                    </span>
+
+                    {% if observation.status.digital %}
+                    <span>
+                        DIGITAL {{ observation.status.digital }}
+                    </span>
+                    {% endif %}
+
+                    {% if observation.status.voice %}
+                    <span>
+                        VOICE {{ observation.status.voice|replace("_", " ") }}
+                    </span>
+                    {% endif %}
+                </div>
+
+                <div class="sky-card-footer">
+                    <span>
+                        {{ observation.observation_date|default("unknown date") }}
+                    </span>
+                    <strong>
+                        View observation →
+                    </strong>
+                </div>
+            </a>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+
+    {% if selected %}
+
+    <section class="sky-section sky-detail">
+
+        <div class="sky-detail-header">
+
+            <div>
+                <span class="sky-eyebrow">
+                    {{ selected.id }}
+                </span>
+
+                <h2>
+                    {{ selected.target.name }}
+                </h2>
+
+                <p>
+                    {{ selected.target.purpose }}
+                </p>
+            </div>
+
+            <div class="sky-verdict">
+                <small>Observation verdict</small>
+                <strong>
+                    {{ selected.status.rf }}
+                </strong>
+            </div>
+
+        </div>
+
+
+        <div class="sky-fact-grid">
+
+            <article>
+                <span>Frequency</span>
+                <strong>
+                    {{ "%.3f"|format(
+                        selected.capture.frequency_hz / 1000000
+                    ) }}
+                    MHz
+                </strong>
+            </article>
+
+            <article>
+                <span>Modulation</span>
+                <strong>
+                    {{ selected.capture.modulation }}
+                </strong>
+            </article>
+
+            <article>
+                <span>NORAD</span>
+                <strong>
+                    {{ selected.target.norad_id }}
+                </strong>
+            </article>
+
+            <article>
+                <span>Captured</span>
+                <strong>
+                    {{ selected.capture_start|default(
+                        selected.observation_date,
+                        true
+                    ) }}
+                </strong>
+            </article>
+
+        </div>
+
+
+        <div class="sky-result-layout">
+
+            <article class="sky-panel">
+
+                <span class="sky-panel-label">
+                    WHAT ATLAS READ
+                </span>
+
+                <h3>
+                    Measured & decoded data
+                </h3>
+
+                <div class="sky-result-table">
+
+                    {% for key, value in selected.results.items() %}
+
+                    <div>
+                        <span>
+                            {{ key|replace("_", " ") }}
+                        </span>
+
+                        <strong>
+                            {% if value is sameas true %}
+                                YES
+                            {% elif value is sameas false %}
+                                NO
+                            {% else %}
+                                {{ value }}
+                            {% endif %}
+                        </strong>
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+            </article>
+
+
+            <article class="sky-panel">
+
+                <span class="sky-panel-label">
+                    WHY IT EXISTS
+                </span>
+
+                <h3>
+                    Mission context
+                </h3>
+
+                <p class="sky-mission-copy">
+                    {{ selected.target.purpose }}
+                </p>
+
+                <div class="sky-evidence">
+                    <span>Archive</span>
+                    <strong>
+                        {{ selected.status.archive }}
+                    </strong>
+                </div>
+
+                <div class="sky-evidence">
+                    <span>RF evidence</span>
+                    <strong>
+                        {{ selected.status.rf }}
+                    </strong>
+                </div>
+
+                {% if selected.status.digital %}
+                <div class="sky-evidence">
+                    <span>Digital decode</span>
+                    <strong>
+                        {{ selected.status.digital }}
+                    </strong>
+                </div>
+                {% endif %}
+
+            </article>
+
+        </div>
+
+
+        {% set images = selected.artifact_inventory
+            |selectattr("kind", "equalto", "image")
+            |selectattr("exists", "equalto", true)
+            |list
+        %}
+
+        {% if images %}
+
+        <div class="sky-heading sky-products-heading">
+            <div>
+                <span>SCIENCE PRODUCTS</span>
+                <h2>What we measured</h2>
+            </div>
+        </div>
+
+        <div class="sky-image-grid">
+
+            {% for artifact in images %}
+
+            <figure class="sky-product">
+                <img
+                    src="/api/sky/observations/{{ selected.id }}/artifacts/{{ artifact.name }}"
+                    alt="{{ artifact.name }}"
+                    loading="lazy"
+                >
+
+                <figcaption>
+                    {{ artifact.name|replace("_", " ") }}
+                </figcaption>
+            </figure>
+
+            {% endfor %}
+
+        </div>
+
+        {% endif %}
+
+
+        {% set audio = selected.artifact_inventory
+            |selectattr("kind", "equalto", "audio")
+            |selectattr("exists", "equalto", true)
+            |list
+        %}
+
+        {% if audio %}
+
+        <article class="sky-panel sky-audio-panel">
+
+            <span class="sky-panel-label">
+                RECEIVED AUDIO
+            </span>
+
+            <h3>
+                Radio products
+            </h3>
+
+            {% for artifact in audio %}
+            <div class="sky-audio-item">
+                <span>
+                    {{ artifact.name }}
+                </span>
+
+                <audio controls preload="none">
+                    <source
+                        src="/api/sky/observations/{{ selected.id }}/artifacts/{{ artifact.name }}"
+                        type="audio/wav"
+                    >
+                </audio>
+            </div>
+            {% endfor %}
+
+        </article>
+
+        {% endif %}
+
+
+        <article class="sky-panel sky-files">
+
+            <span class="sky-panel-label">
+                EVIDENCE
+            </span>
+
+            <h3>
+                Observation products
+            </h3>
+
+            <div class="sky-file-grid">
+
+                {% for artifact in selected.artifact_inventory %}
+
+                {% if artifact.exists %}
+
+                <a
+                    href="/api/sky/observations/{{ selected.id }}/artifacts/{{ artifact.name }}"
+                    target="_blank"
+                    rel="noopener"
+                >
+                    <i class="fa-regular fa-file"></i>
+
+                    <span>
+                        {{ artifact.name }}
+                    </span>
+                </a>
+
+                {% endif %}
+
+                {% endfor %}
+
+            </div>
+
+        </article>
+
+    </section>
+
+    {% endif %}
+
+    {% else %}
+
+    <section class="sky-empty">
+        <h2>No observations discovered</h2>
+        <p>
+            ATLAS Sky will populate this page automatically when
+            observation.json manifests appear in the archive.
+        </p>
+    </section>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}
