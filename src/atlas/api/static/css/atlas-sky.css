@@ -876,3 +876,25 @@
         grid-template-columns: 1fr;
     }
 }
+
+
+/* Estados de capacidad en castellano */
+.sky-capability-rating.is-fuerte {
+    color: var(--success);
+    background: rgba(40, 167, 69, .08);
+}
+
+.sky-capability-rating.is-capaz {
+    color: var(--primary);
+    background: var(--primary-soft);
+}
+
+.sky-capability-rating.is-limitado {
+    color: #a56a00;
+    background: rgba(245, 166, 35, .10);
+}
+
+.sky-capability-rating.is-futuro {
+    color: var(--muted);
+    background: var(--bg-secondary);
+}
