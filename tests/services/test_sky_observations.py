@@ -183,3 +183,92 @@ def test_artifacts_are_manifest_allowlisted(
         )
         is None
     )
+
+
+def test_science_presentation_metadata(
+    tmp_path,
+):
+    directory = _write_observation(
+        tmp_path,
+        "OUT-FM116-PRE",
+    )
+
+    manifest_path = (
+        directory
+        / "observation.json"
+    )
+
+    manifest = json.loads(
+        manifest_path.read_text()
+    )
+
+    manifest["results"].update(
+        {
+            "ephemeris_frames": 84,
+            "strict_valid_frames": 17391,
+            "mean_position_error_km": 1.536,
+            "mean_velocity_error_m_s": 0.016,
+            "max_position_error_km": 1.583,
+            "altitude_min_km": 701.56,
+            "altitude_max_km": 706.43,
+        }
+    )
+
+    manifest["artifacts"] = [
+        "trajectory_comparison.png",
+        "ephemeris_position_error.png",
+    ]
+
+    manifest_path.write_text(
+        json.dumps(manifest)
+    )
+
+    (
+        directory
+        / "trajectory_comparison.png"
+    ).write_bytes(b"png")
+
+    (
+        directory
+        / "ephemeris_position_error.png"
+    ).write_bytes(b"png")
+
+    observation = (
+        SkyObservationService(
+            tmp_path
+        )
+        .get_observation(
+            "OUT-FM116-PRE"
+        )
+    )
+
+    assert observation is not None
+    assert (
+        observation["highlight_results"][0]["value"]
+        == "84"
+    )
+    assert (
+        observation["highlight_results"][2]["value"]
+        == "1.536 km"
+    )
+
+    figures = {
+        item["name"]: item
+        for item in observation[
+            "artifact_inventory"
+        ]
+    }
+
+    assert (
+        figures[
+            "trajectory_comparison.png"
+        ]["title"]
+        == "Orbital trajectory validation"
+    )
+
+    assert (
+        figures[
+            "ephemeris_position_error.png"
+        ]["metric"]
+        == "Max 1.583 km"
+    )
