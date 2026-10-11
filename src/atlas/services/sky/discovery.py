@@ -123,7 +123,7 @@ class SkyDiscoveryService:
         max_pages: int = 100,
     ) -> dict[str, Any]:
         satellites = self._collect_endpoint(
-            f"{SATNOGS_BASE_URL}/satellites/",
+            f"{SATNOGS_BASE_URL}/satellites/?status=alive",
             max_pages=max_pages,
         )
 
@@ -153,11 +153,31 @@ class SkyDiscoveryService:
 
         targets.sort(
             key=lambda item: (
+                -item["priority_score"],
                 -item["reception_score"],
                 item.get("satellite_name") or "",
                 item.get("downlink_hz") or 0,
             )
         )
+
+        unique_spacecraft = {
+            (
+                item.get("norad_id")
+                or item.get("satellite_name")
+            )
+            for item in targets
+        }
+
+        candidate_spacecraft = {
+            (
+                item.get("norad_id")
+                or item.get("satellite_name")
+            )
+            for item in targets
+            if item.get(
+                "current_antenna_candidate"
+            )
+        }
 
         payload = {
             "schema": "atlas-sky-discovery/v1",
@@ -167,6 +187,9 @@ class SkyDiscoveryService:
             "source": "SatNOGS DB",
             "receiver": "RTL-SDR Blog V3",
             "antenna_profile": "dipolo exterior ~54 cm por brazo",
+            "transmitter_count": len(targets),
+            "spacecraft_count": len(unique_spacecraft),
+            "candidate_spacecraft_count": len(candidate_spacecraft),
             "targets": targets,
         }
 
@@ -304,6 +327,12 @@ class SkyDiscoveryService:
         if raw.get("unconfirmed") is True:
             return None
 
+        # SatNOGS transmitter records expose a separate alive flag.
+        # An active database entry is not enough if the transmitter
+        # itself is no longer considered alive.
+        if raw.get("alive") is False:
+            return None
+
         downlink = cls._first_number(
             raw,
             (
@@ -363,6 +392,25 @@ class SkyDiscoveryService:
                 if satellite:
                     break
 
+        # The satellite catalog was requested with status=alive.
+        # If we cannot resolve the transmitter back to that catalog,
+        # do not promote it as an automatic observation candidate.
+        if not satellite:
+            return None
+
+        satellite_status = str(
+            satellite.get(
+                "status",
+                "alive",
+            )
+        ).lower()
+
+        if satellite_status not in {
+            "alive",
+            "operational",
+        }:
+            return None
+
         name = (
             satellite.get("name")
             or raw.get("satellite_name")
@@ -403,6 +451,20 @@ class SkyDiscoveryService:
                 or mode.get("mode")
             )
 
+        mode_text = str(
+            mode or "Desconocido"
+        )
+
+        priority_score = cls._priority_score(
+            reception_score=score,
+            mode=mode_text,
+            service=str(
+                raw.get("service")
+                or ""
+            ),
+            baud=raw.get("baud"),
+        )
+
         return {
             "source": "SatNOGS DB",
             "transmitter_uuid": (
@@ -418,9 +480,7 @@ class SkyDiscoveryService:
                 downlink / 1_000_000.0,
                 6,
             ),
-            "mode": str(
-                mode or "Desconocido"
-            ),
+            "mode": mode_text,
             "baud": raw.get("baud"),
             "description": raw.get(
                 "description"
@@ -429,10 +489,12 @@ class SkyDiscoveryService:
                 "service"
             ),
             "reception_score": score,
+            "priority_score": priority_score,
             "reception_level": level,
             "reception_reason": reason,
             "current_antenna_candidate": (
                 score >= 60
+                and priority_score >= 55
             ),
         }
 
@@ -471,6 +533,83 @@ class SkyDiscoveryService:
             return None
 
         return int(value)
+
+    @staticmethod
+    def _priority_score(
+        *,
+        reception_score: int,
+        mode: str,
+        service: str,
+        baud: Any,
+    ) -> int:
+        score = int(
+            reception_score
+        )
+
+        mode_upper = mode.upper()
+
+        mode_bonus = {
+            "LRPT": 20,
+            "APT": 20,
+            "SSTV": 18,
+            "AFSK": 16,
+            "GMSK": 16,
+            "BPSK": 16,
+            "FSK": 14,
+            "CW": 12,
+            "FMN": 12,
+            "FM": 10,
+            "USB": 6,
+        }
+
+        score += max(
+            (
+                bonus
+                for token, bonus
+                in mode_bonus.items()
+                if token in mode_upper
+            ),
+            default=-8,
+        )
+
+        service_upper = service.upper()
+
+        if "METEOR" in service_upper:
+            score += 18
+        elif "EARTH EXPLORATION" in service_upper:
+            score += 15
+        elif "SPACE RESEARCH" in service_upper:
+            score += 14
+        elif "AMATEUR" in service_upper:
+            score += 12
+        elif "SPACE OPERATION" in service_upper:
+            score += 8
+
+        try:
+            baud_value = float(
+                baud
+            )
+        except (
+            TypeError,
+            ValueError,
+        ):
+            baud_value = None
+
+        if baud_value is not None:
+            if baud_value <= 9_600:
+                score += 8
+            elif baud_value <= 38_400:
+                score += 3
+            elif baud_value > 250_000:
+                score -= 12
+
+        return max(
+            0,
+            min(
+                150,
+                score,
+            ),
+        )
 
     @staticmethod
     def _reception_score(
