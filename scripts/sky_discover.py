@@ -51,6 +51,47 @@ def main():
         )
     ]
 
+    best_by_spacecraft = {}
+
+    for item in candidates:
+        key = (
+            item.get("norad_id")
+            or item.get("satellite_name")
+        )
+
+        current = best_by_spacecraft.get(
+            key
+        )
+
+        if (
+            current is None
+            or item.get(
+                "priority_score",
+                0,
+            )
+            > current.get(
+                "priority_score",
+                0,
+            )
+        ):
+            best_by_spacecraft[
+                key
+            ] = item
+
+    best_spacecraft = sorted(
+        best_by_spacecraft.values(),
+        key=lambda item: (
+            -item.get(
+                "priority_score",
+                0,
+            ),
+            item.get(
+                "satellite_name",
+                "",
+            ),
+        ),
+    )
+
     print(
         json.dumps(
             {
@@ -63,11 +104,19 @@ def main():
                 "transmisores_en_rango": len(
                     targets
                 ),
-                "candidatos_antena_actual": len(
+                "naves_en_rango": result.get(
+                    "spacecraft_count",
+                    0,
+                ),
+                "transmisores_candidatos": len(
                     candidates
                 ),
-                "mejores_candidatos": (
-                    candidates[:20]
+                "naves_candidatas_antena_actual": result.get(
+                    "candidate_spacecraft_count",
+                    0,
+                ),
+                "mejores_naves": (
+                    best_spacecraft[:20]
                 ),
             },
             indent=2,
