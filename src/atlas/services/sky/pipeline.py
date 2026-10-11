@@ -183,8 +183,7 @@ class SkyPipelineService:
         seen = set()
 
         for pattern in (
-            "*.iq",
-            "*.meta.txt",
+            "*.iq.sha256",
             "observation.json",
         ):
             for path in self.root.rglob(
