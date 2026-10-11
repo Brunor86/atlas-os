@@ -194,3 +194,64 @@ def test_pipeline_merges_audit_and_publishes(
         "science.png"
         in manifest["artifacts"]
     )
+
+
+def test_pipeline_preserves_previously_published_manifest(
+    tmp_path,
+):
+    directory = _capture(
+        tmp_path,
+        observation_id="OUT-ISS-001",
+    )
+
+    (
+        directory
+        / "observation.json"
+    ).write_text(
+        json.dumps(
+            {
+                "schema": "atlas-sky-observation/v1",
+                "id": "OUT-ISS-001",
+                "target": {
+                    "name": "International Space Station",
+                    "norad_id": 25544,
+                    "category": "crewed_station",
+                    "purpose": "Test",
+                },
+                "capture": {
+                    "frequency_hz": 437800000,
+                    "modulation": "FM",
+                },
+                "status": {
+                    "archive": "VERIFIED",
+                    "rf": "CONFIRMED",
+                    "confidence": "HIGH_RF",
+                },
+                "results": {
+                    "voice_doppler_correlation": 0.9996,
+                },
+                "summary": "Already audited.",
+                "artifacts": [],
+            }
+        )
+    )
+
+    result = (
+        SkyPipelineService(
+            tmp_path
+        ).scan()[0]
+    )
+
+    assert result["stage"] == "PUBLISHED"
+
+    manifest = json.loads(
+        (
+            directory
+            / "observation.json"
+        ).read_text()
+    )
+
+    assert (
+        manifest["status"]["rf"]
+        == "CONFIRMED"
+    )
