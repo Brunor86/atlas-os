@@ -3,39 +3,39 @@ TARGET_PROFILES = [
         "key": "fm116",
         "name": "ORBCOMM FM116",
         "norad_id": 41189,
-        "category": "Commercial communications",
+        "category": "Comunicaciones comerciales",
         "primary_frequency_mhz": 137.800,
         "mode": "SDPSK 4800",
         "purpose": (
-            "Machine-to-machine satellite communications used for remote "
-            "asset tracking, monitoring and control."
+            "Satélite de comunicaciones máquina a máquina utilizado para "
+            "seguimiento de activos, monitoreo y control remoto."
         ),
         "atlas_can_read": [
-            "Orbital Doppler signature",
-            "Network and control frames",
-            "Spacecraft identifiers",
-            "Orbital-element packets",
-            "Ephemeris position, altitude and velocity",
+            "Firma Doppler orbital",
+            "Tramas de red y control",
+            "Identificadores de la nave",
+            "Paquetes de elementos orbitales",
+            "Efemérides: posición, altitud y velocidad",
         ],
         "audit_kind": "orbcomm_digital",
     },
     {
         "key": "iss",
-        "name": "International Space Station",
+        "name": "Estación Espacial Internacional",
         "norad_id": 25544,
-        "category": "Crewed orbital laboratory",
+        "category": "Laboratorio orbital tripulado",
         "primary_frequency_mhz": 437.800,
         "secondary_frequency_mhz": 437.825,
         "mode": "FM / APRS",
         "purpose": (
-            "Crewed research laboratory. ARISS adds amateur-radio and "
-            "educational communications from the station."
+            "Laboratorio de investigación tripulado. ARISS agrega "
+            "comunicaciones educativas y de radioaficionados desde la estación."
         ),
         "atlas_can_read": [
-            "Orbital Doppler signature",
-            "437.800 MHz repeater downlink",
-            "Voice when signal-to-noise is sufficient",
-            "437.825 MHz APRS when active and decodable",
+            "Firma Doppler orbital",
+            "Bajada del repetidor en 437.800 MHz",
+            "Voz cuando la relación señal/ruido es suficiente",
+            "APRS en 437.825 MHz cuando está activo y es decodificable",
         ],
         "audit_kind": "iss_uhf",
     },
@@ -43,18 +43,18 @@ TARGET_PROFILES = [
         "key": "meteor_m24",
         "name": "METEOR-M2-4",
         "norad_id": 59051,
-        "category": "Weather satellite",
+        "category": "Satélite meteorológico",
         "primary_frequency_mhz": 137.900,
         "mode": "LRPT",
         "purpose": (
-            "Operational Earth-observation weather satellite carrying "
-            "meteorological imaging instruments."
+            "Satélite operativo de observación terrestre con instrumentos "
+            "meteorológicos y transmisión directa de imágenes."
         ),
         "atlas_can_read": [
-            "Orbital Doppler signature",
-            "LRPT digital downlink",
-            "Weather imagery",
-            "Pass quality and image coverage",
+            "Firma Doppler orbital",
+            "Bajada digital LRPT",
+            "Imágenes meteorológicas",
+            "Calidad del pase y cobertura de imagen",
         ],
         "audit_kind": "meteor_lrpt",
     },
@@ -62,18 +62,18 @@ TARGET_PROFILES = [
         "key": "rs44",
         "name": "RS-44",
         "norad_id": 44909,
-        "category": "Scientific / amateur radio",
+        "category": "Científico / radioaficionados",
         "primary_frequency_mhz": 435.605,
-        "mode": "CW / linear transponder",
+        "mode": "CW / transpondedor lineal",
         "purpose": (
-            "Scientific and amateur-radio spacecraft carrying a linear "
-            "transponder and beacon."
+            "Nave científica y de radioaficionados con baliza y "
+            "transpondedor lineal."
         ),
         "atlas_can_read": [
-            "Orbital Doppler signature",
-            "Beacon carrier",
-            "CW telemetry when signal quality permits",
-            "Amateur transponder traffic when present",
+            "Firma Doppler orbital",
+            "Portadora de baliza",
+            "Telemetría CW si la señal lo permite",
+            "Tráfico del transpondedor cuando existe",
         ],
         "audit_kind": "narrowband_uhf",
     },
@@ -81,17 +81,17 @@ TARGET_PROFILES = [
         "key": "ao73",
         "name": "AO-73 / FUNcube-1",
         "norad_id": 39444,
-        "category": "Educational CubeSat",
+        "category": "CubeSat educativo",
         "primary_frequency_mhz": 145.935,
-        "mode": "Telemetry / amateur radio",
+        "mode": "Telemetría / radioaficionados",
         "purpose": (
-            "Educational CubeSat designed for STEM outreach, telemetry "
-            "reception and amateur-radio experimentation."
+            "CubeSat educativo diseñado para divulgación STEM, recepción "
+            "de telemetría y experimentación de radioaficionados."
         ),
         "atlas_can_read": [
-            "Orbital Doppler signature",
-            "Telemetry carrier",
-            "Digital telemetry when link margin is sufficient",
+            "Firma Doppler orbital",
+            "Portadora de telemetría",
+            "Telemetría digital si el margen del enlace es suficiente",
         ],
         "audit_kind": "funcube_vhf",
     },
@@ -101,52 +101,52 @@ TARGET_PROFILES = [
 STATION_CAPABILITIES = [
     {
         "band": "137–146 MHz",
-        "rating": "STRONG",
-        "title": "Weather & low-VHF satellites",
+        "rating": "FUERTE",
+        "title": "Satélites meteorológicos y VHF",
         "detail": (
-            "Best current band with the outdoor ~54 cm-arm dipole. "
-            "FM116 already demonstrated thousands of checksum-valid frames."
+            "Es la mejor zona actual con el dipolo exterior de ~54 cm por brazo. "
+            "FM116 ya demostró miles de tramas válidas por checksum."
         ),
         "examples": "ORBCOMM, METEOR LRPT, AO-73",
     },
     {
         "band": "435–438 MHz",
-        "rating": "CAPABLE",
-        "title": "UHF amateur satellites & ISS",
+        "rating": "CAPAZ",
+        "title": "UHF, ISS y radioaficionados",
         "detail": (
-            "The RTL-SDR receives this band well, but the present VHF dipole "
-            "is mismatched. ISS and RS-44 were still confirmed by Doppler."
+            "El RTL-SDR recibe bien esta banda, pero el dipolo actual no está "
+            "adaptado. Aun así ISS y RS-44 fueron confirmados por Doppler."
         ),
         "examples": "ISS, RS-44",
     },
     {
         "band": "1090 MHz",
-        "rating": "LIMITED",
-        "title": "Aircraft ADS-B",
+        "rating": "LIMITADO",
+        "title": "Aeronaves ADS-B",
         "detail": (
-            "Inside RTL-SDR coverage, but the current antenna is very poorly "
-            "matched. A dedicated ~1090 MHz antenna is the meaningful upgrade."
+            "Está dentro del rango del receptor, pero la antena actual está muy "
+            "desadaptada. Una antena dedicada a 1090 MHz sería la mejora clave."
         ),
         "examples": "ADS-B / Mode-S",
     },
     {
         "band": "HF / ~20 MHz",
-        "rating": "FUTURE",
-        "title": "Solar & Jupiter radio",
+        "rating": "FUTURO",
+        "title": "Radio solar y Júpiter",
         "detail": (
-            "Possible with RTL-SDR Blog V3 direct sampling and a suitable "
-            "long-wire or dedicated HF antenna."
+            "Posible con el RTL-SDR Blog V3 en muestreo directo y una antena "
+            "HF adecuada, por ejemplo un hilo largo."
         ),
-        "examples": "Radio JOVE-style experiments",
+        "examples": "Experimentos tipo Radio JOVE",
     },
     {
         "band": "1420.406 MHz",
-        "rating": "FUTURE",
-        "title": "Neutral hydrogen astronomy",
+        "rating": "FUTURO",
+        "title": "Radioastronomía de hidrógeno neutro",
         "detail": (
-            "Receiver coverage is possible, but useful observations require "
-            "a dish/feed plus low-noise amplification and filtering."
+            "La frecuencia está dentro de la cobertura del receptor, pero para "
+            "observarla de forma útil harán falta plato/alimentador, LNA y filtro."
         ),
-        "examples": "Galactic H I line",
+        "examples": "Línea galáctica H I",
     },
 ]
