@@ -3,6 +3,9 @@ import os
 from pathlib import Path
 from typing import Any
 
+from atlas.services.sky.discovery import (
+    SkyDiscoveryService,
+)
 from atlas.services.sky.profiles import (
     STATION_CAPABILITIES,
     TARGET_PROFILES,
@@ -119,10 +122,113 @@ class SkyObservationService:
     def catalog(
         self,
     ) -> list[dict[str, Any]]:
-        return [
-            dict(item)
+        seeds = [
+            {
+                **dict(item),
+                "catalog_source": "curado",
+                "reception_score": 100,
+                "reception_level": "VALIDADO",
+            }
             for item in TARGET_PROFILES
         ]
+
+        discovered = (
+            SkyDiscoveryService()
+            .load_cache()
+            .get(
+                "targets",
+                [],
+            )
+        )
+
+        known_norad = {
+            item.get("norad_id")
+            for item in seeds
+            if item.get("norad_id")
+        }
+
+        dynamic = []
+
+        for item in discovered:
+            norad = item.get(
+                "norad_id"
+            )
+
+            if (
+                norad
+                and norad in known_norad
+            ):
+                continue
+
+            dynamic.append(
+                {
+                    "key": (
+                        f"satnogs-{item.get('transmitter_uuid')}"
+                    ),
+                    "name": item.get(
+                        "satellite_name",
+                        "Objeto sin nombre",
+                    ),
+                    "norad_id": norad,
+                    "category": (
+                        item.get("service")
+                        or "Objeto con transmisor activo"
+                    ),
+                    "primary_frequency_mhz": item.get(
+                        "downlink_mhz"
+                    ),
+                    "mode": item.get(
+                        "mode",
+                        "Desconocido",
+                    ),
+                    "purpose": (
+                        item.get("description")
+                        or (
+                            "Transmisor activo registrado en SatNOGS DB. "
+                            "ATLAS Sky todavía no realizó una observación "
+                            "confirmada de este objetivo."
+                        )
+                    ),
+                    "atlas_can_read": [
+                        "Firma Doppler orbital",
+                        (
+                            "Señal y modulación del transmisor si el "
+                            "margen del enlace es suficiente"
+                        ),
+                        (
+                            "Telemetría o contenido adicional cuando "
+                            "exista un decodificador compatible"
+                        ),
+                    ],
+                    "audit_kind": "generic_rf",
+                    "catalog_source": "SatNOGS DB",
+                    "reception_score": item.get(
+                        "reception_score",
+                        0,
+                    ),
+                    "reception_level": item.get(
+                        "reception_level",
+                        "EXPLORATORIO",
+                    ),
+                    "reception_reason": item.get(
+                        "reception_reason"
+                    ),
+                }
+            )
+
+        dynamic.sort(
+            key=lambda item: (
+                -int(
+                    item.get(
+                        "reception_score",
+                        0,
+                    )
+                ),
+                item.get("name") or "",
+            )
+        )
+
+        return seeds + dynamic[:100]
 
     def station_capabilities(
         self,
