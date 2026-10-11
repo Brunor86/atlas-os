@@ -1,4 +1,5 @@
 import hashlib
+import os
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, Request
@@ -62,6 +63,10 @@ def sky_home(
         name="sky.html",
         context={
             "atlas_version": __version__,
+            "atlas_home_url": os.getenv(
+                "ATLAS_HOME_URL",
+                "/",
+            ),
             "static_asset_version": SKY_STATIC_ASSET_VERSION,
             "sky": service.overview(),
             "observations": observations,
@@ -92,6 +97,10 @@ def sky_observation(
         name="sky.html",
         context={
             "atlas_version": __version__,
+            "atlas_home_url": os.getenv(
+                "ATLAS_HOME_URL",
+                "/",
+            ),
             "static_asset_version": SKY_STATIC_ASSET_VERSION,
             "sky": service.overview(),
             "observations": service.list_observations(),
