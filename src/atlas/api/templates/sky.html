@@ -112,7 +112,7 @@
                     </div>
 
                     <span class="sky-confidence">
-                        {{ observation.status.confidence|default("UNKNOWN") }}
+                        {{ observation.display_status.confidence|default("SIN CLASIFICAR") }}
                     </span>
                 </div>
 
@@ -128,31 +128,31 @@
                 </div>
 
                 <p>
-                    {{ observation.summary }}
+                    {{ observation.display_summary }}
                 </p>
 
                 <div class="sky-status-row">
                     <span class="is-confirmed">
-                        RF {{ observation.status.rf }}
+                        RF {{ observation.display_status.rf }}
                     </span>
 
                     {% if observation.status.digital %}
                     <span
                         class="{% if observation.status.digital == 'CONFIRMED' %}is-confirmed{% endif %}"
                     >
-                        DIGITAL {{ observation.status.digital }}
+                        DIGITAL {{ observation.display_status.digital }}
                     </span>
                     {% endif %}
 
                     {% if observation.status.voice %}
                     <span>
-                        VOICE {{ observation.status.voice|replace("_", " ") }}
+                        VOZ {{ observation.display_status.voice }}
                     </span>
                     {% endif %}
 
                     {% if observation.status.aprs %}
                     <span>
-                        APRS {{ observation.status.aprs|replace("_", " ") }}
+                        APRS {{ observation.display_status.aprs }}
                     </span>
                     {% endif %}
                 </div>
@@ -190,14 +190,14 @@
                 </h2>
 
                 <p>
-                    {{ selected.target.purpose }}
+                    {{ selected.display_purpose }}
                 </p>
             </div>
 
             <div class="sky-verdict">
                 <small>Resultado de la observación</small>
                 <strong>
-                    RF {{ selected.status.rf }}
+                    RF {{ selected.display_status.rf }}
                 </strong>
             </div>
         </div>
@@ -214,7 +214,7 @@
                 </h3>
 
                 <p>
-                    {{ selected.summary }}
+                    {{ selected.display_summary }}
                 </p>
             </div>
         </article>
@@ -294,14 +294,14 @@
                 <div class="sky-evidence">
                     <span>Integridad del archivo</span>
                     <strong class="sky-status-chip is-confirmed">
-                        {{ selected.status.archive }}
+                        {{ selected.display_status.archive }}
                     </strong>
                 </div>
 
                 <div class="sky-evidence">
                     <span>Identificación RF</span>
                     <strong class="sky-status-chip is-confirmed">
-                        {{ selected.status.rf }}
+                        {{ selected.display_status.rf }}
                     </strong>
                 </div>
 
@@ -316,7 +316,7 @@
                             {% endif %}
                         "
                     >
-                        {{ selected.status.digital }}
+                        {{ selected.display_status.digital }}
                     </strong>
                 </div>
                 {% endif %}
@@ -325,7 +325,7 @@
                 <div class="sky-evidence">
                     <span>Contenido de voz</span>
                     <strong class="sky-status-chip is-warning">
-                        {{ selected.status.voice|replace("_", " ") }}
+                        {{ selected.display_status.voice }}
                     </strong>
                 </div>
                 {% endif %}
@@ -334,7 +334,7 @@
                 <div class="sky-evidence">
                     <span>APRS</span>
                     <strong class="sky-status-chip">
-                        {{ selected.status.aprs|replace("_", " ") }}
+                        {{ selected.display_status.aprs }}
                     </strong>
                 </div>
                 {% endif %}
@@ -351,7 +351,7 @@
                 </h3>
 
                 <p class="sky-mission-copy">
-                    {{ selected.target.purpose }}
+                    {{ selected.display_purpose }}
                 </p>
             </article>
 
