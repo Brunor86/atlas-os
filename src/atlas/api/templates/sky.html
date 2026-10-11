@@ -554,9 +554,15 @@
                         </h3>
                     </div>
 
-                    <span class="sky-frequency-pill">
-                        {{ "%.3f"|format(target.primary_frequency_mhz) }} MHz
-                    </span>
+                    <div class="sky-catalog-badges">
+                        <span class="sky-reception-pill">
+                            {{ target.reception_level|default("EXPLORATORIO") }}
+                        </span>
+
+                        <span class="sky-frequency-pill">
+                            {{ "%.3f"|format(target.primary_frequency_mhz) }} MHz
+                        </span>
+                    </div>
                 </div>
 
                 <p class="sky-catalog-purpose">
@@ -568,8 +574,17 @@
                     <strong>{{ target.mode }}</strong>
                 </div>
 
+                {% if target.reception_reason %}
+                <div class="sky-reception-reason">
+                    {{ target.reception_reason }}
+                </div>
+                {% endif %}
+
                 <div class="sky-readable-list">
-                    <span>Qué puede aprender ATLAS</span>
+                    <span>
+                        Qué puede aprender ATLAS
+                        · {{ target.catalog_source|default("catálogo") }}
+                    </span>
 
                     <ul>
                         {% for capability in target.atlas_can_read %}
