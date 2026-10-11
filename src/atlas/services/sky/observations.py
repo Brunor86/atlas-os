@@ -218,6 +218,12 @@ class SkyObservationService:
             )
         )
 
+        item["highlight_results"] = (
+            self._highlight_results(
+                item
+            )
+        )
+
         item["artifact_inventory"] = (
             self._artifact_inventory(
                 item
@@ -282,12 +288,180 @@ class SkyObservationService:
         return f"{year}-{month}-{day}"
 
     @staticmethod
+    def _highlight_results(
+        observation: dict[str, Any],
+    ) -> list[dict[str, str]]:
+        results = observation.get(
+            "results",
+            {},
+        )
+
+        observation_id = observation.get(
+            "id"
+        )
+
+        if observation_id == "OUT-FM116-PRE":
+            values = [
+                (
+                    "Decoded ephemerides",
+                    results.get("ephemeris_frames"),
+                    "orbital states received over RF",
+                ),
+                (
+                    "Strict valid frames",
+                    results.get("strict_valid_frames"),
+                    "raw packets with valid checksum",
+                ),
+                (
+                    "Mean position error",
+                    (
+                        f'{results.get("mean_position_error_km"):.3f} km'
+                        if results.get("mean_position_error_km") is not None
+                        else None
+                    ),
+                    "decoded ephemeris vs independent TLE",
+                ),
+                (
+                    "Mean velocity error",
+                    (
+                        f'{results.get("mean_velocity_error_m_s"):.3f} m/s'
+                        if results.get("mean_velocity_error_m_s") is not None
+                        else None
+                    ),
+                    "decoded velocity vs reference orbit",
+                ),
+            ]
+
+        elif observation_id == "OUT-ISS-001":
+            values = [
+                (
+                    "Doppler correlation",
+                    (
+                        f'{results.get("voice_doppler_correlation"):.4f}'
+                        if results.get("voice_doppler_correlation") is not None
+                        else None
+                    ),
+                    "observed carrier vs ISS orbital model",
+                ),
+                (
+                    "Orbital advantage",
+                    (
+                        f'+{results.get("voice_orbital_advantage_db"):.2f} dB'
+                        if results.get("voice_orbital_advantage_db") is not None
+                        else None
+                    ),
+                    "orbital model over stationary controls",
+                ),
+                (
+                    "Frequency excursion",
+                    (
+                        f'{results.get("voice_frequency_span_hz") / 1000:.3f} kHz'
+                        if results.get("voice_frequency_span_hz") is not None
+                        else None
+                    ),
+                    "measured Doppler span during the pass",
+                ),
+                (
+                    "Maximum elevation",
+                    (
+                        f'{results.get("predicted_max_elevation_deg"):.2f}°'
+                        if results.get("predicted_max_elevation_deg") is not None
+                        else None
+                    ),
+                    "predicted geometry for this pass",
+                ),
+            ]
+
+        else:
+            values = []
+
+        return [
+            {
+                "label": label,
+                "value": str(value),
+                "note": note,
+            }
+            for label, value, note in values
+            if value is not None
+        ]
+
+    @staticmethod
     def _artifact_inventory(
         observation: dict[str, Any],
     ) -> list[dict[str, Any]]:
         directory = Path(
             observation["_directory"]
         )
+
+        results = observation.get(
+            "results",
+            {},
+        )
+
+        presentations = {
+            "trajectory_comparison.png": {
+                "title": "Orbital trajectory validation",
+                "description": (
+                    "Decoded FM116 ephemerides compared with the "
+                    "independent CelesTrak reference trajectory. "
+                    "Near-overlap is the expected result."
+                ),
+                "metric": (
+                    f'Mean error {results.get("mean_position_error_km"):.3f} km'
+                    if results.get("mean_position_error_km") is not None
+                    else None
+                ),
+            },
+            "ephemeris_position_error.png": {
+                "title": "Position error vs reference",
+                "description": (
+                    "Distance between the position transmitted by "
+                    "FM116 and the reference TLE solution over time."
+                ),
+                "metric": (
+                    f'Max {results.get("max_position_error_km"):.3f} km'
+                    if results.get("max_position_error_km") is not None
+                    else None
+                ),
+            },
+            "ephemeris_altitude.png": {
+                "title": "Altitude agreement",
+                "description": (
+                    "Altitude decoded directly from the satellite "
+                    "compared with the independent orbital model."
+                ),
+                "metric": (
+                    (
+                        f'{results.get("altitude_min_km"):.2f}–'
+                        f'{results.get("altitude_max_km"):.2f} km'
+                    )
+                    if (
+                        results.get("altitude_min_km") is not None
+                        and results.get("altitude_max_km") is not None
+                    )
+                    else None
+                ),
+            },
+            "OUT-ISS-001_strict_rf.png": {
+                "title": "ISS orbital Doppler confirmation",
+                "description": (
+                    "Received 437.800 MHz carrier tracked against the "
+                    "predicted ISS Doppler curve after receiver-frame "
+                    "stationary components were controlled."
+                ),
+                "metric": (
+                    (
+                        f'corr {results.get("voice_doppler_correlation"):.4f} · '
+                        f'+{results.get("voice_orbital_advantage_db"):.2f} dB'
+                    )
+                    if (
+                        results.get("voice_doppler_correlation") is not None
+                        and results.get("voice_orbital_advantage_db") is not None
+                    )
+                    else None
+                ),
+            },
+        }
 
         inventory = []
 
@@ -324,6 +498,11 @@ class SkyObservationService:
             else:
                 kind = "file"
 
+            presentation = presentations.get(
+                name,
+                {},
+            )
+
             inventory.append(
                 {
                     "name": name,
@@ -337,6 +516,16 @@ class SkyObservationService:
                         if path.exists()
                         and path.is_file()
                         else None
+                    ),
+                    "title": presentation.get(
+                        "title",
+                        name.replace("_", " "),
+                    ),
+                    "description": presentation.get(
+                        "description"
+                    ),
+                    "metric": presentation.get(
+                        "metric"
                     ),
                 }
             )
