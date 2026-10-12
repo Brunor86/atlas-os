@@ -300,3 +300,80 @@ def test_meteor_processor_waits_for_verified_archive(
         directory
         / "audit.json"
     ).exists()
+
+
+def test_processor_does_not_treat_frequency_only_capture_as_meteor(
+    tmp_path,
+):
+    directory = (
+        tmp_path
+        / "2026"
+        / "10"
+        / "12"
+        / "OUT-BASELINE-138"
+    )
+
+    directory.mkdir(
+        parents=True
+    )
+
+    iq = (
+        directory
+        / "OUT-BASELINE-138.iq"
+    )
+
+    iq.write_bytes(
+        b"\x80\x80" * 1024
+    )
+
+    import hashlib
+
+    digest = hashlib.sha256(
+        iq.read_bytes()
+    ).hexdigest()
+
+    (
+        directory
+        / "OUT-BASELINE-138.iq.sha256"
+    ).write_text(
+        f"{digest}  {iq}\n"
+    )
+
+    (
+        directory
+        / "OUT-BASELINE-138.meta.txt"
+    ).write_text(
+        "\n".join(
+            [
+                "center_hz=138100000",
+                "sample_rate=1024000",
+                "gain_db=33.8",
+                "archive_status=VERIFIED",
+            ]
+        )
+        + "\n"
+    )
+
+    service = SkyProcessorService(
+        tmp_path,
+        satdump_command="/fake/satdump",
+    )
+
+    result = service.scan()
+
+    assert result == []
+
+    assert not (
+        directory
+        / "processing.json"
+    ).exists()
+
+    assert not (
+        directory
+        / "audit.json"
+    ).exists()
+
+    assert not (
+        directory
+        / "observation.json"
+    ).exists()

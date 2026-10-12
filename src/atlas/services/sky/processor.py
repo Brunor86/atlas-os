@@ -86,6 +86,14 @@ class SkyProcessorService:
             ):
                 continue
 
+            if (
+                profile.get("audit_kind")
+                == "meteor_lrpt"
+                and "METEOR"
+                not in observation_id.upper()
+            ):
+                continue
+
             results.append(
                 self.process_directory(
                     directory,
@@ -179,6 +187,17 @@ class SkyProcessorService:
         audit_kind = profile.get(
             "audit_kind"
         )
+
+        if (
+            audit_kind == "meteor_lrpt"
+            and "METEOR"
+            not in observation_id.upper()
+        ):
+            return {
+                "id": observation_id,
+                "state": "TARGET_IDENTITY_MISMATCH",
+                "audit_kind": audit_kind,
+            }
 
         if (
             audit_kind
