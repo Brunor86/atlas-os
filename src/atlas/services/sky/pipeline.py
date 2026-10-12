@@ -352,6 +352,8 @@ class SkyPipelineService:
             if path.name in {
                 "observation.json",
                 "audit.json",
+                ".archive-verification.json",
+                "processing.json",
             }:
                 continue
 
@@ -459,15 +461,23 @@ class SkyPipelineService:
             / f"{observation_id}.iq"
         )
 
+        if not iq.exists():
+            candidates = sorted(
+                directory.glob("*.iq")
+            )
+
+            if len(candidates) == 1:
+                iq = candidates[0]
+
+        if not iq.exists():
+            return False
+
         checksum_file = (
             directory
-            / f"{observation_id}.iq.sha256"
+            / f"{iq.name}.sha256"
         )
 
-        if (
-            not iq.exists()
-            or not checksum_file.exists()
-        ):
+        if not checksum_file.exists():
             return False
 
         line = checksum_file.read_text(
@@ -479,6 +489,36 @@ class SkyPipelineService:
             return False
 
         expected = line.split()[0]
+
+        stat = iq.stat()
+
+        cache_path = (
+            directory
+            / ".archive-verification.json"
+        )
+
+        cache = (
+            SkyPipelineService._load_json(
+                cache_path
+            )
+        )
+
+        if (
+            cache
+            and cache.get("schema")
+            == "atlas-sky-archive-verification/v1"
+            and cache.get("iq_file")
+            == iq.name
+            and cache.get("sha256")
+            == expected
+            and cache.get("size_bytes")
+            == stat.st_size
+            and cache.get("mtime_ns")
+            == stat.st_mtime_ns
+            and cache.get("ctime_ns")
+            == stat.st_ctime_ns
+        ):
+            return True
 
         digest = hashlib.sha256()
 
@@ -493,10 +533,32 @@ class SkyPipelineService:
 
                 digest.update(block)
 
-        return (
-            digest.hexdigest()
-            == expected
+        computed = digest.hexdigest()
+
+        verified = (
+            computed == expected
         )
+
+        if verified:
+            cache_path.write_text(
+                json.dumps(
+                    {
+                        "schema": (
+                            "atlas-sky-archive-verification/v1"
+                        ),
+                        "iq_file": iq.name,
+                        "size_bytes": stat.st_size,
+                        "mtime_ns": stat.st_mtime_ns,
+                        "ctime_ns": stat.st_ctime_ns,
+                        "sha256": computed,
+                    },
+                    indent=2,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+        return verified
 
     @staticmethod
     def _already_published(

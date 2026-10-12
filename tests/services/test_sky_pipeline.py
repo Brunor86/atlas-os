@@ -255,3 +255,60 @@ def test_pipeline_preserves_previously_published_manifest(
         manifest["status"]["rf"]
         == "CONFIRMED"
     )
+
+
+def test_pipeline_reuses_archive_verification_cache(
+    tmp_path,
+    monkeypatch,
+):
+    from atlas.services.sky import (
+        pipeline as pipeline_module,
+    )
+
+    directory = _capture(
+        tmp_path,
+        observation_id="CACHE-FM116-001",
+    )
+
+    service = SkyPipelineService(
+        tmp_path
+    )
+
+    first = service.scan()[0]
+
+    assert (
+        first["archive_verified"]
+        is True
+    )
+
+    cache = (
+        directory
+        / ".archive-verification.json"
+    )
+
+    assert cache.exists()
+
+    def forbidden_sha256(
+        *args,
+        **kwargs,
+    ):
+        raise AssertionError(
+            "IQ was hashed again"
+        )
+
+    monkeypatch.setattr(
+        pipeline_module.hashlib,
+        "sha256",
+        forbidden_sha256,
+    )
+
+    second = (
+        service.process_directory(
+            directory
+        )
+    )
+
+    assert (
+        second["archive_verified"]
+        is True
+    )
