@@ -200,3 +200,35 @@ def test_priority_rewards_decodable_modes_and_science():
     )
 
     assert interesting > unknown
+
+
+def test_accepts_current_satnogs_in_orbit_status():
+    satellites = {
+        "SAT-ID": {
+            "name": "SAT ACTIVO",
+            "norad_cat_id": 54321,
+            "status": "in orbit",
+        }
+    }
+
+    result = (
+        SkyDiscoveryService
+        ._normalize_transmitter(
+            {
+                "uuid": "tx-live",
+                "satellite": "SAT-ID",
+                "status": "active",
+                "alive": True,
+                "unconfirmed": False,
+                "downlink_low": 145_825_000,
+                "mode": "AFSK",
+                "baud": 1200,
+                "service": "Amateur",
+            },
+            satellites,
+        )
+    )
+
+    assert result is not None
+    assert result["norad_id"] == 54321
+    assert result["current_antenna_candidate"] is True
