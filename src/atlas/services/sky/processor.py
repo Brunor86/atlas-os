@@ -142,6 +142,25 @@ class SkyProcessorService:
             observation_id,
         )
 
+        archive_status = (
+            meta.get(
+                "archive_status",
+                "",
+            )
+            .strip()
+            .upper()
+        )
+
+        if archive_status != "VERIFIED":
+            return {
+                "id": observation_id,
+                "state": "ARCHIVE_NOT_READY",
+                "archive_status": (
+                    archive_status
+                    or "MISSING"
+                ),
+            }
+
         profile = (
             profile
             or SkyPipelineService
@@ -305,14 +324,10 @@ class SkyProcessorService:
             "baseband",
             str(iq),
             str(output_dir),
-            "--samplerate",
-            str(sample_rate),
-            "--baseband_format",
-            "cu8",
-            "--freq_shift",
-            str(frequency_shift),
-            "--satellite_number",
-            "M2-4",
+            f"--samplerate={sample_rate}",
+            "--baseband_format=cu8",
+            f"--freq_shift={frequency_shift}",
+            "--satellite_number=M2-4",
         ]
 
         self._write_json(

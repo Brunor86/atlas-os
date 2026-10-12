@@ -59,6 +59,7 @@ def _meteor_capture(
                 "center_hz=138100000",
                 "sample_rate=1024000",
                 "gain_db=33.8",
+                "archive_status=VERIFIED",
             ]
         )
         + "\n"
@@ -154,17 +155,24 @@ def test_meteor_processor_publishes_audit(
         in command
     )
 
-    assert "cu8" in command
-
-    shift_index = command.index(
-        "--freq_shift"
+    assert (
+        "--samplerate=1024000"
+        in command
     )
 
     assert (
-        command[
-            shift_index + 1
-        ]
-        == "200000"
+        "--baseband_format=cu8"
+        in command
+    )
+
+    assert (
+        "--freq_shift=200000"
+        in command
+    )
+
+    assert (
+        "--satellite_number=M2-4"
+        in command
     )
 
     audit = json.loads(
@@ -233,3 +241,62 @@ def test_missing_satdump_keeps_pending(
         manifest["pipeline"]["stage"]
         == "AUDIT_PENDING"
     )
+
+
+def test_meteor_processor_waits_for_verified_archive(
+    tmp_path,
+):
+    directory = _meteor_capture(
+        tmp_path
+    )
+
+    meta = next(
+        directory.glob(
+            "*.meta.txt"
+        )
+    )
+
+    text = meta.read_text()
+
+    meta.write_text(
+        text.replace(
+            "archive_status=VERIFIED",
+            "archive_status=PENDING",
+        )
+    )
+
+    service = SkyProcessorService(
+        tmp_path,
+        satdump_command=(
+            "/fake/satdump"
+        ),
+    )
+
+    result = service.scan()
+
+    assert len(result) == 1
+
+    assert (
+        result[0]["state"]
+        == "ARCHIVE_NOT_READY"
+    )
+
+    assert (
+        result[0]["archive_status"]
+        == "PENDING"
+    )
+
+    assert not (
+        directory
+        / "observation.json"
+    ).exists()
+
+    assert not (
+        directory
+        / "processing.json"
+    ).exists()
+
+    assert not (
+        directory
+        / "audit.json"
+    ).exists()
