@@ -652,6 +652,27 @@ class SkyOpportunityService:
                     local_tz
                 ).isoformat()
             ),
+            "aos_display": (
+                aos.astimezone(
+                    local_tz
+                ).strftime(
+                    "%d/%m %H:%M:%S"
+                )
+            ),
+            "max_display": (
+                maximum.astimezone(
+                    local_tz
+                ).strftime(
+                    "%d/%m %H:%M:%S"
+                )
+            ),
+            "los_display": (
+                los.astimezone(
+                    local_tz
+                ).strftime(
+                    "%d/%m %H:%M:%S"
+                )
+            ),
             "duration_s": int(
                 round(
                     (
