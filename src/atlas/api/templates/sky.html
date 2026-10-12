@@ -65,6 +65,91 @@
     </section>
 
 
+    {% if opportunities.opportunities %}
+
+    <section class="sky-section">
+
+        <div class="sky-section-heading">
+            <div>
+                <span class="sky-section-kicker">
+                    Próximas oportunidades
+                </span>
+
+                <h2>
+                    Qué vale la pena intentar
+                </h2>
+            </div>
+
+            <p>
+                Pases reales ordenados por compatibilidad de antena, valor
+                científico y geometría orbital. El producto indicado es una
+                expectativa: sólo la auditoría posterior confirma lo recibido.
+            </p>
+        </div>
+
+        <div class="sky-opportunity-grid">
+
+            {% for item in opportunities.opportunities[:8] %}
+
+            <article class="sky-opportunity-card">
+
+                <div class="sky-opportunity-top">
+                    <div>
+                        <span class="sky-object-type">
+                            {{ item.expected_product }}
+                        </span>
+
+                        <h3>
+                            {{ item.satellite_name }}
+                        </h3>
+                    </div>
+
+                    <span class="sky-opportunity-score">
+                        {{ item.opportunity_score }}
+                    </span>
+                </div>
+
+                <div class="sky-opportunity-facts">
+                    <div>
+                        <span>Frecuencia</span>
+                        <strong>
+                            {{ "%.3f"|format(item.frequency_mhz) }} MHz
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>Modo</span>
+                        <strong>{{ item.mode }}</strong>
+                    </div>
+
+                    <div>
+                        <span>Máxima elevación</span>
+                        <strong>
+                            {{ "%.1f"|format(item.max_elevation_deg) }}°
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>Máximo</span>
+                        <strong>{{ item.max_display }}</strong>
+                    </div>
+                </div>
+
+                <p>
+                    {{ item.activity_note }}
+                </p>
+
+            </article>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+    {% endif %}
+
+
     {% if observations %}
 
     <section class="sky-section">
