@@ -411,6 +411,9 @@ class SkyDiscoveryService:
         if satellite_status not in {
             "alive",
             "operational",
+            "in orbit",
+            "in-orbit",
+            "in_orbit",
         }:
             return None
 
