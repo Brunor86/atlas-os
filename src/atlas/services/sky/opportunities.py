@@ -6,6 +6,10 @@ from typing import Any
 from urllib.request import Request, urlopen
 from zoneinfo import ZoneInfo
 
+from atlas.services.sky.profiles import (
+    TARGET_PROFILES,
+)
+
 
 DEFAULT_CATALOG_PATH = Path(
     os.getenv(
@@ -412,6 +416,65 @@ class SkyOpportunityService:
         *,
         max_spacecraft: int,
     ) -> list[dict[str, Any]]:
+        preferred_frequency = {
+            int(
+                profile["norad_id"]
+            ): float(
+                profile[
+                    "primary_frequency_mhz"
+                ]
+            )
+            for profile in TARGET_PROFILES
+            if (
+                profile.get(
+                    "norad_id"
+                )
+                and profile.get(
+                    "primary_frequency_mhz"
+                )
+            )
+        }
+
+        def effective_score(
+            item: dict[str, Any],
+        ) -> int:
+            score = int(
+                item.get(
+                    "priority_score",
+                    0,
+                )
+            )
+
+            norad = item.get(
+                "norad_id"
+            )
+
+            preferred = (
+                preferred_frequency.get(
+                    int(norad)
+                )
+                if norad
+                else None
+            )
+
+            frequency = item.get(
+                "downlink_mhz"
+            )
+
+            if (
+                preferred is not None
+                and frequency is not None
+                and abs(
+                    float(frequency)
+                    - preferred
+                ) <= 0.025
+            ):
+                # ATLAS-validated/curated frequencies outrank an
+                # equally plausible generic catalog transmitter.
+                score += 35
+
+            return score
+
         best: dict[Any, dict[str, Any]] = {}
 
         for item in targets:
@@ -427,6 +490,16 @@ class SkyOpportunityService:
             if not norad:
                 continue
 
+            enriched = dict(
+                item
+            )
+
+            enriched[
+                "effective_priority"
+            ] = effective_score(
+                item
+            )
+
             current = best.get(
                 norad
             )
@@ -434,28 +507,27 @@ class SkyOpportunityService:
             if (
                 current is None
                 or int(
-                    item.get(
-                        "priority_score",
-                        0,
-                    )
+                    enriched[
+                        "effective_priority"
+                    ]
                 )
                 > int(
                     current.get(
-                        "priority_score",
+                        "effective_priority",
                         0,
                     )
                 )
             ):
                 best[
                     norad
-                ] = item
+                ] = enriched
 
         ranked = sorted(
             best.values(),
             key=lambda item: (
                 -int(
                     item.get(
-                        "priority_score",
+                        "effective_priority",
                         0,
                     )
                 ),
@@ -572,8 +644,11 @@ class SkyOpportunityService:
         opportunity_score = (
             int(
                 target.get(
-                    "priority_score",
-                    0,
+                    "effective_priority",
+                    target.get(
+                        "priority_score",
+                        0,
+                    ),
                 )
             )
             + _pass_bonus(
@@ -626,6 +701,12 @@ class SkyOpportunityService:
             ),
             "catalog_priority": target.get(
                 "priority_score"
+            ),
+            "effective_priority": target.get(
+                "effective_priority",
+                target.get(
+                    "priority_score"
+                ),
             ),
             "expected_product": product,
             "activity_note": (
