@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 from urllib.request import Request, urlopen
+from zoneinfo import ZoneInfo
 
 
 DEFAULT_CATALOG_PATH = Path(
@@ -189,6 +190,13 @@ class SkyOpportunityService:
 
         ts = load.timescale()
 
+        local_tz = ZoneInfo(
+            os.getenv(
+                "ATLAS_SKY_TIMEZONE",
+                "America/Argentina/San_Juan",
+            )
+        )
+
         observer = wgs84.latlon(
             latitude_deg,
             longitude_deg,
@@ -306,6 +314,7 @@ class SkyOpportunityService:
                             self._opportunity(
                                 target,
                                 current,
+                                local_tz=local_tz,
                             )
                         )
 
@@ -539,6 +548,8 @@ class SkyOpportunityService:
     def _opportunity(
         target: dict[str, Any],
         pass_data: dict[str, Any],
+        *,
+        local_tz: ZoneInfo,
     ) -> dict[str, Any]:
         product = _expected_product(
             str(
@@ -617,11 +628,30 @@ class SkyOpportunityService:
                 "priority_score"
             ),
             "expected_product": product,
+            "activity_note": (
+                "El transmisor está catalogado; la actividad durante "
+                "este pase no está garantizada hasta comprobarla."
+            ),
             "aos_utc": aos.isoformat(),
             "max_time_utc": (
                 maximum.isoformat()
             ),
             "los_utc": los.isoformat(),
+            "aos_local": (
+                aos.astimezone(
+                    local_tz
+                ).isoformat()
+            ),
+            "max_time_local": (
+                maximum.astimezone(
+                    local_tz
+                ).isoformat()
+            ),
+            "los_local": (
+                los.astimezone(
+                    local_tz
+                ).isoformat()
+            ),
             "duration_s": int(
                 round(
                     (
