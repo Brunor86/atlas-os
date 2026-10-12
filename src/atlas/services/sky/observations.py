@@ -6,6 +6,9 @@ from typing import Any
 from atlas.services.sky.discovery import (
     SkyDiscoveryService,
 )
+from atlas.services.sky.opportunities import (
+    SkyOpportunityService,
+)
 from atlas.services.sky.profiles import (
     STATION_CAPABILITIES,
     TARGET_PROFILES,
@@ -244,6 +247,14 @@ class SkyObservationService:
             dict(item)
             for item in STATION_CAPABILITIES
         ]
+
+    def opportunities(
+        self,
+    ) -> dict[str, Any]:
+        return (
+            SkyOpportunityService()
+            .load()
+        )
 
     def get_observation(
         self,
