@@ -51,6 +51,9 @@ def _expected_product(
     if "GMSK" in text or "BPSK" in text or "FSK" in text:
         return "Telemetría digital"
 
+    if "TELEMETRY" in text or "TLM" in text:
+        return "Telemetría digital"
+
     if "CW" in text:
         return "Baliza / telemetría CW"
 
@@ -58,6 +61,22 @@ def _expected_product(
         return "Audio / voz"
 
     return "Señal RF + firma Doppler"
+
+
+def _activity_note(
+    product: str,
+) -> str:
+    if product == "Imagen SSTV":
+        return (
+            "SSTV figura como capacidad catalogada del transmisor; "
+            "la actividad SSTV durante este pase no está confirmada "
+            "hasta comprobar una activación real."
+        )
+
+    return (
+        "El transmisor está catalogado; la actividad durante "
+        "este pase no está garantizada hasta comprobarla."
+    )
 
 
 def _pass_bonus(
@@ -709,9 +728,8 @@ class SkyOpportunityService:
                 ),
             ),
             "expected_product": product,
-            "activity_note": (
-                "El transmisor está catalogado; la actividad durante "
-                "este pase no está garantizada hasta comprobarla."
+            "activity_note": _activity_note(
+                product
             ),
             "aos_utc": aos.isoformat(),
             "max_time_utc": (

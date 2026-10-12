@@ -18,26 +18,24 @@ def test_static_assets_use_content_versioned_urls():
 
     base = BASE.read_text()
 
-    assert (
-        "css/atlas.css"
-        in base
-    )
-
-    assert (
-        "js/atlas.js"
-        in base
-    )
-
-    assert (
+    version_suffix = (
         "?v={{ static_asset_version }}"
-        in base
     )
+
+    expected_assets = (
+        "css/atlas.css",
+        "css/atlas-sky.css",
+        "js/atlas.js",
+    )
+
+    for asset in expected_assets:
+        assert asset in base
 
     assert (
         base.count(
-            "?v={{ static_asset_version }}"
+            version_suffix
         )
-        == 2
+        == len(expected_assets)
     )
 
 
@@ -50,15 +48,14 @@ def test_static_version_is_derived_from_asset_content():
         in server
     )
 
-    assert (
-        "BASE_DIR / \"static/css/atlas.css\""
-        in server
+    expected_hashed_assets = (
+        'BASE_DIR / "static/css/atlas.css"',
+        'BASE_DIR / "static/css/atlas-sky.css"',
+        'BASE_DIR / "static/js/atlas.js"',
     )
 
-    assert (
-        "BASE_DIR / \"static/js/atlas.js\""
-        in server
-    )
+    for asset in expected_hashed_assets:
+        assert asset in server
 
     assert (
         "STATIC_ASSET_VERSION"
@@ -66,6 +63,6 @@ def test_static_version_is_derived_from_asset_content():
     )
 
     assert (
-        "\"static_asset_version\":"
+        '"static_asset_version":'
         in server
     )

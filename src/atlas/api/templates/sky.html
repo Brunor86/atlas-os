@@ -84,6 +84,14 @@
                 Pases reales ordenados por compatibilidad de antena, valor
                 científico y geometría orbital. El producto indicado es una
                 expectativa: sólo la auditoría posterior confirma lo recibido.
+
+                {% if opportunities.missing_tle %}
+                <br>
+                Cobertura orbital parcial:
+                {{ opportunities.missing_tle|length }}
+                objetos del catálogo no tienen TLE disponible
+                en esta generación.
+                {% endif %}
             </p>
         </div>
 

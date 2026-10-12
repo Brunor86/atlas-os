@@ -2,6 +2,7 @@ import json
 
 from atlas.services.sky.opportunities import (
     SkyOpportunityService,
+    _activity_note,
     _expected_product,
     _pass_bonus,
 )
@@ -31,6 +32,36 @@ def test_expected_product_classification():
         )
         == "Paquetes AX.25 / APRS"
     )
+
+    assert (
+        _expected_product(
+            "FM",
+            "Telemetry",
+        )
+        == "Telemetría digital"
+    )
+
+    assert (
+        _expected_product(
+            "FM",
+            "Voice",
+        )
+        == "Audio / voz"
+    )
+
+
+def test_sstv_activity_note_marks_activity_unconfirmed():
+    note = _activity_note(
+        "Imagen SSTV"
+    )
+
+    assert "no está confirmada" in note
+
+    generic_note = _activity_note(
+        "Telemetría digital"
+    )
+
+    assert "no está garantizada" in generic_note
 
 
 def test_pass_bonus_rewards_elevation_and_science_product():
@@ -132,6 +163,7 @@ def test_load_is_offline_cache(tmp_path):
         json.dumps(
             {
                 "generated_at": "2026-10-12T00:00:00+00:00",
+                "missing_tle": [999],
                 "opportunities": [
                     {
                         "satellite_name": "SAT-A",
@@ -152,3 +184,5 @@ def test_load_is_offline_cache(tmp_path):
     assert len(
         payload["opportunities"]
     ) == 1
+
+    assert payload["missing_tle"] == [999]
