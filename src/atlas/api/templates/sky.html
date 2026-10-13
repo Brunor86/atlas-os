@@ -350,6 +350,40 @@
         </div>
 
 
+        {% if selected.source and selected.source.type == "SatNOGS" %}
+        <div class="sky-fact-grid">
+            <article>
+                <span>Fuente</span>
+                <strong>SatNOGS Network</strong>
+            </article>
+
+            <article>
+                <span>Estación</span>
+                <strong>
+                    {{ selected.source.station_name }}
+                    · #{{ selected.source.station_id }}
+                </strong>
+            </article>
+
+            <article>
+                <span>Observación SatNOGS</span>
+                <strong>
+                    #{{ selected.source.observation_id }}
+                </strong>
+            </article>
+
+            <article>
+                <span>Elevación máxima</span>
+                <strong>
+                    {{ "%.0f"|format(
+                        selected.capture.max_elevation_deg
+                    ) }}°
+                </strong>
+            </article>
+        </div>
+        {% endif %}
+
+
         {% if selected.highlight_results %}
         <div class="sky-highlight-grid">
 
@@ -449,6 +483,39 @@
             </article>
 
         </div>
+
+
+        {% if selected.packet_breakdown %}
+        <article class="sky-panel">
+            <span class="sky-panel-label">
+                Protocolo ORBCOMM
+            </span>
+
+            <h3>
+                Paquetes recuperados
+            </h3>
+
+            <div class="sky-result-table">
+                {% for packet in selected.packet_breakdown %}
+                <div>
+                    <span>
+                        {{ packet.label }}
+                    </span>
+
+                    <strong>
+                        {{ packet.value }}
+                    </strong>
+                </div>
+                {% endfor %}
+            </div>
+
+            <p class="sky-mission-copy">
+                Los paquetes Message se contabilizan para validar
+                el enlace digital, pero ATLAS no expone ni conserva
+                su payload.
+            </p>
+        </article>
+        {% endif %}
 
 
         {% set images = selected.artifact_inventory
@@ -561,7 +628,7 @@
                 <audio controls preload="none">
                     <source
                         src="/api/sky/observations/{{ selected.id }}/artifacts/{{ artifact.name }}"
-                        type="audio/wav"
+                        type="{{ artifact.mime_type|default('audio/wav', true) }}"
                     >
                 </audio>
             </div>

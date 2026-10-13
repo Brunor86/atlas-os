@@ -307,3 +307,151 @@ def test_observation_display_is_localized_without_mutating_evidence(
         "ATLAS Sky confirmó"
         in observation["display_summary"]
     )
+
+
+def test_satnogs_orbcomm_presentation_metadata(
+    tmp_path,
+):
+    directory = _write_observation(
+        tmp_path,
+        "SATNOGS-15191789-FM116",
+    )
+
+    manifest_path = (
+        directory
+        / "observation.json"
+    )
+
+    manifest = json.loads(
+        manifest_path.read_text()
+    )
+
+    manifest["target"][
+        "norad_id"
+    ] = 41189
+
+    manifest["source"] = {
+        "type": "SatNOGS",
+        "station_id": 5251,
+        "station_name":
+            "ATLAS-SKY-SAN-JUAN",
+        "observation_id": 15191789,
+    }
+
+    manifest["capture"][
+        "max_elevation_deg"
+    ] = 87.0
+
+    manifest["results"] = {
+        "strict_valid_frames": 12191,
+        "accepted_windows": 38,
+        "satnogs_station_id": 5251,
+        "satnogs_observation_id":
+            15191789,
+        "packet_counts": {
+            "Downlink_info": 168,
+            "Fill": 10779,
+            "Message": 851,
+            "Network": 42,
+            "Orbital": 5,
+            "Sync": 258,
+            "Uplink_info": 88,
+        },
+    }
+
+    manifest["artifacts"] = [
+        "capture.ogg",
+    ]
+
+    manifest_path.write_text(
+        json.dumps(
+            manifest
+        )
+    )
+
+    (
+        directory
+        / "capture.ogg"
+    ).write_bytes(
+        b"OGG"
+    )
+
+    observation = (
+        SkyObservationService(
+            tmp_path
+        )
+        .get_observation(
+            "SATNOGS-15191789-FM116"
+        )
+    )
+
+    assert observation is not None
+
+    highlights = (
+        observation[
+            "highlight_results"
+        ]
+    )
+
+    assert (
+        highlights[0]["label"]
+        == "Paquetes válidos"
+    )
+
+    assert (
+        highlights[0]["value"]
+        == "12.191"
+    )
+
+    assert (
+        highlights[1]["value"]
+        == "38"
+    )
+
+    packets = {
+        item["label"]: item
+        for item in observation[
+            "packet_breakdown"
+        ]
+    }
+
+    assert (
+        packets["Sync"]["value"]
+        == "258"
+    )
+
+    assert (
+        packets["Fill"]["value"]
+        == "10.779"
+    )
+
+    assert (
+        packets["Message"]["value"]
+        == "851"
+    )
+
+    assert (
+        "payload"
+        in packets["Message"]["note"]
+    )
+
+    artifacts = {
+        item["name"]: item
+        for item in observation[
+            "artifact_inventory"
+        ]
+    }
+
+    assert (
+        artifacts[
+            "capture.ogg"
+        ]["kind"]
+        == "audio"
+    )
+
+    assert (
+        artifacts[
+            "capture.ogg"
+        ]["mime_type"]
+        == "audio/ogg"
+    )

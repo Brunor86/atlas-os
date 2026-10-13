@@ -396,6 +396,12 @@ class SkyObservationService:
             )
         )
 
+        item["packet_breakdown"] = (
+            self._packet_breakdown(
+                item
+            )
+        )
+
         return item
 
     @staticmethod
@@ -558,7 +564,78 @@ class SkyObservationService:
             "id"
         )
 
-        if observation_id == "OUT-FM116-PRE":
+        source = observation.get(
+            "source",
+            {},
+        )
+
+        target = observation.get(
+            "target",
+            {},
+        )
+
+        capture = observation.get(
+            "capture",
+            {},
+        )
+
+        if (
+            source.get("type") == "SatNOGS"
+            and target.get("norad_id") == 41189
+        ):
+            valid_packets = results.get(
+                "strict_valid_frames"
+            )
+
+            formatted_packets = (
+                f"{int(valid_packets):,}"
+                .replace(",", ".")
+                if valid_packets is not None
+                else None
+            )
+
+            max_elevation = capture.get(
+                "max_elevation_deg"
+            )
+
+            values = [
+                (
+                    "Paquetes válidos",
+                    formatted_packets,
+                    (
+                        "tramas digitales con "
+                        "checksum Fletcher válido"
+                    ),
+                ),
+                (
+                    "Ventanas válidas",
+                    results.get(
+                        "accepted_windows"
+                    ),
+                    (
+                        "ventanas de 10 s con "
+                        "decodificación confirmada"
+                    ),
+                ),
+                (
+                    "Estación SatNOGS",
+                    results.get(
+                        "satnogs_station_id"
+                    ),
+                    "ATLAS-SKY-SAN-JUAN",
+                ),
+                (
+                    "Elevación máxima",
+                    (
+                        f"{float(max_elevation):.0f}°"
+                        if max_elevation is not None
+                        else None
+                    ),
+                    "geometría máxima del pase",
+                ),
+            ]
+
+        elif observation_id == "OUT-FM116-PRE":
             values = [
                 (
                     "Efemérides decodificadas",
@@ -644,6 +721,98 @@ class SkyObservationService:
         ]
 
     @staticmethod
+    def _packet_breakdown(
+        observation: dict[str, Any],
+    ) -> list[dict[str, str]]:
+        source = observation.get(
+            "source",
+            {},
+        )
+
+        if source.get("type") != "SatNOGS":
+            return []
+
+        counts = (
+            observation.get(
+                "results",
+                {},
+            ).get(
+                "packet_counts",
+                {},
+            )
+        )
+
+        if not isinstance(
+            counts,
+            dict,
+        ):
+            return []
+
+        definitions = [
+            (
+                "Sync",
+                "Sync",
+                "sincronización del flujo ORBCOMM",
+            ),
+            (
+                "Network",
+                "Network",
+                "información de control de red",
+            ),
+            (
+                "Downlink_info",
+                "Downlink info",
+                "información del canal de bajada",
+            ),
+            (
+                "Uplink_info",
+                "Uplink info",
+                "información del canal de subida",
+            ),
+            (
+                "Orbital",
+                "Orbital",
+                "paquetes de información orbital",
+            ),
+            (
+                "Fill",
+                "Fill",
+                "tramas de relleno del flujo",
+            ),
+            (
+                "Message",
+                "Message",
+                (
+                    "sólo conteo; el payload "
+                    "no se expone ni almacena"
+                ),
+            ),
+        ]
+
+        result = []
+
+        for key, label, note in definitions:
+            value = counts.get(
+                key
+            )
+
+            if value is None:
+                continue
+
+            result.append(
+                {
+                    "label": label,
+                    "value": (
+                        f"{int(value):,}"
+                        .replace(",", ".")
+                    ),
+                    "note": note,
+                }
+            )
+
+        return result
+
+    @staticmethod
     def _artifact_inventory(
         observation: dict[str, Any],
     ) -> list[dict[str, Any]]:
@@ -723,6 +892,12 @@ class SkyObservationService:
 
         inventory = []
 
+        mime_types = {
+            ".wav": "audio/wav",
+            ".mp3": "audio/mpeg",
+            ".ogg": "audio/ogg",
+        }
+
         for name in observation.get(
             "artifacts",
             [],
@@ -765,6 +940,11 @@ class SkyObservationService:
                 {
                     "name": name,
                     "kind": kind,
+                    "mime_type": (
+                        mime_types.get(
+                            suffix
+                        )
+                    ),
                     "exists": (
                         path.exists()
                         and path.is_file()
