@@ -485,7 +485,6 @@
 .sky-result-table span,
 .sky-evidence span {
     color: var(--muted);
-    text-transform: capitalize;
 }
 
 .sky-result-table strong,

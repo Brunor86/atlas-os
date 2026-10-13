@@ -345,6 +345,7 @@ def test_satnogs_orbcomm_presentation_metadata(
     manifest["results"] = {
         "strict_valid_frames": 12191,
         "accepted_windows": 38,
+        "audio_duration_s": 600.0430208333333,
         "satnogs_station_id": 5251,
         "satnogs_observation_id":
             15191789,
@@ -408,6 +409,26 @@ def test_satnogs_orbcomm_presentation_metadata(
         == "38"
     )
 
+    assert (
+        highlights[2]["label"]
+        == "Tiempo digital confirmado"
+    )
+
+    assert (
+        highlights[2]["value"]
+        == "6m20s"
+    )
+
+    assert (
+        highlights[3]["label"]
+        == "Audio analizado"
+    )
+
+    assert (
+        highlights[3]["value"]
+        == "10m00s"
+    )
+
     packets = {
         item["label"]: item
         for item in observation[
@@ -454,4 +475,43 @@ def test_satnogs_orbcomm_presentation_metadata(
             "capture.ogg"
         ]["mime_type"]
         == "audio/ogg"
+    )
+
+
+def test_capture_start_has_local_display_value(
+    tmp_path,
+):
+    directory = _write_observation(
+        tmp_path,
+        "SATNOGS-TIME-001",
+    )
+
+    (
+        directory
+        / "SATNOGS-TIME-001.meta.txt"
+    ).write_text(
+        "start=2026-10-12T22:15:18Z\n"
+    )
+
+    observation = (
+        SkyObservationService(
+            tmp_path
+        )
+        .get_observation(
+            "SATNOGS-TIME-001"
+        )
+    )
+
+    assert observation is not None
+
+    assert (
+        observation["capture_start"]
+        == "2026-10-12T22:15:18Z"
+    )
+
+    assert (
+        observation[
+            "display_capture_start"
+        ]
+        == "12 oct 2026 · 19:15 ART"
     )

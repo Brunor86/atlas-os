@@ -1,7 +1,9 @@
 import json
 import os
+from datetime import datetime
 from pathlib import Path
 from typing import Any
+from zoneinfo import ZoneInfo
 
 from atlas.services.sky.discovery import (
     SkyDiscoveryService,
@@ -363,6 +365,14 @@ class SkyObservationService:
             )
         )
 
+        item["display_capture_start"] = (
+            self._display_capture_start(
+                item.get(
+                    "capture_start"
+                )
+            )
+        )
+
         item["display_status"] = (
             self._display_status(
                 item.get(
@@ -458,6 +468,92 @@ class SkyObservationService:
             return None
 
         return f"{year}-{month}-{day}"
+
+    @staticmethod
+    def _display_capture_start(
+        value: str | None,
+    ) -> str | None:
+        if not value:
+            return None
+
+        try:
+            parsed = datetime.fromisoformat(
+                value.replace(
+                    "Z",
+                    "+00:00",
+                )
+            )
+        except ValueError:
+            return value
+
+        if parsed.tzinfo is None:
+            return value
+
+        local = parsed.astimezone(
+            ZoneInfo(
+                "America/Argentina/San_Juan"
+            )
+        )
+
+        months = (
+            "ene",
+            "feb",
+            "mar",
+            "abr",
+            "may",
+            "jun",
+            "jul",
+            "ago",
+            "sep",
+            "oct",
+            "nov",
+            "dic",
+        )
+
+        return (
+            f"{local.day} "
+            f"{months[local.month - 1]} "
+            f"{local.year} · "
+            f"{local:%H:%M} ART"
+        )
+
+    @staticmethod
+    def _format_duration(
+        seconds: int | float | None,
+    ) -> str | None:
+        if seconds is None:
+            return None
+
+        total = max(
+            0,
+            int(
+                round(
+                    float(seconds)
+                )
+            ),
+        )
+
+        minutes, remainder = divmod(
+            total,
+            60,
+        )
+
+        hours, minutes = divmod(
+            minutes,
+            60,
+        )
+
+        if hours:
+            return (
+                f"{hours}h"
+                f"{minutes:02d}m"
+                f"{remainder:02d}s"
+            )
+
+        return (
+            f"{minutes}m"
+            f"{remainder:02d}s"
+        )
 
     @staticmethod
     def _display_status(
@@ -574,11 +670,6 @@ class SkyObservationService:
             {},
         )
 
-        capture = observation.get(
-            "capture",
-            {},
-        )
-
         if (
             source.get("type") == "SatNOGS"
             and target.get("norad_id") == 41189
@@ -594,8 +685,14 @@ class SkyObservationService:
                 else None
             )
 
-            max_elevation = capture.get(
-                "max_elevation_deg"
+            accepted_windows = results.get(
+                "accepted_windows"
+            )
+
+            digital_seconds = (
+                int(accepted_windows) * 10
+                if accepted_windows is not None
+                else None
             )
 
             values = [
@@ -618,20 +715,26 @@ class SkyObservationService:
                     ),
                 ),
                 (
-                    "Estación SatNOGS",
-                    results.get(
-                        "satnogs_station_id"
+                    "Tiempo digital confirmado",
+                    SkyObservationService._format_duration(
+                        digital_seconds
                     ),
-                    "ATLAS-SKY-SAN-JUAN",
+                    (
+                        "suma de las ventanas aceptadas "
+                        "por el decoder"
+                    ),
                 ),
                 (
-                    "Elevación máxima",
-                    (
-                        f"{float(max_elevation):.0f}°"
-                        if max_elevation is not None
-                        else None
+                    "Audio analizado",
+                    SkyObservationService._format_duration(
+                        results.get(
+                            "audio_duration_s"
+                        )
                     ),
-                    "geometría máxima del pase",
+                    (
+                        "duración total del producto "
+                        "SatNOGS procesado"
+                    ),
                 ),
             ]
 
